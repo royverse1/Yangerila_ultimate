@@ -23,22 +23,7 @@ export default function FooterReveal() {
 
     // 2. Pinned Panels with Overscroll (Removed GSAP pinning - converted to native CSS sticky for 0 CLS)
 
-    // 3. The GSAP Grow from Bottom effect natively applied without CSS Z-Index overlap
-    if (contactRef.current && contactContainerRef.current) {
-      gsap.fromTo(contactRef.current,
-        { clipPath: 'inset(100% 0px 0px 0px)' }, // Initially 100% hidden at the very top (so bottom is hidden)
-        {
-          clipPath: 'inset(0% 0px 0px 0px)', // Completely open
-          ease: 'none',
-          scrollTrigger: {
-            trigger: contactContainerRef.current, // The actual physical space it occupies
-            start: "top bottom",                  // When the top of the container hits the bottom of viewport
-            end: "bottom bottom",                 // When the bottom of the container hits the bottom of viewport
-            scrub: true,
-          }
-        }
-      );
-    }
+    // (Residual GSAP grow-from-bottom effect entirely removed for smoother native transitions)
   }, { scope: containerRef });
 
   const testimonials = [
@@ -132,18 +117,11 @@ export default function FooterReveal() {
         </div>
       </section>
 
-      {/* 
-        4. CONTACT & FORM (SCROLLTRIGGER CLIP-PATH REVEAL)
-        Using the newly generated background image.
-        Note: We don't add `.panel` to contactContainerRef because the clipPath scroll scrubbing 
-        already handles the reveal uniquely as the very final block.
-      */}
-      <div ref={contactContainerRef} className="relative w-full h-[100vh] z-[60]">
-        <footer 
-          ref={contactRef} 
-          className="fixed bottom-0 left-0 w-full h-[100vh] bg-cover bg-center overflow-hidden flex flex-col justify-center shadow-[0_-30px_60px_rgba(0,0,0,1)] border-t border-white/10 z-[60]"
-          style={{ backgroundImage: "url('./contact_bg.png')" }}
-        >
+      {/* 4. CONTACT & FORM SECTION */}
+      <section 
+        className="panel sticky top-0 w-full min-h-screen flex flex-col justify-center bg-cover bg-center overflow-hidden shadow-[0_-30px_60px_rgba(0,0,0,1)] border-t border-white/10 z-[60]"
+        style={{ backgroundImage: "url('./contact_bg.png')" }}
+      >
           {/* Overlays for contrast and readability */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0 pointer-events-none"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-[#020505] via-transparent to-[#020505] z-0 pointer-events-none opacity-80"></div>
@@ -179,8 +157,8 @@ export default function FooterReveal() {
             </div>
             
           </div>
-        </footer>
-      </div>
+        </div>
+      </section>
     </div>
   );
 }

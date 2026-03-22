@@ -44,7 +44,9 @@ export default function MethodPanel() {
     const founderTl = gsap.timeline({
       scrollTrigger: {
         trigger: founderBoxRef.current,
-        start: "top 80%", // Triggers when box hits 80% down the screen
+        start: "center center", 
+        end: "+=40%",
+        pin: true, // Forces a pause so the user reads it
         toggleActions: "play none none reverse"
       }
     });
@@ -72,8 +74,10 @@ export default function MethodPanel() {
     // 2. Featured Courses Bento Reveal
     gsap.set(coursesRef.current, { scale: 0.9, opacity: 0, y: 40 });
     ScrollTrigger.create({
-      trigger: coursesRef.current[0],
-      start: "top 85%",
+      trigger: coursesRef.current[0].parentElement,
+      start: "center center",
+      end: "+=40%",
+      pin: true, // Forces a pause to showcase courses
       onEnter: () => {
         gsap.to(coursesRef.current, {
           scale: 1, opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: "back.out(1.5)"
@@ -88,7 +92,9 @@ export default function MethodPanel() {
     const btnTimeline = gsap.timeline({
       scrollTrigger: {
         trigger: admissionRef.current,
-        start: "top 65%", // Trigger later
+        start: "center center",
+        end: "+=40%",
+        pin: true, // Forces a pause on the CTA
         toggleActions: "play none none reverse"
       }
     });

@@ -23,32 +23,63 @@ export default function LegacyPanel() {
     const words = textContainerRef.current.querySelectorAll('.word');
     tl.fromTo(words, 
       { opacity: 0.1, y: 15 },
-      { opacity: 1, y: 0, duration: 2, stagger: 0.1, ease: 'power2.out' }
+      { opacity: 1, y: 0, duration: 1.6, stagger: 0.08, ease: 'power4.out' }
     );
 
     // 2. Horizontal scroll for the timeline
     const horizontalScroll = gsap.to(timelineWrapRef.current, {
       x: () => -(timelineWrapRef.current.scrollWidth - window.innerWidth),
       ease: 'none',
-      duration: 4
+      duration: 3.2
     });
     tl.add(horizontalScroll, "+=0.5");
 
     // 3. Reveal timeline elements progressively using containerAnimation
     const nodes = gsap.utils.toArray('.timeline-node');
-    // Animate texts first
-    tl.fromTo('.text-block', 
-      { opacity: 0, y: 40 },
-      { opacity: 1, y: 0, stagger: 0.8, duration: 0.8, ease: "power4.out" }
-    );
-
-    // Then animate nodes
     nodes.forEach((node, i) => {
-      tl.fromTo(node, 
-        { scale: 0, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(2)" }, 
-        "-=0.2"
-      );
+      // The box and line animation
+      const box = node.querySelector('.content-box');
+      const line = node.querySelector('.vertical-line');
+      const dot = node.querySelector('.center-dot');
+
+      const isTop = i % 2 === 0;
+
+      // Start state
+      gsap.set([box, line, dot], { opacity: 0 });
+      gsap.set(box, { y: isTop ? 40 : -40, scale: 0.95 });
+      gsap.set(line, { scaleY: 0, transformOrigin: isTop ? "bottom" : "top" });
+      gsap.set(dot, { scale: 0 });
+
+      // Animate as they come into view from right
+      gsap.to(dot, {
+        scale: 1, opacity: 1, duration: 0.4, ease: "back.out(2)",
+        scrollTrigger: {
+          trigger: node,
+          containerAnimation: tl,
+          start: "left 85%", // when left of node hits 85% of screen width
+          toggleActions: "play none none reverse"
+        }
+      });
+
+      gsap.to(line, {
+        scaleY: 1, opacity: 0.6, duration: 0.4, ease: "power4.out", delay: 0.1,
+        scrollTrigger: {
+          trigger: node,
+          containerAnimation: tl,
+          start: "left 85%",
+          toggleActions: "play none none reverse"
+        }
+      });
+
+      gsap.to(box, {
+        y: 0, opacity: 1, scale: 1, duration: 0.6, ease: "power4.out", delay: 0.3,
+        scrollTrigger: {
+          trigger: node,
+          containerAnimation: tl,
+          start: "left 85%",
+          toggleActions: "play none none reverse"
+        }
+      });
     });
 
   }, { scope: containerRef });
