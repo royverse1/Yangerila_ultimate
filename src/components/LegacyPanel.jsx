@@ -13,9 +13,9 @@ export default function LegacyPanel() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: 'top top',
-        end: '+=400%',
+        end: '+=1200%', // Massive distance to make each node a long, distinct scroll block
         pin: true,
-        scrub: 1,
+        scrub: 1.5, // Even smoother scrubbing
       }
     });
 
@@ -30,7 +30,7 @@ export default function LegacyPanel() {
     const horizontalScroll = gsap.to(timelineWrapRef.current, {
       x: () => -(timelineWrapRef.current.scrollWidth - window.innerWidth),
       ease: 'none',
-      duration: 3.2
+      duration: 5 // Slows horizontal tween down relative to scrub
     });
     tl.add(horizontalScroll, "+=0.5");
 

@@ -44,9 +44,7 @@ export default function MethodPanel() {
     const founderTl = gsap.timeline({
       scrollTrigger: {
         trigger: founderBoxRef.current,
-        start: "center center", 
-        end: "+=40%",
-        pin: true, // Forces a pause so the user reads it
+        start: "top 80%",
         toggleActions: "play none none reverse"
       }
     });
@@ -75,9 +73,7 @@ export default function MethodPanel() {
     gsap.set(coursesRef.current, { scale: 0.9, opacity: 0, y: 40 });
     ScrollTrigger.create({
       trigger: coursesRef.current[0].parentElement,
-      start: "center center",
-      end: "+=40%",
-      pin: true, // Forces a pause to showcase courses
+      start: "top 85%",
       onEnter: () => {
         gsap.to(coursesRef.current, {
           scale: 1, opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: "back.out(1.5)"
@@ -92,9 +88,7 @@ export default function MethodPanel() {
     const btnTimeline = gsap.timeline({
       scrollTrigger: {
         trigger: admissionRef.current,
-        start: "center center",
-        end: "+=40%",
-        pin: true, // Forces a pause on the CTA
+        start: "top 65%",
         toggleActions: "play none none reverse"
       }
     });
