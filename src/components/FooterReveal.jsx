@@ -157,8 +157,7 @@ export default function FooterReveal() {
             </div>
             
           </div>
-        </div>
-      </section>
+        </section>
     </div>
   );
 }
