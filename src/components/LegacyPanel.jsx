@@ -85,7 +85,7 @@ export default function LegacyPanel() {
   }, { scope: containerRef });
 
   return (
-    <section ref={containerRef} className="snap-section w-full bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-blue-900/30 via-obsidian-blue to-pitch-black relative flex flex-col justify-center overflow-hidden">
+    <section ref={containerRef} className="w-full bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-blue-900/30 via-obsidian-blue to-pitch-black relative flex flex-col justify-center overflow-hidden">
 
       {/* Main Content Layer (Changed to relative min-h-screen to prevent overlap) */}
       <div className="z-10 relative flex flex-col justify-between py-32 md:py-40 w-full min-h-screen">

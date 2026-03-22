@@ -68,9 +68,9 @@ export default function App() {
       end: "bottom bottom",
       snap: {
         snapTo: ".snap-section",
-        duration: { min: 0.2, max: 0.6 },
-        delay: 0.05,
-        ease: "power3.inOut"
+        duration: 0.3,
+        delay: 0.1,
+        ease: "power4.out"
       }
     });
 

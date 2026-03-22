@@ -48,7 +48,7 @@ export default function HeroReveal() {
   }, { scope: containerRef });
 
   return (
-    <section ref={containerRef} className="snap-section h-screen w-full relative bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-900/40 via-[#041a1a] to-pitch-black overflow-hidden flex items-center justify-center">
+    <section ref={containerRef} className="h-screen w-full relative bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-900/40 via-[#041a1a] to-pitch-black overflow-hidden flex items-center justify-center">
       
       {/* Brand Mantra Content (Hidden behind the mask at first) */}
       <div 
