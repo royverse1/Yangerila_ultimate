@@ -15,72 +15,46 @@ gsap.registerPlugin(ScrollTrigger);
 function BackgroundGradients() {
   const bgRef = useRef(null);
   
-  // Smooth, slow-moving abstract gradients and edge lighting
+  // Faster, smoother, GPU-accelerated blobs
   useGSAP(() => {
-    // Edge lights breathing (Lowered opacity to blend better)
-    gsap.to(".edge-light", {
-      opacity: 0.3,
-      scale: 1.1,
-      duration: 8,
-      repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut"
-    });
-    
-    // Abstract flowing blobs (Added more dynamic movement)
+    // Make force3D global to ensure all GSAP transforms use GPU matrix translation
+    gsap.config({ force3D: true });
+
+    // Abstract flowing blobs - Much faster now without heavy filters
     gsap.to(".blob-1", {
-      xPercent: 25,
-      yPercent: 35,
-      rotation: 45,
-      scale: 1.4,
-      duration: 20,
+      xPercent: 50,
+      yPercent: 40,
+      rotation: 90,
+      scale: 1.8,
+      duration: 12, // Faster
       repeat: -1,
       yoyo: true,
-      ease: "sine.inOut"
-    });
-    gsap.to(".blob-2", {
-      xPercent: -30,
-      yPercent: -25,
-      rotation: -30,
-      scale: 1.3,
-      duration: 25,
-      repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut"
+      ease: "power1.inOut" // Smoother easing
     });
 
-    // Change background edge light colors based on scroll
-    gsap.to(".bg-color-cycle", {
-      filter: "hue-rotate(360deg)",
-      ease: "none",
-      scrollTrigger: {
-        trigger: document.body,
-        start: "top top",
-        end: "bottom bottom",
-        scrub: 1
-      }
+    gsap.to(".blob-2", {
+      xPercent: -40,
+      yPercent: -35,
+      rotation: -60,
+      scale: 1.5,
+      duration: 14, // Faster
+      repeat: -1,
+      yoyo: true,
+      ease: "power1.inOut"
     });
   }, { scope: bgRef });
 
   return (
     <div ref={bgRef} className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#050B0B]">
       
-      <div className="bg-color-cycle absolute inset-0 w-full h-full">
-        {/* Edge Lighting Top & Bottom - Lower base opacity and reduced blur for perf */}
-        <div className="edge-light absolute top-0 left-0 w-full h-[30vh] bg-gradient-to-b from-teal-500/10 to-transparent blur-3xl opacity-20"></div>
-        <div className="edge-light absolute bottom-0 left-0 w-full h-[40vh] bg-gradient-to-t from-fuchsia-600/10 to-transparent blur-3xl opacity-20"></div>
-        
-        {/* Edge Lighting Left & Right */}
-        <div className="edge-light absolute top-0 left-0 w-[20vw] h-full bg-gradient-to-r from-emerald-500/10 to-transparent blur-3xl opacity-20"></div>
-        <div className="edge-light absolute top-0 right-0 w-[20vw] h-full bg-gradient-to-l from-purple-500/10 to-transparent blur-3xl opacity-20"></div>
-
-        {/* Abstract floating blobs, reduced scale and blur to improve Framerate */}
-        <div className="blob-1 absolute top-[10%] left-[20%] w-[25vw] h-[25vw] md:w-[20vw] md:h-[20vw] rounded-full bg-teal-400/20 blur-3xl opacity-30"></div>
-        <div className="blob-2 absolute bottom-[20%] right-[10%] w-[35vw] h-[35vw] md:w-[30vw] md:h-[30vw] rounded-full bg-fuchsia-500/20 blur-3xl opacity-20"></div>
+      <div className="absolute inset-0 w-full h-full will-change-transform">
+        {/* Soft radial gradients completely replace expensive CSS blur-3xl */}
+        <div className="blob-1 absolute top-[10%] left-[20%] w-[40vw] h-[40vw] md:w-[30vw] md:h-[30vw] bg-[radial-gradient(circle_at_center,_rgba(46,211,162,0.15)_0%,_transparent_60%)] will-change-transform opacity-60" style={{ transform: 'translateZ(0)' }}></div>
+        <div className="blob-2 absolute bottom-[20%] right-[10%] w-[50vw] h-[50vw] md:w-[40vw] md:h-[40vw] bg-[radial-gradient(circle_at_center,_rgba(217,70,239,0.15)_0%,_transparent_60%)] will-change-transform opacity-60" style={{ transform: 'translateZ(0)' }}></div>
       </div>
       
-      {/* Noise overlay for texture, removed mix-blend for perf */}
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]"></div>
+      {/* Noise overlay hardware accelerated */}
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] will-change-transform" style={{ transform: 'translateZ(0)' }}></div>
     </div>
   );
 }

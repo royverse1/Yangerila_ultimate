@@ -69,7 +69,7 @@ export default function HeroReveal() {
 
       {/* The Mask Layer: Deep Pitch Black with a transparent 'Y' hole */}
       <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-        <svg ref={maskRef} viewBox="0 0 100 100" className="w-[15vw] md:w-[8vw] h-auto overflow-visible">
+        <svg ref={maskRef} viewBox="0 0 100 100" className="w-[15vw] md:w-[8vw] h-auto overflow-visible will-change-transform" style={{ transform: 'translateZ(0)' }}>
            <defs>
              <mask id="y-hole-mask">
                {/* White is visible, Black is transparent hole */}
