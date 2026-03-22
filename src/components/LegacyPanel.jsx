@@ -7,9 +7,6 @@ export default function LegacyPanel() {
   const containerRef = useRef(null);
   const textContainerRef = useRef(null);
   const timelineWrapRef = useRef(null);
-  const canvasRef = useRef(null);
-
-  // Removed CPU-heavy HTML5 canvas. Replaced with minimal CSS later if needed, but App.jsx Gradients are sufficient for now.
 
   useGSAP(() => {
     const tl = gsap.timeline({
@@ -89,9 +86,6 @@ export default function LegacyPanel() {
 
   return (
     <section ref={containerRef} className="w-full bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-blue-900/30 via-obsidian-blue to-pitch-black relative flex flex-col justify-center overflow-hidden">
-      
-      {/* Background Canvas */}
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-0 pointer-events-none mix-blend-screen opacity-80" />
 
       {/* Main Content Layer (Changed to relative min-h-screen to prevent overlap) */}
       <div className="z-10 relative flex flex-col justify-between py-32 md:py-40 w-full min-h-screen">
