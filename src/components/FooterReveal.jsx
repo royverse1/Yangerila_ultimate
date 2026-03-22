@@ -38,7 +38,7 @@ export default function FooterReveal() {
     <div ref={containerRef} className="relative w-full flex flex-col z-20">
       
       {/* 1. FUN FACT SECTION */}
-      <section className="panel sticky top-0 w-full section-padding min-h-screen flex flex-col items-center justify-center text-center bg-pitch-black bg-[linear-gradient(to_bottom,#0d2a1c,var(--color-pitch-black))] border-t border-emerald-900/50 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] z-30">
+      <section className="snap-section panel sticky top-0 w-full section-padding min-h-screen flex flex-col items-center justify-center text-center bg-pitch-black bg-[linear-gradient(to_bottom,#0d2a1c,var(--color-pitch-black))] border-t border-emerald-900/50 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] z-30">
         <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-12 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)]">Fun Fact</h2>
         <div className="max-w-5xl mx-auto">
           <p className="text-4xl md:text-6xl text-white font-light text-serif-italic mb-12 leading-relaxed drop-shadow-xl">
@@ -57,7 +57,7 @@ export default function FooterReveal() {
       </section>
 
       {/* 2. DISCOUNT & REWARDS SECTION */}
-      <section className="panel sticky top-0 w-full section-padding min-h-screen bg-pitch-black bg-[linear-gradient(to_bottom,#380a2b,var(--color-pitch-black))] border-t border-fuchsia-900/50 flex flex-col items-center justify-center overflow-hidden shadow-[0_-20px_50px_rgba(0,0,0,0.8)] z-40">
+      <section className="snap-section panel sticky top-0 w-full section-padding min-h-screen bg-pitch-black bg-[linear-gradient(to_bottom,#380a2b,var(--color-pitch-black))] border-t border-fuchsia-900/50 flex flex-col items-center justify-center overflow-hidden shadow-[0_-20px_50px_rgba(0,0,0,0.8)] z-40">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-neon-mint/10 rounded-full blur-[60px] pointer-events-none"></div>
         <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-16 text-center drop-shadow-[0_0_15px_rgba(46,211,162,0.5)] relative z-10">Exclusive Rewards</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-7xl mx-auto relative z-10">
@@ -81,7 +81,7 @@ export default function FooterReveal() {
       </section>
 
       {/* 3. TESTIMONIALS SECTION */}
-      <section className="panel sticky top-0 w-full min-h-screen overflow-hidden flex flex-col justify-center bg-pitch-black bg-[linear-gradient(to_bottom,#08273d,var(--color-pitch-black))] border-t border-blue-900/50 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] z-50">
+      <section className="snap-section panel sticky top-0 w-full min-h-screen overflow-hidden flex flex-col justify-center bg-pitch-black bg-[linear-gradient(to_bottom,#08273d,var(--color-pitch-black))] border-t border-blue-900/50 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] z-50">
         <div className="px-6 md:px-24 mb-16 pt-24">
           <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tight drop-shadow-2xl">Voices of <br/><span className="text-serif-italic font-light text-neon-mint lowercase drop-shadow-[0_0_20px_rgba(46,211,162,0.5)]">excellence</span></h2>
           <p className="text-neutral-300 mt-6 max-w-2xl text-lg drop-shadow-md">“Out of hundreds of testimonials over the years, we’ve handpicked a few that highlight our core belief — Yangerila’s classes are for anyone, anywhere.”</p>
@@ -119,7 +119,7 @@ export default function FooterReveal() {
 
       {/* 4. CONTACT & FORM SECTION */}
       <section 
-        className="panel sticky top-0 w-full min-h-screen flex flex-col justify-center bg-cover bg-center overflow-hidden shadow-[0_-30px_60px_rgba(0,0,0,1)] border-t border-white/10 z-[60]"
+        className="snap-section panel sticky top-0 w-full min-h-screen flex flex-col justify-center bg-cover bg-center overflow-hidden shadow-[0_-30px_60px_rgba(0,0,0,1)] border-t border-white/10 z-[60]"
         style={{ backgroundImage: "url('./contact_bg.png')" }}
       >
           {/* Overlays for contrast and readability */}

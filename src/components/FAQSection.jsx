@@ -78,7 +78,7 @@ export default function FAQSection() {
   };
 
   return (
-    <section ref={containerRef} className="w-full section-padding min-h-screen flex flex-col justify-center bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-teal-950/80 via-pitch-black to-pitch-black border-t border-white/5 relative z-20 overflow-hidden shadow-[0_-30px_60px_rgba(0,0,0,1)]">
+    <section ref={containerRef} className="snap-section w-full section-padding min-h-screen flex flex-col justify-center bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-teal-950/80 via-pitch-black to-pitch-black border-t border-white/5 relative z-20 overflow-hidden shadow-[0_-30px_60px_rgba(0,0,0,1)]">
       <div className="max-w-6xl mx-auto px-6 md:px-12 relative z-10 w-full pt-20">
         <div className="text-center mb-16">
           <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-4 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)]">Got Questions?</h2>

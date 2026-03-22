@@ -133,7 +133,7 @@ export default function MethodPanel() {
     <section ref={containerRef} className="relative z-20 w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-900/30 via-obsidian-purple to-pitch-black overflow-hidden flex flex-col pt-32 pb-0 rounded-t-[4rem] shadow-[0_-30px_60px_rgba(0,0,0,1)] border-t border-fuchsia-500/20">
       
       {/* SECTION 1: The Founder Note (Full Width & Height) */}
-      <div className="w-full min-h-[80vh] section-padding flex flex-col items-center justify-center perspective-[1000px]">
+      <div className="snap-section w-full min-h-screen section-padding flex flex-col items-center justify-center perspective-[1000px] py-20">
         <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-12 text-center drop-shadow-[0_0_15px_rgba(46,211,162,0.8)]">A Note from the Founder</h2>
         
         <div 
@@ -166,7 +166,7 @@ export default function MethodPanel() {
       </div>
 
       {/* SECTION 2: Featured Courses Display */}
-      <div className="w-full py-32 my-12 relative overflow-hidden">
+      <div className="snap-section w-full min-h-screen flex flex-col justify-center py-20 relative overflow-hidden">
         {/* Soft immersive background for courses */}
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-fuchsia-400/40 to-transparent"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.03] to-transparent pointer-events-none"></div>
@@ -210,7 +210,7 @@ export default function MethodPanel() {
       </div>
 
       {/* SECTION 3: High-impact Brochure CTA */}
-      <div ref={admissionRef} className="w-full min-h-[60vh] section-padding flex flex-col items-center justify-center text-center relative">
+      <div ref={admissionRef} className="snap-section w-full min-h-screen section-padding flex flex-col items-center justify-center text-center relative">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-fuchsia-900/20 via-transparent to-transparent pointer-events-none"></div>
         <h2 className="text-6xl md:text-8xl font-black text-white mb-8 uppercase tracking-tight drop-shadow-2xl relative z-10">
           Admissions <br/>
