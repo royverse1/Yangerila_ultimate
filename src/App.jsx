@@ -60,24 +60,6 @@ function BackgroundGradients() {
 }
 
 export default function App() {
-  useGSAP(() => {
-    // Advanced Global Snapping Architecture
-    ScrollTrigger.create({
-      trigger: "main",
-      start: "top top",
-      end: "bottom bottom",
-      snap: {
-        snapTo: ".snap-section",
-        duration: 0.3,
-        delay: 0.1,
-        ease: "power4.out"
-      }
-    });
-
-    // Mobile specific layout recalibrations
-    ScrollTrigger.refresh();
-  });
-
   return (
     <div className="relative w-full overflow-x-hidden bg-pitch-black selection:bg-neon-mint selection:text-pitch-black font-sans">
       <BackgroundGradients />

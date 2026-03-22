@@ -13,9 +13,8 @@ export default function LegacyPanel() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: 'top top',
-        end: '+=1200%', // Massive distance to make each node a long, distinct scroll block
-        pin: true,
-        scrub: 1.5, // Even smoother scrubbing
+        end: 'bottom bottom',
+        scrub: 1.5,
       }
     });
 
@@ -85,13 +84,12 @@ export default function LegacyPanel() {
   }, { scope: containerRef });
 
   return (
-    <section ref={containerRef} className="w-full bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-blue-900/30 via-obsidian-blue to-pitch-black relative flex flex-col justify-center overflow-hidden">
-
-      {/* Main Content Layer (Changed to relative min-h-screen to prevent overlap) */}
-      <div className="z-10 relative flex flex-col justify-between py-32 md:py-40 w-full min-h-screen">
+    <div ref={containerRef} className="snap-section w-full h-[600vh] relative z-20">
+      <section className="sticky top-0 w-full h-screen bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-blue-900/30 via-obsidian-blue to-pitch-black flex flex-col justify-center overflow-hidden">
+        <div className="z-10 relative flex flex-col justify-center gap-8 py-16 w-full h-full"> 
         
         {/* Cinematic Headline */}
-        <div className="px-6 md:px-24 shrink-0 max-w-7xl mb-12">
+        <div className="px-6 md:px-24 shrink-0 max-w-7xl">
           <h2 ref={textContainerRef} className="text-3xl md:text-5xl lg:text-5xl font-light leading-tight text-white text-serif-italic drop-shadow-2xl">
             {"Yangerila Creative Studio was born from a teacher's vision to make guitar learning more effective, progressive, and enjoyable for everyone.".split(' ').map((w, i) => (
               <span key={i} className="word inline-block mr-3 md:mr-4">{w}</span>
@@ -160,8 +158,8 @@ export default function LegacyPanel() {
             <span className="text-sm tracking-widest text-[#a8b8b8] uppercase mt-3">Countries Worldwide</span>
           </div>
         </div>
-
       </div>
-    </section>
+      </section>
+    </div>
   );
 }
