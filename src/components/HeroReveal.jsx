@@ -69,15 +69,17 @@ export default function HeroReveal() {
 
       {/* The Mask Layer: Deep Pitch Black with a transparent 'Y' hole */}
       <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-        <svg ref={maskRef} viewBox="0 0 100 100" className="w-[15vw] md:w-[8vw] h-auto overflow-visible will-change-transform" style={{ transform: 'translateZ(0)' }}>
-           <defs>
-             <mask id="y-hole-mask">
-               {/* White is visible, Black is transparent hole */}
-               <rect x="-500" y="-500" width="1100" height="1100" fill="white" />
-               <path d="M20,10 L45,50 L45,90 L55,90 L55,50 L80,10 L65,10 L50,35 L35,10 Z" fill="black" />
-             </mask>
-           </defs>
-           <rect x="-500" y="-500" width="1100" height="1100" fill="#050505" mask="url(#y-hole-mask)" />
+        <svg ref={maskRef} viewBox="0 0 100 100" className="w-[15vw] md:w-[8vw] h-auto overflow-visible">
+           {/* 
+             A compound vector path using fillRule="evenodd". 
+             The outer rectangle is massive, and the inner Y shape punches a perfectly sharp hole.
+             Because there is no <mask/> and no transform caching, it scales infinitely sharp and lightning fast. 
+           */}
+           <path 
+             d="M-2000,-2000 L2100,-2000 L2100,2100 L-2000,2100 Z M20,10 L45,50 L45,90 L55,90 L55,50 L80,10 L65,10 L50,35 L35,10 Z" 
+             fill="#050505" 
+             fillRule="evenodd" 
+           />
            {/* Glow around the initial Y before it scales */}
            <path ref={letterYRef} d="M20,10 L45,50 L45,90 L55,90 L55,50 L80,10 L65,10 L50,35 L35,10 Z" fill="transparent" stroke="#2ed3a2" strokeWidth="0.5" className="drop-shadow-[0_0_10px_rgba(46,211,162,1)]" />
         </svg>
