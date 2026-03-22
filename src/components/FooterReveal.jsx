@@ -152,7 +152,7 @@ export default function FooterReveal() {
         <footer 
           ref={contactRef} 
           className="absolute bottom-0 left-0 w-full h-[100vh] bg-cover bg-center overflow-hidden flex flex-col justify-center shadow-[0_-30px_60px_rgba(0,0,0,1)] border-t border-white/10"
-          style={{ backgroundImage: "url('/contact_bg.png')" }}
+          style={{ backgroundImage: "url('./contact_bg.png')" }}
         >
           {/* Overlays for contrast and readability */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0 pointer-events-none"></div>

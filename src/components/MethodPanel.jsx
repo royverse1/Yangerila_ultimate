@@ -150,7 +150,7 @@ export default function MethodPanel() {
               className="relative shrink-0 will-change-transform transform-style-3d cursor-crosshair transform-gpu"
             >
                <div className="absolute inset-0 rounded-2xl bg-fuchsia-500/30 blur-2xl animate-pulse translate-z-[20px]"></div>
-               <img ref={founderImgRef} src="/founder-guitar.jpg" alt="Micky Dixit - Founder" className="w-[280px] h-[280px] md:w-[320px] md:h-[320px] rounded-2xl object-cover border-2 border-white/30 shadow-[0_0_30px_rgba(255,255,255,0.2)] relative z-10 translate-z-[50px]" />
+               <img ref={founderImgRef} src="./founder-guitar.jpg" alt="Micky Dixit - Founder" className="w-[280px] h-[280px] md:w-[320px] md:h-[320px] rounded-2xl object-cover border-2 border-white/30 shadow-[0_0_30px_rgba(255,255,255,0.2)] relative z-10 translate-z-[50px]" />
             </div>
             
             <div className="flex flex-col justify-center translate-z-[30px] transform-style-3d md:mt-4">
