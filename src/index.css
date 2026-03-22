@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-pitch-black: #050505;
+  --color-pitch-black: #081010;
   --color-neon-mint: #2ed3a2;
   --color-obsidian-teal: #041a1a;
   --color-obsidian-blue: #020b14;
@@ -27,10 +27,10 @@
 
 @layer utilities {
   .liquid-glass {
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     will-change: transform, opacity;
     transform: translateZ(0);
   }

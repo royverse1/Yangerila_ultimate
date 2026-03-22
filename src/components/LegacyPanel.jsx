@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -36,50 +36,19 @@ export default function LegacyPanel() {
 
     // 3. Reveal timeline elements progressively using containerAnimation
     const nodes = gsap.utils.toArray('.timeline-node');
+    // Animate texts first
+    tl.fromTo('.text-block', 
+      { opacity: 0, y: 40 },
+      { opacity: 1, y: 0, stagger: 0.8, duration: 0.8, ease: "power4.out" }
+    );
+
+    // Then animate nodes
     nodes.forEach((node, i) => {
-      // The box and line animation
-      const box = node.querySelector('.content-box');
-      const line = node.querySelector('.vertical-line');
-      const dot = node.querySelector('.center-dot');
-
-      const isTop = i % 2 === 0;
-
-      // Start state
-      gsap.set([box, line, dot], { opacity: 0 });
-      gsap.set(box, { y: isTop ? 40 : -40, scale: 0.95 });
-      gsap.set(line, { scaleY: 0, transformOrigin: isTop ? "bottom" : "top" });
-      gsap.set(dot, { scale: 0 });
-
-      // Animate as they come into view from right
-      gsap.to(dot, {
-        scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.7)",
-        scrollTrigger: {
-          trigger: node,
-          containerAnimation: tl,
-          start: "left 85%", // when left of node hits 85% of screen width
-          toggleActions: "play none none reverse"
-        }
-      });
-
-      gsap.to(line, {
-        scaleY: 1, opacity: 0.6, duration: 0.6, ease: "power3.out", delay: 0.2,
-        scrollTrigger: {
-          trigger: node,
-          containerAnimation: tl,
-          start: "left 85%",
-          toggleActions: "play none none reverse"
-        }
-      });
-
-      gsap.to(box, {
-        y: 0, opacity: 1, scale: 1, duration: 0.8, ease: "power3.out", delay: 0.4,
-        scrollTrigger: {
-          trigger: node,
-          containerAnimation: tl,
-          start: "left 85%",
-          toggleActions: "play none none reverse"
-        }
-      });
+      tl.fromTo(node, 
+        { scale: 0, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(2)" }, 
+        "-=0.2"
+      );
     });
 
   }, { scope: containerRef });

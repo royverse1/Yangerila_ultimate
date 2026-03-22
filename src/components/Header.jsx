@@ -20,8 +20,8 @@ export default function Header() {
   }, [lastScrollY]);
 
   return (
-    <header className={`fixed top-0 left-0 w-full z-50 transition-transform duration-500 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
-      <div className="mx-6 mt-4 liquid-glass rounded-2xl flex justify-between items-center px-6 py-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/10">
+    <header className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 ease-out ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+      <div className="mx-6 mt-4 liquid-glass rounded-2xl flex justify-between items-center px-6 py-4 shadow-[0_10px_30px_rgba(0,0,0,0.6)] border border-white/20">
         <div className="flex items-center gap-3 cursor-pointer">
           <div className="w-8 h-8 rounded-full bg-neon-mint flex items-center justify-center font-black text-pitch-black text-xs">Y</div>
           <span className="text-white font-black tracking-widest uppercase text-sm drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">Yangerila.</span>

@@ -26,10 +26,10 @@ function BackgroundGradients() {
       yPercent: 40,
       rotation: 90,
       scale: 1.8,
-      duration: 12, // Faster
+      duration: 9.6, // 20% Faster
       repeat: -1,
       yoyo: true,
-      ease: "power1.inOut" // Smoother easing
+      ease: "power4.out" // More aggressive ease
     });
 
     gsap.to(".blob-2", {
@@ -37,15 +37,15 @@ function BackgroundGradients() {
       yPercent: -35,
       rotation: -60,
       scale: 1.5,
-      duration: 14, // Faster
+      duration: 11.2, // 20% Faster
       repeat: -1,
       yoyo: true,
-      ease: "power1.inOut"
+      ease: "power4.out"
     });
   }, { scope: bgRef });
 
   return (
-    <div ref={bgRef} className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#050B0B]">
+    <div ref={bgRef} className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-pitch-black">
       
       <div className="absolute inset-0 w-full h-full will-change-transform">
         {/* Soft radial gradients completely replace expensive CSS blur-3xl */}
@@ -61,7 +61,7 @@ function BackgroundGradients() {
 
 export default function App() {
   return (
-    <div className="relative w-full overflow-x-hidden bg-[#050B0B] selection:bg-neon-mint selection:text-pitch-black font-sans">
+    <div className="relative w-full overflow-x-hidden bg-pitch-black selection:bg-neon-mint selection:text-pitch-black font-sans">
       <BackgroundGradients />
       <Header />
       

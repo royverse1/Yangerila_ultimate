@@ -36,8 +36,8 @@ export default function MethodPanel() {
 
     // Initialize gsap.quickTo for hyper-performant cursor-driven 3D tilt
     if (tiltCardRef.current) {
-      xTo.current = gsap.quickTo(tiltCardRef.current, "rotationY", { ease: "power3.out", duration: 0.8 });
-      yTo.current = gsap.quickTo(tiltCardRef.current, "rotationX", { ease: "power3.out", duration: 0.8 });
+      xTo.current = gsap.quickTo(tiltCardRef.current, "rotationY", { ease: "power4.out", duration: 0.5 });
+      yTo.current = gsap.quickTo(tiltCardRef.current, "rotationX", { ease: "power4.out", duration: 0.5 });
     }
 
     // 1. Founder Note Bento Reveal + Typing Effect
@@ -58,29 +58,29 @@ export default function MethodPanel() {
 
     // Sequence
     founderTl.to(founderBoxRef.current, {
-      scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.2)"
+      scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.5)"
     });
     founderTl.to(founderImgRef.current, {
-      scale: 1, opacity: 1, rotationY: 0, duration: 0.8, ease: "back.out(1.5)"
-    }, "-=0.4");
+      scale: 1, opacity: 1, rotationY: 0, duration: 0.6, ease: "back.out(1.5)"
+    }, "-=0.3");
     founderTl.to(founderTextRef.current, {
       text: founderOriginalText,
-      duration: 4,
+      duration: 3.2,
       ease: "none"
     }, "-=0.2");
 
     // 2. Featured Courses Bento Reveal
-    gsap.set(coursesRef.current, { scale: 0.8, opacity: 0, y: 50 });
+    gsap.set(coursesRef.current, { scale: 0.9, opacity: 0, y: 40 });
     ScrollTrigger.create({
       trigger: coursesRef.current[0],
       start: "top 85%",
       onEnter: () => {
         gsap.to(coursesRef.current, {
-          scale: 1, opacity: 1, y: 0, duration: 0.8, stagger: 0.15, ease: "back.out(1.2)"
+          scale: 1, opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: "back.out(1.5)"
         });
       },
       onLeaveBack: () => {
-        gsap.to(coursesRef.current, { scale: 0.8, opacity: 0, y: 50, duration: 0.4 });
+        gsap.to(coursesRef.current, { scale: 0.9, opacity: 0, y: 40, duration: 0.3 });
       }
     });
 
@@ -94,14 +94,14 @@ export default function MethodPanel() {
     });
 
     btnTimeline.fromTo(admissionRef.current,
-      { scale: 0.9, opacity: 0, y: 40 },
-      { scale: 1, opacity: 1, y: 0, duration: 1, ease: "back.out(1.2)" }
+      { scale: 0.9, opacity: 0, y: 30 },
+      { scale: 1, opacity: 1, y: 0, duration: 0.8, ease: "back.out(1.5)" }
     );
     
     btnTimeline.fromTo(admissionRef.current.querySelectorAll('a'),
-      { scale: 0.5, opacity: 0, y: 20 },
-      { scale: 1, opacity: 1, y: 0, duration: 0.5, stagger: 0.15, ease: "back.out(1.5)" },
-      "-=0.6"
+      { scale: 0.6, opacity: 0, y: 15 },
+      { scale: 1, opacity: 1, y: 0, duration: 0.4, stagger: 0.1, ease: "back.out(1.5)" },
+      "-=0.5"
     );
 
   }, { scope: containerRef });
@@ -138,7 +138,7 @@ export default function MethodPanel() {
         
         <div 
           ref={founderBoxRef}
-          className="liquid-glass p-12 md:p-20 rounded-[3rem] border border-white/20 relative overflow-hidden group max-w-5xl mx-auto w-full shadow-[0_0_80px_rgba(192,38,211,0.25)] hover:shadow-[0_0_120px_rgba(192,38,211,0.4)] transition-shadow duration-700"
+          className="liquid-glass p-12 md:p-20 rounded-[3rem] border border-white/20 relative overflow-hidden group max-w-5xl mx-auto w-full shadow-[0_0_80px_rgba(192,38,211,0.35)] hover:shadow-[0_0_120px_rgba(192,38,211,0.55)] transition-shadow duration-500"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none mix-blend-overlay"></div>
           

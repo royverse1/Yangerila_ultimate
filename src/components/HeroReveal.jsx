@@ -24,7 +24,7 @@ export default function HeroReveal() {
     tl.to(maskRef.current, {
       scale: 150,
       transformOrigin: '50% 40%',
-      ease: 'power3.in',
+      ease: 'power4.in',
       duration: 2
     })
     // Also fade out the Y border/fill
@@ -41,9 +41,9 @@ export default function HeroReveal() {
       opacity: 1,
       scale: 1,
       y: 0,
-      duration: 1,
-      ease: 'power2.out'
-    }, "-=1");
+      duration: 0.8,
+      ease: 'power4.out'
+    }, "-=0.8");
 
   }, { scope: containerRef });
 
