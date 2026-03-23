@@ -48,6 +48,30 @@ export default function FAQSection() {
         gsap.set(el, { height: "auto", opacity: 1 });
       }
     });
+
+    // Pin the FAQ section while scrolling
+    const faqTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: containerRef.current,
+        pin: true,
+        start: "center center",
+        end: "+=100%", // Pause for 1 screen height
+        scrub: 1
+      }
+    });
+
+    const faqHeader = containerRef.current.querySelector('.faq-header');
+    const faqTabs = containerRef.current.querySelector('.faq-tabs');
+    const faqContent = containerRef.current.querySelector('.faq-content');
+
+    gsap.set([faqHeader, faqTabs, faqContent], { y: 30, opacity: 0 });
+
+    faqTl.to({}, { duration: 0.1 });
+    faqTl.to(faqHeader, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" });
+    faqTl.to(faqTabs, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, "-=0.3");
+    faqTl.to(faqContent, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, "-=0.2");
+    faqTl.to({}, { duration: 0.4 });
+
   }, { scope: containerRef, dependencies: [activeCategory] });
 
   const toggleFaq = (idx) => {
@@ -80,13 +104,13 @@ export default function FAQSection() {
   return (
     <section ref={containerRef} className="snap-section w-full section-padding min-h-screen flex flex-col justify-center bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-teal-950/80 via-pitch-black to-pitch-black border-t border-white/5 relative z-20 overflow-hidden shadow-[0_-30px_60px_rgba(0,0,0,1)]">
       <div className="max-w-6xl mx-auto px-6 md:px-12 relative z-10 w-full pt-20">
-        <div className="text-center mb-16">
+        <div className="faq-header text-center mb-16">
           <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-4 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)]">Got Questions?</h2>
           <h3 className="text-5xl md:text-6xl font-black text-white uppercase tracking-tight drop-shadow-lg">Frequently Asked <br/><span className="text-serif-italic font-light text-teal-400 lowercase drop-shadow-none">clarifications</span></h3>
         </div>
 
         {/* Categories 4-Column Tabs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-16 relative z-20">
+        <div className="faq-tabs grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-16 relative z-20">
           {categories.map((cat) => {
             const isActive = activeCategory === cat;
             // Splitting title to mimic user request: stack words vertically
@@ -120,7 +144,7 @@ export default function FAQSection() {
         </div>
 
         {/* Dynamic Accordion Questions based on active tab */}
-        <div className="flex flex-col gap-4 max-w-4xl mx-auto">
+        <div className="faq-content flex flex-col gap-4 max-w-4xl mx-auto">
           {faqCategories[activeCategory].map((faq, idx) => {
             const isOpen = openIndex === idx;
             return (

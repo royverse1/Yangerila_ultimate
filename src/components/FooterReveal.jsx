@@ -4,11 +4,17 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { MapPin, Phone, Mail } from 'lucide-react';
 
+gsap.registerPlugin(ScrollTrigger);
+
 export default function FooterReveal() {
   const containerRef = useRef(null);
+  const wrapperRef = useRef(null);
   const tickerWrapRef = useRef(null);
-  const contactRef = useRef(null);
-  const contactContainerRef = useRef(null);
+
+  // Section refs
+  const funFactRef = useRef(null);
+  const rewardsRef = useRef(null);
+  const voicesRef = useRef(null);
 
   useGSAP(() => {
     // 1. Horizontal Testimonial Endless Scroll
@@ -21,9 +27,59 @@ export default function FooterReveal() {
       });
     }
 
-    // 2. Pinned Panels with Overscroll (Removed GSAP pinning - converted to native CSS sticky for 0 CLS)
+    // 2. CREATE MASTER SCRUB TIMELINE FOR SECTIONS 1-3
+    const funFactContent = funFactRef.current.querySelector('.fun-fact-content');
+    const rewardCards = rewardsRef.current.querySelectorAll('.liquid-glass');
+    const rewardsHeader = rewardsRef.current.querySelector('.rewards-header');
+    const voicesHeader = voicesRef.current.querySelector('.voices-header');
+    const voicesTicker = voicesRef.current.querySelector('.voices-ticker');
 
-    // (Residual GSAP grow-from-bottom effect entirely removed for smoother native transitions)
+    // Set initial states
+    gsap.set(funFactContent, { opacity: 0, y: 50 });
+    gsap.set(rewardsHeader, { opacity: 0, y: -30 });
+    gsap.set(rewardCards, { scale: 0.8, opacity: 0, y: 50 });
+    gsap.set(voicesHeader, { opacity: 0, scale: 0.9 });
+    gsap.set(voicesTicker, { opacity: 0, x: 100 });
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: "top top",
+        end: "+=450%", // 4.5 screens of scroll padding
+        scrub: 1,
+        pin: true,
+        invalidateOnRefresh: true,
+      }
+    });
+
+    // Animate Fun Fact Reveal
+    tl.to(funFactContent, { opacity: 1, y: 0, duration: 1.2, ease: 'power2.out' });
+    tl.to({}, { duration: 1.5 }); // Pause
+
+    // Scroll wrapper up to Rewards
+    tl.to(wrapperRef.current, {
+      y: () => -rewardsRef.current.offsetTop,
+      duration: 1.5,
+      ease: 'power2.inOut'
+    });
+
+    // Animate Rewards Reveal
+    tl.to(rewardsHeader, { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' });
+    tl.to(rewardCards, { scale: 1, opacity: 1, y: 0, stagger: 0.15, duration: 1.2, ease: 'back.out(1.5)' }, "-=0.4");
+    tl.to({}, { duration: 1.5 }); // Pause
+
+    // Scroll wrapper up to Voices
+    tl.to(wrapperRef.current, {
+      y: () => -voicesRef.current.offsetTop,
+      duration: 1.5,
+      ease: 'power2.inOut'
+    });
+
+    // Animate Voices Reveal
+    tl.to(voicesHeader, { opacity: 1, scale: 1, duration: 1, ease: 'back.out(1.5)' });
+    tl.to(voicesTicker, { opacity: 1, x: 0, duration: 1.2, ease: 'power2.out' }, "-=0.5");
+    tl.to({}, { duration: 1.5 }); // Final pause before Contact scrolls up naturally
+
   }, { scope: containerRef });
 
   const testimonials = [
@@ -35,89 +91,98 @@ export default function FooterReveal() {
   ];
 
   return (
-    <div ref={containerRef} className="relative w-full flex flex-col z-20">
+    <div className="relative w-full block z-20 bg-pitch-black">
       
-      {/* 1. FUN FACT SECTION */}
-      <section className="snap-section w-full section-padding min-h-screen flex flex-col items-center justify-center text-center bg-pitch-black bg-[linear-gradient(to_bottom,#0d2a1c,var(--color-pitch-black))] border-t border-emerald-900/50 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] relative z-30">
-        <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-12 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)]">Fun Fact</h2>
-        <div className="max-w-5xl mx-auto">
-          <p className="text-4xl md:text-6xl text-white font-light text-serif-italic mb-12 leading-relaxed drop-shadow-xl">
-            "Fender published a study stating that about 90% of guitar students quit playing within their first year."
-          </p>
-          <div className="w-full h-[1px] bg-white/10 my-12 relative overflow-hidden shadow-[0_0_20px_rgba(46,211,162,0.5)]">
-             <div className="absolute inset-y-0 left-0 bg-neon-mint w-1/3 blur-md shadow-[0_0_20px_#2ed3a2]"></div>
-          </div>
-          <h3 className="text-4xl md:text-6xl text-white font-black uppercase tracking-tighter drop-shadow-2xl">
-            At Yangerila, more than <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-[#1a9570] drop-shadow-[0_0_40px_rgba(46,211,162,0.6)]">90% don't quit.</span>
-          </h3>
-          <p className="text-xl text-neutral-300 font-light mt-8">
-            This opposite statistic fills us with both happiness and confidence in our teaching methods.
-          </p>
-        </div>
-      </section>
-
-      {/* 2. DISCOUNT & REWARDS SECTION */}
-      <section className="snap-section w-full section-padding min-h-screen bg-pitch-black bg-[linear-gradient(to_bottom,#380a2b,var(--color-pitch-black))] border-t border-fuchsia-900/50 flex flex-col items-center justify-center overflow-hidden shadow-[0_-20px_50px_rgba(0,0,0,0.8)] relative z-40">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-neon-mint/10 rounded-full blur-[60px] pointer-events-none"></div>
-        <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-16 text-center drop-shadow-[0_0_15px_rgba(46,211,162,0.5)] relative z-10">Exclusive Rewards</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-7xl mx-auto relative z-10">
-          <div className="liquid-glass p-8 md:p-12 rounded-3xl text-center border-white/20 shadow-[0_0_40px_rgba(255,255,255,0.05)] hover:shadow-[0_0_60px_rgba(255,255,255,0.15)] transition-shadow">
-            <h4 className="text-3xl font-black text-white mb-4 drop-shadow-lg">INR 1,000</h4>
-            <p className="text-sm tracking-widest text-[#a8b8b8] uppercase">Referral Reward<br/>(Amazon Gift Card)</p>
-          </div>
-          <div className="liquid-glass p-8 md:p-12 rounded-3xl text-center border border-neon-mint/30 shadow-[0_0_50px_rgba(46,211,162,0.15)] hover:shadow-[0_0_70px_rgba(46,211,162,0.3)] transition-shadow">
-            <h4 className="text-3xl font-black text-neon-mint mb-4 drop-shadow-[0_0_15px_rgba(46,211,162,0.6)]">30% OFF</h4>
-            <p className="text-sm tracking-widest text-white uppercase">Group Discount<br/>United We Stand</p>
-          </div>
-          <div className="liquid-glass p-8 md:p-12 rounded-3xl text-center border border-neon-mint/30 shadow-[0_0_50px_rgba(46,211,162,0.15)] hover:shadow-[0_0_70px_rgba(46,211,162,0.3)] transition-shadow">
-            <h4 className="text-3xl font-black text-neon-mint mb-4 drop-shadow-[0_0_15px_rgba(46,211,162,0.6)]">50% OFF</h4>
-            <p className="text-sm tracking-widest text-white uppercase">Next Fee<br/>Student Referral</p>
-          </div>
-          <div className="liquid-glass p-8 md:p-12 rounded-3xl text-center hidden md:block border border-white/20 shadow-[0_0_40px_rgba(255,255,255,0.05)] hover:shadow-[0_0_60px_rgba(255,255,255,0.15)] transition-shadow">
-            <h4 className="text-3xl font-black text-white mb-4 drop-shadow-lg">Exclusive</h4>
-            <p className="text-sm tracking-widest text-[#a8b8b8] uppercase">Festive<br/>Discounts</p>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. TESTIMONIALS SECTION */}
-      <section className="snap-section w-full min-h-screen overflow-hidden flex flex-col justify-center bg-pitch-black bg-[linear-gradient(to_bottom,#08273d,var(--color-pitch-black))] border-t border-blue-900/50 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] relative z-50">
-        <div className="px-6 md:px-24 mb-16 pt-24">
-          <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tight drop-shadow-2xl">Voices of <br/><span className="text-serif-italic font-light text-neon-mint lowercase drop-shadow-[0_0_20px_rgba(46,211,162,0.5)]">excellence</span></h2>
-          <p className="text-neutral-300 mt-6 max-w-2xl text-lg drop-shadow-md">“Out of hundreds of testimonials over the years, we’ve handpicked a few that highlight our core belief — Yangerila’s classes are for anyone, anywhere.”</p>
-        </div>
-
-        {/* Endless Horizontal Testimonial Ticker */}
-        <div className="w-full flex whitespace-nowrap overflow-hidden relative">
-          <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-pitch-black to-transparent z-10 pointer-events-none"></div>
-          <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-pitch-black to-transparent z-10 pointer-events-none"></div>
+      {/* PINNED MASTER WRAPPER FOR SECTIONS 1-3 */}
+      <section ref={containerRef} className="w-full h-screen relative overflow-hidden m-0 p-0 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] z-30">
+        
+        {/* Inner translating wrapper */}
+        <div ref={wrapperRef} className="w-full h-full relative will-change-transform">
           
-          <div className="flex">
-            <div ref={tickerWrapRef} className="flex gap-8 items-center px-4 w-max">
-              {[...testimonials, ...testimonials].map((t, idx) => (
-                <div key={idx} className="relative bg-gradient-to-br from-[#0c1821] to-[#040a0f] p-10 md:p-14 rounded-[3rem] border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] w-[85vw] md:w-[650px] whitespace-normal flex-shrink-0 hover:border-neon-mint/30 hover:shadow-[0_30px_80px_rgba(46,211,162,0.15)] transition-all duration-500 overflow-hidden group">
-                  <div className="absolute top-0 right-8 text-white/5 font-serif text-9xl leading-none rotate-6 group-hover:text-neon-mint/10 group-hover:scale-110 transition-all duration-500 pointer-events-none">"</div>
-                  <div className="absolute -left-20 -top-20 w-64 h-64 bg-teal-500/10 rounded-full blur-[40px] group-hover:bg-neon-mint/20 transition-colors duration-700 pointer-events-none"></div>
-                  
-                  <p className="text-white text-xl md:text-2xl font-light text-serif-italic mb-12 leading-relaxed relative z-10 drop-shadow-md">"{t.text}"</p>
-                  
-                  <div className="flex items-center gap-6 relative z-10">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-neon-mint/30 to-teal-900/50 text-neon-mint flex items-center justify-center font-black text-xl border border-neon-mint/40 shadow-[0_0_25px_rgba(46,211,162,0.3)]">
-                      {t.name.split(' ').map(n=>n[0]).join('').substring(0,2)}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-white tracking-wide text-lg drop-shadow-md">{t.name}</h4>
-                      <p className="text-sm text-neon-mint uppercase tracking-[0.15em] mt-1 font-bold opacity-90">{t.role}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+          {/* 1. FUN FACT SECTION */}
+          <div ref={funFactRef} className="w-full h-screen flex flex-col items-center justify-center text-center bg-pitch-black bg-[linear-gradient(to_bottom,#0d2a1c,var(--color-pitch-black))] relative px-6 md:px-12 border-t border-emerald-900/50">
+            <div className="fun-fact-content max-w-5xl mx-auto flex flex-col items-center justify-center w-full">
+              <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-12 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)]">Fun Fact</h2>
+              <p className="text-4xl md:text-6xl text-white font-light text-serif-italic mb-12 leading-relaxed drop-shadow-xl">
+                "Fender published a study stating that about 90% of guitar students quit playing within their first year."
+              </p>
+              <div className="w-full h-[1px] bg-white/10 my-12 relative overflow-hidden shadow-[0_0_20px_rgba(46,211,162,0.5)] max-w-5xl">
+                 <div className="absolute inset-y-0 left-0 bg-neon-mint w-1/3 blur-md shadow-[0_0_20px_#2ed3a2]"></div>
+              </div>
+              <h3 className="text-4xl md:text-6xl text-white font-black uppercase tracking-tighter drop-shadow-2xl">
+                At Yangerila, more than <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-[#1a9570] drop-shadow-[0_0_40px_rgba(46,211,162,0.6)]">90% don't quit.</span>
+              </h3>
+              <p className="text-xl text-neutral-300 font-light mt-8">
+                This opposite statistic fills us with both happiness and confidence in our teaching methods.
+              </p>
             </div>
           </div>
+
+          {/* 2. DISCOUNT & REWARDS SECTION */}
+          <div ref={rewardsRef} className="w-full h-screen bg-pitch-black bg-[linear-gradient(to_bottom,#380a2b,var(--color-pitch-black))] border-t border-fuchsia-900/50 flex flex-col items-center justify-center overflow-hidden relative px-6 md:px-12">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-neon-mint/10 rounded-full blur-[60px] pointer-events-none"></div>
+            <h2 className="rewards-header text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-16 text-center drop-shadow-[0_0_15px_rgba(46,211,162,0.5)] relative z-10">Exclusive Rewards</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 w-full max-w-7xl mx-auto relative z-10">
+              <div className="liquid-glass p-6 md:p-12 rounded-3xl text-center border-white/20 shadow-[0_0_40px_rgba(255,255,255,0.05)] hover:shadow-[0_0_60px_rgba(255,255,255,0.15)] transition-shadow">
+                <h4 className="text-3xl font-black text-white mb-4 drop-shadow-lg">INR 1,000</h4>
+                <p className="text-xs lg:text-sm tracking-widest text-[#a8b8b8] uppercase">Referral Reward<br/>(Amazon Gift Card)</p>
+              </div>
+              <div className="liquid-glass p-6 md:p-12 rounded-3xl text-center border border-neon-mint/30 shadow-[0_0_50px_rgba(46,211,162,0.15)] hover:shadow-[0_0_70px_rgba(46,211,162,0.3)] transition-shadow">
+                <h4 className="text-3xl font-black text-neon-mint mb-4 drop-shadow-[0_0_15px_rgba(46,211,162,0.6)]">30% OFF</h4>
+                <p className="text-xs lg:text-sm tracking-widest text-white uppercase">Group Discount<br/>United We Stand</p>
+              </div>
+              <div className="liquid-glass p-6 md:p-12 rounded-3xl text-center border border-neon-mint/30 shadow-[0_0_50px_rgba(46,211,162,0.15)] hover:shadow-[0_0_70px_rgba(46,211,162,0.3)] transition-shadow">
+                <h4 className="text-3xl font-black text-neon-mint mb-4 drop-shadow-[0_0_15px_rgba(46,211,162,0.6)]">50% OFF</h4>
+                <p className="text-xs lg:text-sm tracking-widest text-white uppercase">Next Fee<br/>Student Referral</p>
+              </div>
+              <div className="liquid-glass p-6 md:p-12 rounded-3xl text-center hidden md:block border border-white/20 shadow-[0_0_40px_rgba(255,255,255,0.05)] hover:shadow-[0_0_60px_rgba(255,255,255,0.15)] transition-shadow">
+                <h4 className="text-3xl font-black text-white mb-4 drop-shadow-lg">Exclusive</h4>
+                <p className="text-xs lg:text-sm tracking-widest text-[#a8b8b8] uppercase">Festive<br/>Discounts</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. TESTIMONIALS SECTION */}
+          <div ref={voicesRef} className="w-full h-screen overflow-hidden flex flex-col justify-center bg-pitch-black bg-[linear-gradient(to_bottom,#08273d,var(--color-pitch-black))] border-t border-blue-900/50 relative pt-10 px-0">
+            <div className="voices-header px-6 md:px-12 xl:px-24 mb-12">
+              <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tight drop-shadow-2xl">Voices of <br/><span className="text-serif-italic font-light text-neon-mint lowercase drop-shadow-[0_0_20px_rgba(46,211,162,0.5)]">excellence</span></h2>
+              <p className="text-neutral-300 mt-6 max-w-2xl text-lg drop-shadow-md">“Out of hundreds of testimonials over the years, we’ve handpicked a few that highlight our core belief — Yangerila’s classes are for anyone, anywhere.”</p>
+            </div>
+
+            {/* Endless Horizontal Testimonial Ticker */}
+            <div className="voices-ticker w-full flex whitespace-nowrap overflow-hidden relative pb-10">
+              <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-pitch-black to-transparent z-10 pointer-events-none"></div>
+              <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-pitch-black to-transparent z-10 pointer-events-none"></div>
+              
+              <div className="flex">
+                <div ref={tickerWrapRef} className="flex gap-6 lg:gap-8 items-center px-4 w-max">
+                  {[...testimonials, ...testimonials].map((t, idx) => (
+                    <div key={idx} className="relative bg-gradient-to-br from-[#0c1821] to-[#040a0f] p-8 lg:p-14 rounded-[3rem] border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] w-[85vw] md:w-[650px] whitespace-normal flex-shrink-0 hover:border-neon-mint/30 hover:shadow-[0_30px_80px_rgba(46,211,162,0.15)] transition-all duration-500 overflow-hidden group">
+                      <div className="absolute top-0 right-8 text-white/5 font-serif text-9xl leading-none rotate-6 group-hover:text-neon-mint/10 group-hover:scale-110 transition-all duration-500 pointer-events-none">"</div>
+                      <div className="absolute -left-20 -top-20 w-64 h-64 bg-teal-500/10 rounded-full blur-[40px] group-hover:bg-neon-mint/20 transition-colors duration-700 pointer-events-none"></div>
+                      
+                      <p className="text-white text-lg md:text-2xl font-light text-serif-italic mb-12 leading-relaxed relative z-10 drop-shadow-md">"{t.text}"</p>
+                      
+                      <div className="flex items-center gap-6 relative z-10">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-neon-mint/30 to-teal-900/50 text-neon-mint flex items-center justify-center font-black text-xl border border-neon-mint/40 shadow-[0_0_25px_rgba(46,211,162,0.3)]">
+                          {t.name.split(' ').map(n=>n[0]).join('').substring(0,2)}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-white tracking-wide text-lg drop-shadow-md">{t.name}</h4>
+                          <p className="text-sm text-neon-mint uppercase tracking-[0.15em] mt-1 font-bold opacity-90">{t.role}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          
         </div>
       </section>
 
-      {/* 4. CONTACT & FORM SECTION */}
+      {/* 4. CONTACT & FORM SECTION (Outside pinned wrapper, naturally scrolls up) */}
       <section 
         className="snap-section w-full min-h-screen flex flex-col justify-center bg-cover bg-center overflow-hidden shadow-[0_-30px_60px_rgba(0,0,0,1)] border-t border-white/10 relative z-[60]"
         style={{ backgroundImage: "url('./contact_bg.png')" }}
@@ -126,7 +191,7 @@ export default function FooterReveal() {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0 pointer-events-none"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-[#020505] via-transparent to-[#020505] z-0 pointer-events-none opacity-80"></div>
 
-          <div className="relative z-10 w-full h-full section-padding max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-16 pt-32 lg:pt-0">
+          <div className="relative z-10 w-full h-full section-padding max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-16 pt-32 lg:pt-0 pb-20">
             
             <div className="flex-1 text-center lg:text-left">
               <h2 className="text-5xl md:text-7xl font-black uppercase text-white tracking-tight mb-6 drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">Ready to<br/> Start?</h2>
