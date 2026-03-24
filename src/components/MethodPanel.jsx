@@ -52,7 +52,7 @@ export default function MethodPanel() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: "top top",
-        end: "+=450%", // 4.5 screens of scroll padding
+        end: "+=310%", // Tightened further to eliminate gap
         scrub: 1,
         pin: true, // We pin the ENTIRE container once. No flex bugs.
         invalidateOnRefresh: true,
@@ -164,33 +164,30 @@ export default function MethodPanel() {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-              <div ref={el => coursesRef.current[0] = el} className="liquid-glass p-6 lg:p-10 rounded-[2.5rem] border border-white/10 hover:border-fuchsia-500/50 hover:bg-fuchsia-500/10 transition-all duration-500 group relative overflow-hidden shadow-2xl">
-                <div className="absolute -right-10 -top-10 w-32 h-32 bg-fuchsia-500/20 rounded-full blur-[40px] group-hover:bg-fuchsia-500/40 transition-colors"></div>
-                <h3 className="text-2xl lg:text-3xl font-black text-white mb-2 group-hover:text-fuchsia-300 transition-colors drop-shadow-md">Hobby Courses</h3>
-                <p className="text-neutral-400 text-xs tracking-[0.2em] font-bold uppercase mb-8">₹3200/Mo Onwards</p>
-                <div className="text-neon-mint font-bold text-xl drop-shadow-[0_0_10px_rgba(46,211,162,0.5)]">2500+ Students</div>
-              </div>
-              
-              <div ref={el => coursesRef.current[1] = el} className="liquid-glass p-6 lg:p-10 rounded-[2.5rem] border border-white/10 hover:border-teal-400/50 hover:bg-teal-400/10 transition-all duration-500 group relative overflow-hidden shadow-2xl">
-                <div className="absolute -right-10 -top-10 w-32 h-32 bg-teal-500/20 rounded-full blur-[40px] group-hover:bg-teal-500/40 transition-colors"></div>
-                <h3 className="text-2xl lg:text-3xl font-black text-white mb-2 group-hover:text-teal-300 transition-colors drop-shadow-md">Rhythm Grades</h3>
-                <p className="text-neutral-400 text-xs tracking-[0.2em] font-bold uppercase mb-8">₹3200/Mo Onwards</p>
-                <div className="text-neon-mint font-bold text-xl drop-shadow-[0_0_10px_rgba(46,211,162,0.5)]">2000+ Students</div>
-              </div>
-              
-              <div ref={el => coursesRef.current[2] = el} className="liquid-glass p-6 lg:p-10 rounded-[2.5rem] border border-white/10 hover:border-amber-400/50 hover:bg-amber-400/10 transition-all duration-500 group relative overflow-hidden shadow-2xl">
-                <div className="absolute -right-10 -top-10 w-32 h-32 bg-amber-500/20 rounded-full blur-[40px] group-hover:bg-amber-500/40 transition-colors"></div>
-                <h3 className="text-2xl lg:text-3xl font-black text-white mb-2 group-hover:text-amber-300 transition-colors drop-shadow-md">Lead Grades</h3>
-                <p className="text-neutral-400 text-xs tracking-[0.2em] font-bold uppercase mb-8">₹3600/Mo Onwards</p>
-                <div className="text-neon-mint font-bold text-xl drop-shadow-[0_0_10px_rgba(46,211,162,0.5)]">1800+ Students</div>
-              </div>
-              
-              <div ref={el => coursesRef.current[3] = el} className="liquid-glass p-6 lg:p-10 rounded-[2.5rem] border border-white/10 hover:border-purple-400/50 hover:bg-purple-400/10 transition-all duration-500 group relative overflow-hidden shadow-2xl">
-                <div className="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/20 rounded-full blur-[40px] group-hover:bg-purple-500/40 transition-colors"></div>
-                <h3 className="text-2xl lg:text-3xl font-black text-white mb-2 group-hover:text-purple-300 transition-colors drop-shadow-md">Finger-picking</h3>
-                <p className="text-neutral-400 text-xs tracking-[0.2em] font-bold uppercase mb-8">₹3600/Mo Onwards</p>
-                <div className="text-neon-mint font-bold text-xl drop-shadow-[0_0_10px_rgba(46,211,162,0.5)]">1250+ Students</div>
-              </div>
+              {[
+                { title: "Hobby Courses", price: "₹3200/Mo Onwards", stats: "2500+ Alums", color: "fuchsia" },
+                { title: "Rhythm Grades", price: "₹3200/Mo Onwards", stats: "2000+ Alums", color: "teal" },
+                { title: "Lead Grades", price: "₹3600/Mo Onwards", stats: "1800+ Alums", color: "amber" },
+                { title: "Finger-picking", price: "₹3600/Mo Onwards", stats: "1250+ Alums", color: "purple" }
+              ].map((course, idx) => (
+                <div 
+                  key={idx}
+                  ref={el => coursesRef.current[idx] = el} 
+                  className={`relative p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 hover:border-${course.color}-400/50 hover:bg-${course.color}-500/[0.05] transition-all duration-500 group overflow-hidden shadow-2xl flex flex-col items-center text-center`}
+                >
+                  <div className={`absolute -right-10 -top-10 w-32 h-32 bg-${course.color}-500/10 rounded-full blur-[40px] group-hover:bg-${course.color}-500/20 transition-colors`}></div>
+                  <h3 className="text-2xl font-black text-white mb-2 group-hover:text-white/90 transition-colors">{course.title}</h3>
+                  <p className="text-neutral-500 text-[10px] tracking-[0.2em] font-bold uppercase mb-8">{course.price}</p>
+                  
+                  <div className="mt-auto space-y-4 w-full">
+                    <div className="text-neutral-400 font-medium text-sm tracking-widest uppercase opacity-60 group-hover:opacity-100 transition-opacity">{course.stats}</div>
+                    <div className="h-px w-0 bg-white/20 group-hover:w-full transition-all duration-700 mx-auto"></div>
+                    <div className={`text-[10px] items-center justify-center font-black uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-500 flex gap-2 text-${course.color}-400`}>
+                      Explore <span className="translate-x-0 group-hover:translate-x-1 transition-transform">→</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

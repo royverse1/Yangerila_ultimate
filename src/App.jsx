@@ -9,6 +9,8 @@ import LegacyPanel from './components/LegacyPanel';
 import MethodPanel from './components/MethodPanel';
 import FAQSection from './components/FAQSection';
 import FooterReveal from './components/FooterReveal';
+import SmoothScroll from './components/SmoothScroll';
+import CustomCursor from './components/CustomCursor';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -54,7 +56,7 @@ function BackgroundGradients() {
       </div>
 
       {/* Noise overlay hardware accelerated */}
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] will-change-transform" style={{ transform: 'translateZ(0)' }}></div>
+      <div className="absolute inset-0 bg-[url('./noise.svg')] opacity-[0.02] will-change-transform" style={{ transform: 'translateZ(0)' }}></div>
     </div>
   );
 }
@@ -62,6 +64,8 @@ function BackgroundGradients() {
 export default function App() {
   return (
     <div className="relative w-full overflow-x-clip bg-pitch-black selection:bg-neon-mint selection:text-pitch-black font-sans">
+      <SmoothScroll />
+      <CustomCursor />
       <BackgroundGradients />
       <Header />
 

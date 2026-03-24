@@ -33,30 +33,33 @@ export default function FAQSection() {
   
   const containerRef = useRef(null);
   const contentRefs = useRef([]);
+  const contentContainerRef = useRef(null);
 
   const categories = Object.keys(faqCategories);
 
+  // Initialize GSAP states for accordion
   useGSAP(() => {
-    // Reset and initialize GSAP states for the newly active category's accordion
     contentRefs.current.forEach((el, i) => {
-      // Safely kill existing tweens if user spammed clicks
-      if(el) gsap.killTweensOf(el);
-
-      if (i !== openIndex && el) {
-        gsap.set(el, { height: 0, opacity: 0 });
-      } else if (el) {
-        gsap.set(el, { height: "auto", opacity: 1 });
+      if (el) {
+        if (i === openIndex) {
+          gsap.set(el, { height: "auto", opacity: 1 });
+        } else {
+          gsap.set(el, { height: 0, opacity: 0 });
+        }
       }
     });
+  }, { scope: containerRef, dependencies: [activeCategory, openIndex] });
 
-    // Pin the FAQ section while scrolling
+  // Main reveal and pinning
+  useGSAP(() => {
     const faqTl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
         pin: true,
-        start: "center center",
-        end: "+=100%", // Pause for 1 screen height
-        scrub: 1
+        start: "top top",
+        end: "+=150%",
+        scrub: 1,
+        invalidateOnRefresh: true,
       }
     });
 
@@ -66,107 +69,95 @@ export default function FAQSection() {
 
     gsap.set([faqHeader, faqTabs, faqContent], { y: 30, opacity: 0 });
 
-    faqTl.to({}, { duration: 0.1 });
-    faqTl.to(faqHeader, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" });
-    faqTl.to(faqTabs, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, "-=0.3");
-    faqTl.to(faqContent, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, "-=0.2");
-    faqTl.to({}, { duration: 0.4 });
+    faqTl.to(faqHeader, { y: 0, opacity: 1, duration: 1 })
+         .to(faqTabs, { y: 0, opacity: 1, duration: 1 }, "-=0.7")
+         .to(faqContent, { y: 0, opacity: 1, duration: 1 }, "-=0.7");
 
-  }, { scope: containerRef, dependencies: [activeCategory] });
+  }, { scope: containerRef });
 
   const toggleFaq = (idx) => {
     if (openIndex === idx) {
-      // Close currently open
-      gsap.to(contentRefs.current[idx], { 
-        height: 0, opacity: 0, duration: 0.4, ease: "power4.out" 
-      });
       setOpenIndex(-1);
     } else {
-      // Close previous
-      if (openIndex !== -1 && contentRefs.current[openIndex]) {
-        gsap.to(contentRefs.current[openIndex], { 
-          height: 0, opacity: 0, duration: 0.4, ease: "power4.out" 
-        });
-      }
-      // Open new
-      const targetEl = contentRefs.current[idx];
-      gsap.set(targetEl, { height: "auto" });
-      const targetHeight = targetEl.offsetHeight;
-      
-      gsap.fromTo(targetEl, 
-        { height: 0, opacity: 0 }, 
-        { height: targetHeight, opacity: 1, duration: 0.4, ease: "power4.out" }
-      );
       setOpenIndex(idx);
     }
   };
 
+  useGSAP(() => {
+    contentRefs.current.forEach((el, i) => {
+      if (el) {
+        if (i === openIndex) {
+          gsap.to(el, { height: 'auto', opacity: 1, duration: 0.5, ease: 'power2.out' });
+        } else {
+          gsap.to(el, { height: 0, opacity: 0, duration: 0.5, ease: 'power2.inOut' });
+        }
+      }
+    });
+  }, { scope: containerRef, dependencies: [openIndex, activeCategory] });
+
   return (
-    <section ref={containerRef} className="snap-section w-full section-padding min-h-screen flex flex-col justify-center bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-teal-950/80 via-pitch-black to-pitch-black border-t border-white/5 relative z-20 overflow-hidden shadow-[0_-30px_60px_rgba(0,0,0,1)]">
-      <div className="max-w-6xl mx-auto px-6 md:px-12 relative z-10 w-full pt-20">
-        <div className="faq-header text-center mb-16">
-          <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-4 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)]">Got Questions?</h2>
-          <h3 className="text-5xl md:text-6xl font-black text-white uppercase tracking-tight drop-shadow-lg">Frequently Asked <br/><span className="text-serif-italic font-light text-teal-400 lowercase drop-shadow-none">clarifications</span></h3>
+    <section 
+      ref={containerRef} 
+      className="relative z-20 w-full min-h-screen pt-16 pb-32 flex flex-col items-center justify-start bg-pitch-black border-t border-white/5"
+    >
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-neon-mint/[0.03] rounded-full blur-[120px] pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10 w-full flex flex-col items-center">
+        <div className="faq-header text-center mb-10 md:mb-16 w-full pt-10">
+          <span className="text-neon-mint tracking-[0.4em] font-bold text-[10px] uppercase mb-4 block opacity-80">Support</span>
+          <h2 className="text-3xl md:text-7xl font-black text-white uppercase tracking-tighter leading-tight">
+            Frequently Asked <br className="hidden md:block" /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-teal-400 font-light text-serif-italic lowercase">insights</span>
+          </h2>
         </div>
 
-        {/* Categories 4-Column Tabs */}
-        <div className="faq-tabs grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-16 relative z-20">
+        {/* Categories - Simple Clean Navigation */}
+        <div className="faq-tabs flex flex-wrap justify-center gap-4 md:gap-12 mb-12 md:mb-20 w-full border-b border-white/10 pb-6 md:pb-8">
           {categories.map((cat) => {
             const isActive = activeCategory === cat;
-            // Splitting title to mimic user request: stack words vertically
-            const words = cat === "Classes & Online Learning" 
-              ? ["Classes", "& Online", "Learning"] 
-              : cat === "Courses & Features"
-              ? ["Courses", "&", "Features"]
-              : cat === "Fees & Enrollment"
-              ? ["Fees", "&", "Enrollment"]
-              : cat.split(" ");
-              
             return (
               <button
                 key={cat}
                 onClick={() => {
-                  setOpenIndex(0); // Immediately open first item when switching tabs
+                  setOpenIndex(0);
                   setActiveCategory(cat);
                 }}
-                className={`p-6 rounded-3xl border transition-all duration-300 font-black tracking-widest uppercase text-sm md:text-md text-center flex flex-col justify-center items-center gap-1 ${
-                  isActive 
-                    ? 'bg-neon-mint text-pitch-black border-neon-mint shadow-[0_0_30px_rgba(46,211,162,0.4)] scale-105 z-10' 
-                    : 'bg-white/5 border-white/10 text-white hover:border-white/30 hover:bg-white/10'
+                className={`relative py-2 text-[10px] md:text-sm font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all duration-500 hover:text-neon-mint bg-transparent border-none cursor-pointer ${
+                  isActive ? 'text-neon-mint' : 'text-neutral-500'
                 }`}
               >
-                {words.map((word, i) => (
-                  <span key={i} className="block leading-tight">{word}</span>
-                ))}
+                {cat}
+                {isActive && (
+                  <div className="absolute -bottom-6 md:-bottom-8 left-1/2 -translate-x-1/2 w-6 md:w-8 h-[2px] bg-neon-mint shadow-[0_0_10px_#2ed3a2]"></div>
+                )}
               </button>
             );
           })}
         </div>
 
-        {/* Dynamic Accordion Questions based on active tab */}
-        <div className="faq-content flex flex-col gap-4 max-w-4xl mx-auto">
+        {/* Accordion Content */}
+        <div ref={contentContainerRef} className="faq-content flex flex-col gap-3 md:gap-4 w-full max-w-4xl pb-20">
           {faqCategories[activeCategory].map((faq, idx) => {
             const isOpen = openIndex === idx;
             return (
               <div 
                 key={`${activeCategory}-${idx}`} 
-                className={`liquid-glass rounded-2xl overflow-hidden border transition-all duration-500 ${isOpen ? 'border-neon-mint/50 shadow-[0_0_30px_rgba(46,211,162,0.15)] bg-white/5' : 'border-white/10 hover:border-white/20 hover:bg-white/[0.02]'}`}
+                className={`liquid-glass rounded-2xl md:rounded-3xl overflow-hidden border transition-all duration-500 ${isOpen ? 'border-neon-mint/30 bg-white/[0.03]' : 'border-white/5 hover:border-white/10'}`}
               >
                 <button 
                   onClick={() => toggleFaq(idx)}
-                  className="w-full px-8 py-6 flex items-center justify-between text-left focus:outline-none group relative z-10 bg-transparent"
+                  className="w-full px-6 md:px-8 py-5 md:py-7 flex items-center justify-between text-left group bg-transparent focus:outline-none"
                 >
-                  <span className={`text-lg md:text-xl font-bold transition-colors duration-500 ${isOpen ? 'text-neon-mint drop-shadow-[0_0_10px_rgba(46,211,162,0.5)]' : 'text-white group-hover:text-neon-mint/80'}`}>
+                  <span className={`text-base md:text-xl font-bold uppercase tracking-tight transition-colors duration-300 ${isOpen ? 'text-neon-mint' : 'text-neutral-300 group-hover:text-white'}`}>
                     {faq.question}
                   </span>
-                  <ChevronDown className={`text-white transition-transform duration-600 ease-[cubic-bezier(0.87,0,0.13,1)] shrink-0 ${isOpen ? 'rotate-180 text-neon-mint' : ''}`} />
+                  <ChevronDown size={18} className={`transition-transform duration-500 shrink-0 ml-4 ${isOpen ? 'rotate-180 text-neon-mint' : 'text-neutral-600'}`} />
                 </button>
                 
                 <div 
                   ref={el => contentRefs.current[idx] = el}
                   className="overflow-hidden"
                 >
-                  <div className="px-8 pb-8 pt-0 text-neutral-300 font-light leading-relaxed text-lg relative z-0">
+                  <div className="px-6 md:px-8 pb-6 md:pb-8 pt-0 text-neutral-400 font-light leading-relaxed text-sm md:text-lg">
                     {faq.answer}
                   </div>
                 </div>

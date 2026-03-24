@@ -21,8 +21,9 @@ export default function LegacyPanel() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: 'top top',
-        end: 'bottom bottom',
-        scrub: 1.5,
+        end: () => window.innerWidth < 768 ? '+=350%' : '+=250%', // Even tighter to avoid ghost space
+        scrub: 1.2,
+        pin: true,
         invalidateOnRefresh: true,
       }
     });
@@ -154,7 +155,7 @@ export default function LegacyPanel() {
   }, { scope: containerRef });
 
   return (
-    <div ref={containerRef} className="snap-section w-full h-[600vh] relative z-20">
+    <div ref={containerRef} className="snap-section w-full h-screen relative z-20">
       <section className="sticky top-0 w-full h-screen bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-blue-900/30 via-obsidian-blue to-pitch-black overflow-hidden relative">
         
         {/* The entire sequence wrapper that mechanically moves up relative to sticky screen */}
