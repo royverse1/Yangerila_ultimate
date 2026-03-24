@@ -30,14 +30,22 @@ export default function FooterReveal() {
     }
 
     // 2. CREATE MASTER SCRUB TIMELINE FOR SECTIONS 1-3
-    const funFactContent = funFactRef.current?.querySelector('.fun-fact-content');
-    const rewardCards = rewardsRef.current?.querySelectorAll('.liquid-glass');
+    const funFactElements = funFactRef.current?.children[0]?.children;
     const rewardsHeader = rewardsRef.current?.querySelector('.rewards-header');
+    const rewardCards = rewardsRef.current?.querySelectorAll('.liquid-glass');
     const voicesHeader = voicesRef.current?.querySelector('.voices-header');
     const voicesTicker = voicesRef.current?.querySelector('.voices-ticker');
 
-    // Set initial states
-    if (funFactContent) gsap.set(funFactContent, { opacity: 0, y: 50 });
+    // Set initial states for "fly-in"
+    if (funFactElements) {
+      const [ffHeader, ffQuote, ffLine, ffHeading, ffFooter] = funFactElements;
+      if (ffHeader) gsap.set(ffHeader, { opacity: 0, y: -40, scale: 0.8 });
+      if (ffQuote) gsap.set(ffQuote, { opacity: 0, x: -60, rotate: -3 });
+      if (ffLine) gsap.set(ffLine, { scaleX: 0, opacity: 0, transformOrigin: "left center" });
+      if (ffHeading) gsap.set(ffHeading, { opacity: 0, x: 60, rotate: 3 });
+      if (ffFooter) gsap.set(ffFooter, { opacity: 0, y: 40 });
+    }
+
     if (rewardsHeader) gsap.set(rewardsHeader, { opacity: 0, y: -30 });
     if (rewardCards) gsap.set(rewardCards, { scale: 0.8, opacity: 0, y: 50 });
     if (voicesHeader) gsap.set(voicesHeader, { opacity: 0, scale: 0.9 });
@@ -54,8 +62,17 @@ export default function FooterReveal() {
       }
     });
 
-    if (funFactContent) {
-      tl.to(funFactContent, { opacity: 1, y: 0, duration: 1.2, ease: 'power2.out' });
+    if (funFactElements) {
+      const [ffHeader, ffQuote, ffLine, ffHeading, ffFooter] = funFactElements;
+      
+      const ffTl = gsap.timeline();
+      if (ffHeader) ffTl.to(ffHeader, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'back.out(1.5)' });
+      if (ffQuote) ffTl.to(ffQuote, { opacity: 1, x: 0, rotate: 0, duration: 0.6, ease: 'power3.out' }, "-=0.35");
+      if (ffLine) ffTl.to(ffLine, { scaleX: 1, opacity: 1, duration: 0.5, ease: 'power2.inOut' }, "-=0.4");
+      if (ffHeading) ffTl.to(ffHeading, { opacity: 1, x: 0, rotate: 0, duration: 0.6, ease: 'power4.out' }, "-=0.5");
+      if (ffFooter) ffTl.to(ffFooter, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, "-=0.4");
+      
+      tl.add(ffTl);
       tl.to({}, { duration: 1.5 });
     }
 
