@@ -1,10 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { TextPlugin } from 'gsap/TextPlugin';
+import { Observer } from 'gsap/observer';
 
-gsap.registerPlugin(ScrollTrigger, TextPlugin);
+gsap.registerPlugin(ScrollTrigger, TextPlugin, Observer);
 
 export default function MethodPanel() {
   const containerRef = useRef(null);
@@ -14,6 +15,7 @@ export default function MethodPanel() {
   // Section refs
   const founderSectionRef = useRef(null);
   const coursesSectionRef = useRef(null);
+  const bonusesSectionRef = useRef(null);
   const admissionSectionRef = useRef(null);
 
   // Animation targets
@@ -21,6 +23,7 @@ export default function MethodPanel() {
   const founderImgRef = useRef(null);
   const founderTextRef = useRef(null);
   const coursesRef = useRef([]);
+  const bonusesRef = useRef([]);
 
   const founderOriginalText = "“In my 20+ years as a guitarist, I’ve learned, played, performed, and composed—but teaching has always had my heart. Helping students became my true passion. I am confident in what we’ve created and in what we deliver. Give us the opportunity to serve you, and I promise it will be one of the best decisions in your musical journey.”";
 
@@ -34,11 +37,22 @@ export default function MethodPanel() {
       yTo.current = gsap.quickTo(tiltCardRef.current, "rotationX", { ease: "power4.out", duration: 0.5 });
     }
 
-    // Set initial states for all animated elements
+    const steps = [
+      { id: 'founder', ref: founderSectionRef },
+      { id: 'courses', ref: coursesSectionRef },
+      { id: 'bonuses', ref: bonusesSectionRef },
+      { id: 'admissions', ref: admissionSectionRef }
+    ];
+
+    let currentStepIndex = 0;
+    let isAnimating = false;
+
+    // Initial States
     gsap.set(founderBoxRef.current, { scale: 0.8, opacity: 0 });
     gsap.set(founderImgRef.current, { scale: 0, opacity: 0, rotationY: -90 });
     if (founderTextRef.current) founderTextRef.current.innerHTML = "";
     gsap.set(coursesRef.current, { scale: 0.8, opacity: 0, y: 100 });
+    gsap.set(bonusesRef.current, { scale: 0.8, opacity: 0, y: 80 });
     
     // Set admission states
     const admissionContent = admissionSectionRef.current?.querySelector('.admission-headline');
@@ -47,55 +61,108 @@ export default function MethodPanel() {
     gsap.set([admissionContent, admissionText], { scale: 0.9, opacity: 0, y: 50 });
     if (admissionBtns) gsap.set(admissionBtns, { scale: 0.6, opacity: 0, y: 30 });
 
-    // CREATE MASTER SCRUB TIMELINE (Replaces buggy pin spaces with perfectly orchestrated sticky wrapper logic)
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: "top top",
-        end: "+=310%", // Tightened further to eliminate gap
-        scrub: 1,
-        pin: true, // We pin the ENTIRE container once. No flex bugs.
-        invalidateOnRefresh: true,
+    const goToStep = (index, direction) => {
+      if (isAnimating || index < 0 || index >= steps.length) return;
+      isAnimating = true;
+      currentStepIndex = index;
+      const step = steps[index];
+      const duration = direction === -1 ? 1.5 : 1.2;
+      const ease = "power3.inOut";
+
+      const masterTl = gsap.timeline({
+        onComplete: () => {
+          isAnimating = false;
+        }
+      });
+
+      // Move wrapper to center the current section
+      masterTl.to(wrapperRef.current, {
+        y: -step.ref.current.offsetTop,
+        duration: duration,
+        ease: ease
+      });
+
+      // Trigger animations for the specific section
+      if (step.id === 'founder') {
+        masterTl.to(founderBoxRef.current, { scale: 1, opacity: 1, duration: 1, ease: "back.out(1.5)" }, "-=0.6");
+        masterTl.to(founderImgRef.current, { scale: 1, opacity: 1, rotationY: 0, duration: 1, ease: "back.out(1.5)" }, "-=0.8");
+        masterTl.to(founderTextRef.current, { text: founderOriginalText, duration: 1.5, ease: "none" }, "-=0.4");
+      } 
+      else if (step.id === 'courses') {
+        masterTl.to(coursesRef.current, { scale: 1, opacity: 1, y: 0, stagger: 0.1, duration: 1.2, ease: "back.out(1.5)" }, "-=0.6");
       }
+      else if (step.id === 'bonuses') {
+        masterTl.to(bonusesRef.current, { scale: 1, opacity: 1, y: 0, stagger: 0.1, duration: 1.2, ease: "back.out(1.5)" }, "-=0.6");
+      }
+      else if (step.id === 'admissions') {
+        masterTl.to(admissionContent, { scale: 1, opacity: 1, y: 0, duration: 1.0, ease: "back.out(1.5)" }, "-=0.6");
+        masterTl.to(admissionText, { scale: 1, opacity: 1, y: 0, duration: 0.8 }, "-=0.4");
+        if (admissionBtns) masterTl.to(admissionBtns, { scale: 1, opacity: 1, y: 0, stagger: 0.1, duration: 0.8 }, "-=0.4");
+      }
+    };
+
+    // First reveal
+    goToStep(0, 1);
+
+    const obs = Observer.create({
+      target: window,
+      type: "wheel,touch,pointer",
+      onDown: () => {
+        if (!isAnimating) {
+          if (currentStepIndex < steps.length - 1) {
+            goToStep(currentStepIndex + 1, 1);
+          } else {
+            // Fling to FAQ
+            const nextSection = containerRef.current.nextElementSibling;
+            if (nextSection) {
+              gsap.to(window, {
+                scrollTo: nextSection.offsetTop,
+                duration: 1.5,
+                ease: "power4.inOut"
+              });
+            }
+          }
+        }
+      },
+      onUp: () => {
+        if (!isAnimating) {
+          if (currentStepIndex > 0) {
+            goToStep(currentStepIndex - 1, -1);
+          } else {
+            // Fling to Legacy
+            const prevSection = containerRef.current.previousElementSibling;
+            if (prevSection) {
+              gsap.to(window, {
+                scrollTo: prevSection.offsetTop,
+                duration: 1.5,
+                ease: "power4.inOut"
+              });
+            }
+          }
+        }
+      },
+      onChange: (self) => {
+        if (isAnimating) return;
+        if (self.deltaY > 0 && currentStepIndex < steps.length - 1) self.event.preventDefault();
+        if (self.deltaY < 0 && currentStepIndex > 0) self.event.preventDefault();
+      },
+      tolerance: 20
     });
 
-    // 1. Reveal Founder Note
-    tl.to(founderBoxRef.current, { scale: 1, opacity: 1, duration: 1, ease: "back.out(1.5)" });
-    tl.to(founderImgRef.current, { scale: 1, opacity: 1, rotationY: 0, duration: 1, ease: "back.out(1.5)" }, "-=0.5");
-    tl.to(founderTextRef.current, { text: founderOriginalText, duration: 2, ease: "none" }, "-=0.2");
-    
-    // Pause for reading
-    tl.to({}, { duration: 1.5 });
-
-    // 2. Scroll wrapper up to center the Courses section
-    tl.to(wrapperRef.current, {
-      y: () => -coursesSectionRef.current.offsetTop,
-      duration: 1.5,
-      ease: 'power2.inOut'
+    ScrollTrigger.create({
+      trigger: containerRef.current,
+      start: "top top",
+      end: "+=350%",
+      pin: true,
+      onEnter: () => obs.enable(),
+      onEnterBack: () => obs.enable(),
+      onLeave: () => { obs.disable(); isAnimating = false; },
+      onLeaveBack: () => { obs.disable(); isAnimating = false; },
     });
 
-    // Animate Courses Reveal
-    tl.to(coursesRef.current, { scale: 1, opacity: 1, y: 0, stagger: 0.15, duration: 1.5, ease: "back.out(1.5)" });
-    
-    // Pause for viewing courses
-    tl.to({}, { duration: 1.0 });
-
-    // 3. Scroll wrapper up to center the Admissions section
-    tl.to(wrapperRef.current, {
-      y: () => -admissionSectionRef.current.offsetTop,
-      duration: 1.5,
-      ease: 'power2.inOut'
-    });
-
-    // Animate Admissions Reveal
-    tl.to(admissionContent, { scale: 1, opacity: 1, y: 0, duration: 1.2, ease: "back.out(1.5)" });
-    tl.to(admissionText, { scale: 1, opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, "-=0.6");
-    if (admissionBtns) {
-      tl.to(admissionBtns, { scale: 1, opacity: 1, y: 0, duration: 0.8, stagger: 0.2, ease: "back.out(1.5)" }, "-=0.4");
-    }
-
-    // Final cushion
-    tl.to({}, { duration: 1.0 });
+    return () => {
+      obs.kill();
+    };
 
   }, { scope: containerRef });
 
@@ -120,7 +187,6 @@ export default function MethodPanel() {
   return (
     <section ref={containerRef} className="relative z-20 w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-900/30 via-obsidian-purple to-pitch-black block rounded-t-[4rem] shadow-[0_-30px_60px_rgba(0,0,0,1)] border-t border-fuchsia-500/20 m-0 p-0 overflow-hidden h-screen">
       
-      {/* Inner wrapper that translates Y inside the pinned screen */}
       <div ref={wrapperRef} className="w-full h-full relative will-change-transform">
 
         {/* SECTION 1: The Founder Note */}
@@ -155,8 +221,6 @@ export default function MethodPanel() {
         {/* SECTION 2: Featured Courses Display */}
         <div ref={coursesSectionRef} className="w-full h-screen flex flex-col justify-center relative px-6 md:px-12 pt-20">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-fuchsia-400/40 to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.03] to-transparent pointer-events-none"></div>
-          
           <div className="max-w-7xl mx-auto w-full relative z-10">
             <div className="text-center mb-16 lg:mb-20">
               <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-4 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)]">Our Curriculum</h2>
@@ -182,7 +246,7 @@ export default function MethodPanel() {
                   <div className="mt-auto space-y-4 w-full">
                     <div className="text-neutral-400 font-medium text-sm tracking-widest uppercase opacity-60 group-hover:opacity-100 transition-opacity">{course.stats}</div>
                     <div className="h-px w-0 bg-white/20 group-hover:w-full transition-all duration-700 mx-auto"></div>
-                    <div className={`text-[10px] items-center justify-center font-black uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-500 flex gap-2 text-${course.color}-400`}>
+                    <div className={`liquid-glass py-3 px-6 rounded-xl border border-white/20 text-[10px] items-center justify-center font-black uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-500 flex gap-2 text-${course.color}-400`}>
                       Explore <span className="translate-x-0 group-hover:translate-x-1 transition-transform">→</span>
                     </div>
                   </div>
@@ -192,7 +256,37 @@ export default function MethodPanel() {
           </div>
         </div>
 
-        {/* SECTION 3: High-impact Brochure CTA */}
+        {/* SECTION 3: The Bonuses Display */}
+        <div ref={bonusesSectionRef} className="w-full h-screen flex flex-col justify-center relative px-6 md:px-12 pt-20">
+           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-fuchsia-400/40 to-transparent"></div>
+           <div className="max-w-7xl mx-auto w-full relative z-10">
+            <div className="text-center mb-16 lg:mb-20">
+              <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-4 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)]">Academy Perks</h2>
+              <h3 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tight drop-shadow-lg">Elite <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-teal-400 drop-shadow-[0_0_20px_rgba(46,211,162,0.5)]">Bonuses</span></h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+               {[
+                { title: "Mentor Support", desc: "Direct access to mentors for your doubts anytime.", icon: "💎", color: "blue" },
+                { title: "Backup Classes", desc: "Missed a session? We provide backup recordings.", icon: "📼", color: "emerald" },
+                { title: "Certificates", desc: "Formal grading certificates for every module.", icon: "📜", color: "amber" },
+                { title: "Performances", desc: "Stage opportunities to showcase your talent.", icon: "🎸", color: "rose" }
+              ].map((bonus, idx) => (
+                <div 
+                  key={idx}
+                  ref={el => bonusesRef.current[idx] = el}
+                  className={`bg-white/[0.03] border border-white/10 p-8 rounded-[2.5rem] flex flex-col items-center text-center hover:bg-${bonus.color}-500/[0.05] hover:border-${bonus.color}-500/30 transition-all duration-500 group shadow-2xl h-full`}
+                >
+                  <div className="text-4xl mb-6 transform group-hover:scale-110 transition-transform">{bonus.icon}</div>
+                  <h4 className="text-xl font-black text-white mb-4 uppercase tracking-tighter">{bonus.title}</h4>
+                  <p className="text-neutral-400 text-sm font-light leading-relaxed">{bonus.desc}</p>
+                </div>
+              ))}
+            </div>
+           </div>
+        </div>
+
+        {/* SECTION 4: High-impact Brochure CTA */}
         <div ref={admissionSectionRef} className="w-full h-screen flex flex-col items-center justify-center text-center relative px-6 md:px-12 pt-20">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-fuchsia-900/20 via-transparent to-transparent pointer-events-none"></div>
           <h2 className="admission-headline text-5xl md:text-8xl font-black text-white mb-8 uppercase tracking-tight drop-shadow-2xl relative z-10 block w-full">
@@ -206,7 +300,7 @@ export default function MethodPanel() {
             <a href="https://www.yangerila.com/demo_form.html" target="_blank" rel="noreferrer" className="liquid-glass w-full sm:w-auto text-center px-12 py-6 rounded-full text-white font-bold tracking-widest uppercase hover:bg-white hover:text-black hover:shadow-[0_0_30px_rgba(255,255,255,0.6)] transition-all duration-300 border border-white/30">
               Free Demo Session
             </a>
-            <a href="https://www.yangerila.com/admin_form.html" target="_blank" rel="noreferrer" className="bg-neon-mint w-full sm:w-auto text-center text-pitch-black px-12 py-6 rounded-full font-black tracking-widest uppercase hover:bg-white transition-all duration-300 shadow-[0_0_40px_rgba(46,211,162,0.6)] hover:shadow-[0_0_60px_rgba(46,211,162,1)] border border-neon-mint">
+            <a href="https://www.yangerila.com/admin_form.html" target="_blank" rel="noreferrer" className="liquid-glass bg-neon-mint/20 w-full sm:w-auto text-center text-neon-mint px-12 py-6 rounded-full font-black tracking-widest uppercase hover:bg-neon-mint hover:text-pitch-black transition-all duration-300 shadow-[0_0_40px_rgba(46,211,162,0.6)] hover:shadow-[0_0_60px_rgba(46,211,162,1)] border border-neon-mint/50">
               Begin Admissions
             </a>
           </div>

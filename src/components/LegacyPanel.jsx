@@ -1,156 +1,181 @@
 import React, { useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Observer } from 'gsap/observer';
 import { useGSAP } from '@gsap/react';
+
+gsap.registerPlugin(ScrollTrigger, Observer);
 
 export default function LegacyPanel() {
   const containerRef = useRef(null);
-  
-  // Section refs for vertical navigation
   const wrapperRef = useRef(null);
   const textBlockRef = useRef(null);
   const timelineBlockRef = useRef(null);
   const statsBlockRef = useRef(null);
-  
-  // Inner refs
   const textContainerRef = useRef(null);
   const timelineWrapRef = useRef(null);
 
   useGSAP(() => {
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: 'top top',
-        end: () => window.innerWidth < 768 ? '+=350%' : '+=250%', // Even tighter to avoid ghost space
-        scrub: 1.2,
-        pin: true,
-        invalidateOnRefresh: true,
-      }
-    });
+    const steps = [
+      { id: 'text', ref: textBlockRef },
+      { id: 'year-2011', index: 0 },
+      { id: 'year-2017', index: 1 },
+      { id: 'year-2023', index: 2 },
+      { id: 'year-2025', index: 3 },
+      { id: 'year-future', index: 4 },
+      { id: 'stats', ref: statsBlockRef }
+    ];
 
-    // Reset initial position
-    gsap.set(wrapperRef.current, { y: 0 });
+    let currentStepIndex = 0;
+    let isAnimating = false;
 
-    // 1. Cinematic text word-by-word reveal
+    // Word reveal setup
     const words = textContainerRef.current.querySelectorAll('.word');
-    tl.fromTo(words, 
-      { opacity: 0.1, y: 15 },
-      { opacity: 1, y: 0, duration: 2.5, stagger: 0.05, ease: 'power4.out' }
-    );
-    
-    tl.to({}, { duration: 0.5 }); // reading pause
+    gsap.set(words, { opacity: 0.1, y: 15 });
 
-    // 2. Scroll wrapper UP to center the timeline
-    tl.to(wrapperRef.current, {
-      y: () => {
-        if (!timelineBlockRef.current) return 0;
-        const top = timelineBlockRef.current.offsetTop;
-        const h = timelineBlockRef.current.offsetHeight;
-        const winH = window.innerHeight;
-        return -(top + h / 2 - winH / 2);
-      },
-      duration: 1.8,
-      ease: 'power2.inOut'
-    });
-
-    // 3. Horizontal scroll for the timeline
-    const horizontalScroll = gsap.to(timelineWrapRef.current, {
-      x: () => {
-        // Evaluate dynamic width on resize or load
-        const scrollW = timelineWrapRef.current?.scrollWidth || 0;
-        const winW = window.innerWidth;
-        // The +150 ensures the last item has breathing room on the right
-        return -(scrollW - winW + 150);
-      },
-      ease: 'none',
-      duration: 6 // Take plenty of the scrub duration for horizontal scrolling
-    });
-    tl.add(horizontalScroll, "+=0");
-
-    // Reveal timeline nodes as they enter horizontally
+    // Timeline nodes setup
     const nodes = gsap.utils.toArray('.timeline-node');
     nodes.forEach((node, i) => {
       const box = node.querySelector('.content-box');
       const line = node.querySelector('.vertical-line');
       const dot = node.querySelector('.center-dot');
       const isTop = i % 2 === 0;
-
       gsap.set([box, line, dot], { opacity: 0 });
       gsap.set(box, { y: isTop ? 40 : -40, scale: 0.95 });
       gsap.set(line, { scaleY: 0, transformOrigin: isTop ? "bottom" : "top" });
       gsap.set(dot, { scale: 0 });
-
-      gsap.to(dot, {
-        scale: 1, opacity: 1, duration: 0.4, ease: "back.out(2)",
-        scrollTrigger: {
-          trigger: node,
-          containerAnimation: tl, // using outer timeline is valid since it animates wrapper
-          start: "left 85%",
-          toggleActions: "play none none reverse"
-        }
-      });
-
-      gsap.to(line, {
-        scaleY: 1, opacity: 0.6, duration: 0.4, ease: "power4.out", delay: 0.1,
-        scrollTrigger: {
-          trigger: node,
-          containerAnimation: tl,
-          start: "left 85%",
-          toggleActions: "play none none reverse"
-        }
-      });
-
-      gsap.to(box, {
-        y: 0, opacity: 1, scale: 1, duration: 0.6, ease: "power4.out", delay: 0.3,
-        scrollTrigger: {
-          trigger: node,
-          containerAnimation: tl,
-          start: "left 85%",
-          toggleActions: "play none none reverse"
-        }
-      });
     });
 
-    // 4. Scroll wrapper UP to center the stats
-    tl.to(wrapperRef.current, {
-      y: () => {
-        if (!statsBlockRef.current) return 0;
-        const top = statsBlockRef.current.offsetTop;
-        const h = statsBlockRef.current.offsetHeight;
-        const winH = window.innerHeight;
-        // We push it up enough so stats are visible above the fold
-        return -(top + h / 2 - winH / 2);
-      },
-      duration: 1.8,
-      ease: 'power2.inOut'
-    }, "+=0.2");
-    
-    // Stats pop out
+    // Stats setup
     const statCards = statsBlockRef.current.querySelectorAll('.stat-card');
-    tl.fromTo(statCards, 
-      { scale: 0.8, opacity: 0, y: 50 },
-      { scale: 1, opacity: 1, y: 0, duration: 1.5, stagger: 0.2, ease: "back.out(2)" },
-      "-=1.0" // overlap with the upward scroll
-    );
-
-    // Stats counter up (scrubbed with scroll)
     const counters = statsBlockRef.current.querySelectorAll('.counter-val');
-    counters.forEach((counter) => {
-      const target = parseFloat(counter.getAttribute('data-target'));
-      tl.fromTo(counter, 
-        { innerText: 0 }, 
-        { 
-          innerText: target, 
-          duration: 1.5, 
-          snap: { innerText: 1 }, // GSAP built-in feature to round numbers
-          ease: "power1.out"
-        },
-        "<" // start at the same time as pop out
-      );
+    gsap.set(statCards, { scale: 0.8, opacity: 0, y: 50 });
+
+    const goToStep = (index, direction) => {
+      if (isAnimating || index < 0 || index >= steps.length) return;
+      isAnimating = true;
+      currentStepIndex = index;
+      const step = steps[index];
+      const duration = direction === -1 ? 1.5 : 1.2; // Slower reverse
+      const ease = "power3.inOut";
+
+      const masterTl = gsap.timeline({
+        onComplete: () => {
+          isAnimating = false;
+        }
+      });
+
+      // 1. Position Wrapper
+      if (step.id === 'text') {
+        masterTl.to(wrapperRef.current, { y: 0, duration, ease });
+        masterTl.to(words, { opacity: 1, y: 0, stagger: 0.02, duration: 0.8 }, "-=0.4");
+      } 
+      else if (step.id.startsWith('year')) {
+        const targetX = - (step.index * (window.innerWidth < 768 ? window.innerWidth * 0.85 : window.innerWidth * 0.35));
+        
+        // Move wrapper to timeline if not there
+        const timelineTop = -(timelineBlockRef.current.offsetTop + timelineBlockRef.current.offsetHeight / 2 - window.innerHeight / 2);
+        masterTl.to(wrapperRef.current, { y: timelineTop, duration: 0.8, ease });
+        
+        // Horizontal Scroll
+        masterTl.to(timelineWrapRef.current, { x: targetX, duration, ease }, "-=0.4");
+        
+        // Node Reveal
+        const node = nodes[step.index];
+        const box = node.querySelector('.content-box');
+        const line = node.querySelector('.vertical-line');
+        const dot = node.querySelector('.center-dot');
+        masterTl.to(dot, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(2)" }, "-=0.6");
+        masterTl.to(line, { scaleY: 1, opacity: 0.6, duration: 0.4 }, "-=0.4");
+        masterTl.to(box, { y: 0, opacity: 1, scale: 1, duration: 0.6 }, "-=0.3");
+      }
+      else if (step.id === 'stats') {
+        const statsTop = -(statsBlockRef.current.offsetTop + statsBlockRef.current.offsetHeight / 2 - window.innerHeight / 2);
+        masterTl.to(wrapperRef.current, { y: statsTop, duration, ease });
+        masterTl.to(statCards, { scale: 1, opacity: 1, y: 0, stagger: 0.1, duration: 0.8, ease: "back.out(2)" }, "-=0.4");
+        
+        counters.forEach((counter) => {
+          const target = parseFloat(counter.getAttribute('data-target'));
+          masterTl.fromTo(counter, { innerText: 0 }, { 
+            innerText: target, 
+            duration: 1, 
+            snap: { innerText: 1 },
+            ease: "power1.out"
+          }, "<");
+        });
+      }
+    };
+
+    // Initial first step
+    goToStep(0, 1);
+
+    const obs = Observer.create({
+      target: window, // Move target to window for better intent capturing
+      type: "wheel,touch,pointer",
+      onDown: () => {
+        if (!isAnimating) {
+          if (currentStepIndex < steps.length - 1) {
+            goToStep(currentStepIndex + 1, 1);
+          } else {
+            // Section Fling to next panel
+            const nextSection = containerRef.current.nextElementSibling;
+            if (nextSection) {
+              gsap.to(window, {
+                scrollTo: nextSection.offsetTop,
+                duration: 1.5,
+                ease: "power4.inOut"
+              });
+            }
+          }
+        }
+      },
+      onUp: () => {
+        if (!isAnimating) {
+          if (currentStepIndex > 0) {
+            goToStep(currentStepIndex - 1, -1);
+          } else {
+            // Section Fling back to previous panel
+            const prevSection = containerRef.current.previousElementSibling;
+            if (prevSection) {
+              gsap.to(window, {
+                scrollTo: prevSection.offsetTop,
+                duration: 1.5,
+                ease: "power4.inOut"
+              });
+            }
+          }
+        }
+      },
+      onChange: (self) => {
+        // Prevent default only if we are taking action
+        if (isAnimating) return;
+        if (self.deltaY > 0 && currentStepIndex < steps.length - 1) self.event.preventDefault();
+        if (self.deltaY < 0 && currentStepIndex > 0) self.event.preventDefault();
+      },
+      wheelSpeed: 1,
+      tolerance: 15,
     });
 
-    // final cushion
-    tl.to({}, { duration: 0.5 });
+    ScrollTrigger.create({
+      trigger: containerRef.current,
+      start: "top top",
+      end: "+=300%",
+      pin: true,
+      onEnter: () => obs.enable(),
+      onEnterBack: () => obs.enable(),
+      onLeave: () => {
+        obs.disable();
+        isAnimating = false;
+      },
+      onLeaveBack: () => {
+        obs.disable();
+        isAnimating = false;
+      },
+    });
+
+    return () => {
+      obs.kill();
+    };
 
   }, { scope: containerRef });
 

@@ -11,12 +11,16 @@ export default function HeroReveal() {
 
   useGSAP(() => {
     const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: 'top top',
-        end: '+=150%',
-        pin: true,
-        scrub: 1,
+      paused: true,
+      onComplete: () => {
+        const nextSection = document.querySelector('section:nth-of-type(2)');
+        if (nextSection) {
+          gsap.to(window, {
+            scrollTo: nextSection.offsetTop,
+            duration: 1.5,
+            ease: "power4.inOut"
+          });
+        }
       }
     });
 
@@ -24,26 +28,39 @@ export default function HeroReveal() {
     tl.to(maskRef.current, {
       scale: 150,
       transformOrigin: '50% 40%',
-      ease: 'power4.in',
-      duration: 2
+      ease: 'expo.inOut',
+      duration: 1.8
     })
     // Also fade out the Y border/fill
     .to(letterYRef.current, {
       opacity: 0,
-      duration: 0.5
-    }, "<0.5")
+      duration: 0.6
+    }, "<0.8")
     // Fade in text behind it
     .fromTo(textRef.current, {
       opacity: 0,
-      scale: 0.9,
-      y: 40
+      scale: 0.85,
+      y: 60
     }, {
       opacity: 1,
       scale: 1,
       y: 0,
-      duration: 0.8,
+      duration: 1.2,
       ease: 'power4.out'
-    }, "-=0.8");
+    }, "-=1.0");
+
+    ScrollTrigger.create({
+      trigger: containerRef.current,
+      start: 'top top',
+      end: '+=100%',
+      pin: true,
+      onEnter: () => {
+        if (tl.progress() === 0) tl.play();
+      },
+      onLeaveBack: () => {
+        tl.reverse();
+      }
+    });
 
   }, { scope: containerRef });
 

@@ -3,6 +3,9 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { ChevronDown } from 'lucide-react';
+import { Observer } from 'gsap/observer';
+
+gsap.registerPlugin(ScrollTrigger, Observer);
 
 const faqCategories = {
   "About The Academy": [
@@ -55,11 +58,15 @@ export default function FAQSection() {
     const faqTl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
-        pin: true,
         start: "top top",
-        end: "+=150%",
-        scrub: 1,
+        end: "+=100%",
+        pin: true,
+        toggleActions: "play none none reverse",
         invalidateOnRefresh: true,
+        onEnter: () => obs.enable(),
+        onEnterBack: () => obs.enable(),
+        onLeave: () => obs.disable(),
+        onLeaveBack: () => obs.disable(),
       }
     });
 
@@ -67,11 +74,42 @@ export default function FAQSection() {
     const faqTabs = containerRef.current.querySelector('.faq-tabs');
     const faqContent = containerRef.current.querySelector('.faq-content');
 
-    gsap.set([faqHeader, faqTabs, faqContent], { y: 30, opacity: 0 });
+    gsap.set([faqHeader, faqTabs, faqContent], { y: 40, opacity: 0 });
 
-    faqTl.to(faqHeader, { y: 0, opacity: 1, duration: 1 })
-         .to(faqTabs, { y: 0, opacity: 1, duration: 1 }, "-=0.7")
-         .to(faqContent, { y: 0, opacity: 1, duration: 1 }, "-=0.7");
+    faqTl.to(faqHeader, { y: 0, opacity: 1, duration: 1.2, ease: "power4.out" })
+         .to(faqTabs, { y: 0, opacity: 1, duration: 1, ease: "power3.out" }, "-=0.8")
+         .to(faqContent, { y: 0, opacity: 1, duration: 1, ease: "power3.out" }, "-=0.8");
+
+    const obs = Observer.create({
+      target: window,
+      type: "wheel,touch,pointer",
+      onDown: () => {
+        const nextSection = containerRef.current.nextElementSibling;
+        if (nextSection) {
+          gsap.to(window, {
+            scrollTo: nextSection.offsetTop,
+            duration: 1.5,
+            ease: "power4.inOut"
+          });
+        }
+      },
+      onUp: () => {
+        const prevSection = containerRef.current.previousElementSibling;
+        if (prevSection) {
+          gsap.to(window, {
+            scrollTo: prevSection.offsetTop,
+            duration: 1.5,
+            ease: "power4.inOut"
+          });
+        }
+      },
+      tolerance: 25,
+      paused: true
+    });
+
+    return () => {
+      obs.kill();
+    };
 
   }, { scope: containerRef });
 
