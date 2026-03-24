@@ -56,7 +56,7 @@ export default function LegacyPanel() {
       isAnimating = true;
       currentStepIndex = index;
       const step = steps[index];
-      const duration = direction === -1 ? 1.5 : 1.2; // Slower reverse
+      const duration = direction === -1 ? 1.5 : 1.2;
       const ease = "power3.inOut";
 
       const masterTl = gsap.timeline({
@@ -71,7 +71,8 @@ export default function LegacyPanel() {
         masterTl.to(words, { opacity: 1, y: 0, stagger: 0.02, duration: 0.8 }, "-=0.4");
       } 
       else if (step.id.startsWith('year')) {
-        const targetX = - (step.index * (window.innerWidth < 768 ? window.innerWidth * 0.85 : window.innerWidth * 0.35));
+        const node = nodes[step.index];
+        const targetX = -node.offsetLeft + (window.innerWidth / 2 - node.offsetWidth / 2);
         
         // Move wrapper to timeline if not there
         const timelineTop = -(timelineBlockRef.current.offsetTop + timelineBlockRef.current.offsetHeight / 2 - window.innerHeight / 2);
@@ -81,7 +82,6 @@ export default function LegacyPanel() {
         masterTl.to(timelineWrapRef.current, { x: targetX, duration, ease }, "-=0.4");
         
         // Node Reveal
-        const node = nodes[step.index];
         const box = node.querySelector('.content-box');
         const line = node.querySelector('.vertical-line');
         const dot = node.querySelector('.center-dot');
@@ -110,7 +110,7 @@ export default function LegacyPanel() {
     goToStep(0, 1);
 
     const obs = Observer.create({
-      target: window, // Move target to window for better intent capturing
+      target: window,
       type: "wheel,touch,pointer",
       onDown: () => {
         if (!isAnimating) {
@@ -134,7 +134,7 @@ export default function LegacyPanel() {
           if (currentStepIndex > 0) {
             goToStep(currentStepIndex - 1, -1);
           } else {
-            // Section Fling back to previous panel
+            // Section Fling back to Hero
             const prevSection = containerRef.current.previousElementSibling;
             if (prevSection) {
               gsap.to(window, {
@@ -147,30 +147,22 @@ export default function LegacyPanel() {
         }
       },
       onChange: (self) => {
-        // Prevent default only if we are taking action
         if (isAnimating) return;
         if (self.deltaY > 0 && currentStepIndex < steps.length - 1) self.event.preventDefault();
         if (self.deltaY < 0 && currentStepIndex > 0) self.event.preventDefault();
       },
-      wheelSpeed: 1,
-      tolerance: 15,
+      tolerance: 20
     });
 
     ScrollTrigger.create({
       trigger: containerRef.current,
       start: "top top",
-      end: "+=300%",
+      end: "+=800%",
       pin: true,
       onEnter: () => obs.enable(),
       onEnterBack: () => obs.enable(),
-      onLeave: () => {
-        obs.disable();
-        isAnimating = false;
-      },
-      onLeaveBack: () => {
-        obs.disable();
-        isAnimating = false;
-      },
+      onLeave: () => { obs.disable(); isAnimating = false; },
+      onLeaveBack: () => { obs.disable(); isAnimating = false; },
     });
 
     return () => {
@@ -221,7 +213,7 @@ export default function LegacyPanel() {
                     <div className={`content-box absolute w-full px-6 flex flex-col ${isTop ? 'bottom-[55%] items-start text-left' : 'top-[55%] items-start text-left'}`}>
                       {/* Connecting Vertical Line */}
                       <div className={`vertical-line absolute left-1/2 ${isTop ? 'bottom-[-10%] h-[50px] border-l-2' : 'top-[-10%] h-[50px] border-l-2'} -translate-x-1/2 ${item.border} opacity-40 group-hover:opacity-100 transition-opacity`}></div>
-                      <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 md:p-8 rounded-3xl w-full max-w-[400px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] group-hover:bg-white/10 group-hover:-translate-y-2 transition-all duration-300">
+                      <div className="liquid-glass p-6 md:p-8 rounded-3xl w-full max-w-[400px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-300 border border-white/10 group-hover:border-white/30">
                         <h4 className={`text-3xl md:text-4xl font-black mb-2 ${item.color} drop-shadow-md`}>{item.year}</h4>
                         <h5 className="text-white font-bold tracking-widest uppercase mb-4 text-sm md:text-base opacity-90">{item.title}</h5>
                         <p className="text-neutral-300 font-light leading-relaxed text-sm md:text-base">

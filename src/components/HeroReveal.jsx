@@ -51,7 +51,7 @@ export default function HeroReveal() {
 
     ScrollTrigger.create({
       trigger: containerRef.current,
-      start: 'top top',
+      start: 'top -50px',
       end: '+=100%',
       pin: true,
       onEnter: () => {

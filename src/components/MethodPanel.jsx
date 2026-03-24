@@ -152,7 +152,7 @@ export default function MethodPanel() {
     ScrollTrigger.create({
       trigger: containerRef.current,
       start: "top top",
-      end: "+=350%",
+      end: "+=500%",
       pin: true,
       onEnter: () => obs.enable(),
       onEnterBack: () => obs.enable(),
@@ -187,7 +187,7 @@ export default function MethodPanel() {
   return (
     <section ref={containerRef} className="relative z-20 w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-900/30 via-obsidian-purple to-pitch-black block rounded-t-[4rem] shadow-[0_-30px_60px_rgba(0,0,0,1)] border-t border-fuchsia-500/20 m-0 p-0 overflow-hidden h-screen">
       
-      <div ref={wrapperRef} className="w-full h-full relative will-change-transform">
+      <div ref={wrapperRef} className="w-full h-fit relative will-change-transform">
 
         {/* SECTION 1: The Founder Note */}
         <div ref={founderSectionRef} className="w-full h-screen flex flex-col items-center justify-center perspective-[1000px] relative px-6 md:px-12">
@@ -256,30 +256,29 @@ export default function MethodPanel() {
           </div>
         </div>
 
-        {/* SECTION 3: The Bonuses Display */}
+        {/* SECTION 3: The Bonuses Display (RESTORED ORIGINAL REWARDS) */}
         <div ref={bonusesSectionRef} className="w-full h-screen flex flex-col justify-center relative px-6 md:px-12 pt-20">
            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-fuchsia-400/40 to-transparent"></div>
            <div className="max-w-7xl mx-auto w-full relative z-10">
             <div className="text-center mb-16 lg:mb-20">
-              <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-4 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)]">Academy Perks</h2>
-              <h3 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tight drop-shadow-lg">Elite <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-teal-400 drop-shadow-[0_0_20px_rgba(46,211,162,0.5)]">Bonuses</span></h3>
+              <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-4 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)]">Exclusive Perks</h2>
+              <h3 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tight drop-shadow-lg">Premium <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-teal-400 drop-shadow-[0_0_20px_rgba(46,211,162,0.5)]">Rewards</span></h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 w-full max-w-7xl mx-auto">
                {[
-                { title: "Mentor Support", desc: "Direct access to mentors for your doubts anytime.", icon: "💎", color: "blue" },
-                { title: "Backup Classes", desc: "Missed a session? We provide backup recordings.", icon: "📼", color: "emerald" },
-                { title: "Certificates", desc: "Formal grading certificates for every module.", icon: "📜", color: "amber" },
-                { title: "Performances", desc: "Stage opportunities to showcase your talent.", icon: "🎸", color: "rose" }
+                { title: "INR 1,000", desc: "Referral Reward (Amazon Gift Card)", color: "blue" },
+                { title: "30% OFF", desc: "Group Discount United We Stand", color: "emerald" },
+                { title: "50% OFF", desc: "Next Fee Student Referral", color: "amber" },
+                { title: "Exclusive", desc: "Festive Discounts Throughout the Year", color: "rose" }
               ].map((bonus, idx) => (
                 <div 
                   key={idx}
                   ref={el => bonusesRef.current[idx] = el}
-                  className={`bg-white/[0.03] border border-white/10 p-8 rounded-[2.5rem] flex flex-col items-center text-center hover:bg-${bonus.color}-500/[0.05] hover:border-${bonus.color}-500/30 transition-all duration-500 group shadow-2xl h-full`}
+                  className={`liquid-glass p-8 md:p-12 rounded-[2.5rem] flex flex-col items-center text-center hover:bg-${bonus.color}-500/[0.05] border border-white/10 hover:border-${bonus.color}-500/30 transition-all duration-500 group shadow-2xl h-full`}
                 >
-                  <div className="text-4xl mb-6 transform group-hover:scale-110 transition-transform">{bonus.icon}</div>
-                  <h4 className="text-xl font-black text-white mb-4 uppercase tracking-tighter">{bonus.title}</h4>
-                  <p className="text-neutral-400 text-sm font-light leading-relaxed">{bonus.desc}</p>
+                  <h4 className={`text-4xl font-black mb-4 uppercase tracking-tighter ${idx === 1 || idx === 2 ? 'text-neon-mint' : 'text-white'}`}>{bonus.title}</h4>
+                  <p className="text-neutral-400 text-sm font-light leading-relaxed uppercase tracking-widest">{bonus.desc}</p>
                 </div>
               ))}
             </div>

@@ -40,7 +40,6 @@ export default function FooterReveal() {
 
     const steps = [
       { id: 'funfact', ref: funFactRef },
-      { id: 'rewards', ref: rewardsRef },
       { id: 'voices', ref: voicesRef }
     ];
 
@@ -49,8 +48,6 @@ export default function FooterReveal() {
 
     // Elements setup
     const funFactElements = funFactRef.current?.children[0]?.children;
-    const rewardsHeader = rewardsRef.current?.querySelector('.rewards-header');
-    const rewardCards = rewardsRef.current?.querySelectorAll('.liquid-glass');
     const voicesHeader = voicesRef.current?.querySelector('.voices-header');
     const voicesTicker = voicesRef.current?.querySelector('.voices-ticker');
 
@@ -58,8 +55,6 @@ export default function FooterReveal() {
     if (funFactElements) {
        gsap.set(funFactElements, { opacity: 0, y: 30 });
     }
-    gsap.set(rewardsHeader, { opacity: 0, y: -30 });
-    gsap.set(rewardCards, { scale: 0.8, opacity: 0, y: 50 });
     gsap.set(voicesHeader, { opacity: 0, scale: 0.95 });
     gsap.set(voicesTicker, { opacity: 0, x: 50 });
 
@@ -87,10 +82,6 @@ export default function FooterReveal() {
       // Triggers
       if (step.id === 'funfact') {
          masterTl.to(funFactElements, { opacity: 1, y: 0, stagger: 0.1, duration: 1 }, "-=0.6");
-      }
-      else if (step.id === 'rewards') {
-        masterTl.to(rewardsHeader, { opacity: 1, y: 0, duration: 0.8 }, "-=0.6");
-        masterTl.to(rewardCards, { scale: 1, opacity: 1, y: 0, stagger: 0.1, duration: 1, ease: "back.out(1.5)" }, "-=0.4");
       }
       else if (step.id === 'voices') {
         masterTl.to(voicesHeader, { opacity: 1, scale: 1, duration: 1 }, "-=0.6");
@@ -195,7 +186,7 @@ export default function FooterReveal() {
       </svg>
       
       <section ref={containerRef} className="w-full h-screen relative overflow-hidden m-0 p-0 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] z-30">
-        <div ref={wrapperRef} className="w-full h-full relative will-change-transform">
+        <div ref={wrapperRef} className="w-full h-fit relative will-change-transform">
           
           <div ref={funFactRef} className="w-full h-screen flex flex-col items-center justify-center text-center bg-pitch-black bg-[linear-gradient(to_bottom,#0d2a1c,var(--color-pitch-black))] relative px-6 md:px-12 border-t border-emerald-900/50">
             <div className="max-w-5xl mx-auto flex flex-col items-center justify-center w-full">
@@ -210,21 +201,6 @@ export default function FooterReveal() {
                 At Yangerila, more than <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-[#1a9570]">90% don't quit.</span>
               </h3>
               <p className="text-xl text-neutral-300 font-light mt-8">This opposite statistic fills us with both happiness and confidence in our teaching methods.</p>
-            </div>
-          </div>
-
-          <div ref={rewardsRef} className="w-full h-screen bg-pitch-black bg-[linear-gradient(to_bottom,#380a2b,var(--color-pitch-black))] border-t border-fuchsia-900/50 flex flex-col items-center justify-center overflow-hidden relative px-6 md:px-12">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-neon-mint/10 rounded-full blur-[60px] pointer-events-none"></div>
-            <h2 className="rewards-header text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-16 text-center">Exclusive Rewards</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 w-full max-w-7xl mx-auto relative z-10">
-              {['INR 1,000', '30% OFF', '50% OFF', 'Exclusive'].map((val, i) => (
-                <div key={i} className="liquid-glass p-6 md:p-12 rounded-3xl text-center border-white/20 hover:shadow-[0_0_60px_rgba(255,255,255,0.15)] transition-all duration-500 hover:-translate-y-2 cursor-pointer group">
-                  <h4 className={`text-3xl font-black mb-4 ${i === 1 || i === 2 ? 'text-neon-mint' : 'text-white'}`}>{val}</h4>
-                  <p className="text-xs lg:text-sm tracking-widest text-[#a8b8b8] uppercase">
-                    {i === 0 ? 'Referral Reward' : i === 1 ? 'Group Discount' : i === 2 ? 'Next Fee' : 'Festive Discounts'}
-                  </p>
-                </div>
-              ))}
             </div>
           </div>
 
@@ -284,7 +260,7 @@ export default function FooterReveal() {
               <form className="flex flex-col gap-4">
                 <input type="text" placeholder="FULL NAME" className="bg-white/10 border border-white/20 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-neon-mint" />
                 <input type="email" placeholder="EMAIL ADDRESS" className="bg-white/10 border border-white/40 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-neon-mint" />
-                <button type="button" className="bg-white text-black font-black p-5 w-full rounded-xl hover:bg-neon-mint transition-all">Request Admission</button>
+                <button type="button" className="liquid-glass bg-white/10 text-white border border-white/20 font-black p-5 w-full rounded-xl hover:bg-neon-mint hover:text-pitch-black transition-all">Request Admission</button>
               </form>
             </div>
           </div>
