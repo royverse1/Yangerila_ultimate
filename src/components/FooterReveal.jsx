@@ -212,7 +212,7 @@ export default function FooterReveal() {
 
       <section 
         ref={revealSectionRef}
-        className="reveal-section w-full min-h-screen flex flex-col justify-center bg-cover bg-center overflow-hidden shadow-[0_-30px_60px_rgba(0,0,0,1)] -mt-1 relative z-[60]"
+        className="reveal-section w-full min-h-screen flex flex-col justify-center bg-cover bg-center bg-no-repeat md:bg-fixed overflow-hidden shadow-[0_-30px_60px_rgba(0,0,0,1)] -mt-1 relative z-[60]"
         style={{ 
           backgroundImage: "url('contact_bg.png')",
           clipPath: "url(#curve-reveal)",
