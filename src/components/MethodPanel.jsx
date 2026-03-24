@@ -146,7 +146,8 @@ export default function MethodPanel() {
         if (self.deltaY > 0 && currentStepIndex < steps.length - 1) self.event.preventDefault();
         if (self.deltaY < 0 && currentStepIndex > 0) self.event.preventDefault();
       },
-      tolerance: 20
+      tolerance: 20,
+      preventDefault: true
     });
 
     ScrollTrigger.create({
@@ -193,7 +194,7 @@ export default function MethodPanel() {
         <div ref={founderSectionRef} className="w-full h-screen flex flex-col items-center justify-center perspective-[1000px] relative px-6 md:px-12">
           <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-12 text-center drop-shadow-[0_0_15px_rgba(46,211,162,0.8)] pt-20">A Note from the Founder</h2>
           
-          <div ref={founderBoxRef} className="liquid-glass p-8 md:p-16 rounded-[3rem] border border-white/20 relative overflow-hidden group max-w-5xl mx-auto w-full shadow-[0_0_80px_rgba(192,38,211,0.35)] hover:shadow-[0_0_120px_rgba(192,38,211,0.55)] transition-shadow duration-500">
+          <div ref={founderBoxRef} className="liquid-glass p-8 md:p-16 rounded-[3rem] border border-white/20 relative overflow-visible group max-w-5xl mx-auto w-full h-fit shadow-[0_0_80px_rgba(192,38,211,0.35)] hover:shadow-[0_0_120px_rgba(192,38,211,0.55)] transition-shadow duration-500">
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none mix-blend-overlay"></div>
             
             <div className="flex flex-col md:flex-row gap-8 lg:gap-12 items-center md:items-start text-center md:text-left relative z-10 perspective-[1000px]">
@@ -207,12 +208,14 @@ export default function MethodPanel() {
                  <img ref={founderImgRef} src="./founder-guitar.jpg" alt="Micky Dixit - Founder" className="w-[240px] h-[240px] md:w-[320px] md:h-[320px] rounded-2xl object-cover border-2 border-white/30 shadow-[0_0_30px_rgba(255,255,255,0.2)] relative z-10 translate-z-[50px]" />
               </div>
               
-              <div className="flex flex-col justify-center translate-z-[30px] transform-style-3d md:mt-4">
-                <h3 className="text-3xl lg:text-5xl font-light text-white mb-2 drop-shadow-lg">Micky Dixit</h3>
-                <p className="text-neon-mint tracking-widest uppercase font-bold text-xs lg:text-sm mb-6 drop-shadow-[0_0_10px_rgba(46,211,162,0.5)]">Founder & Head Guitar Coach</p>
-                <p ref={founderTextRef} className="text-neutral-200 leading-relaxed font-light text-xl md:text-2xl text-serif-italic translate-z-[20px] transform-style-3d min-h-[150px]">
-                  {/* Typed dynamically  */}
-                </p>
+              <div className="flex flex-col justify-center translate-z-[30px] transform-style-3d md:mt-4 overflow-visible flex-1">
+                <h3 className="text-2xl lg:text-4xl font-light text-white mb-1 drop-shadow-lg">Micky Dixit</h3>
+                <p className="text-neon-mint tracking-widest uppercase font-bold text-[10px] lg:text-xs mb-4 drop-shadow-[0_0_10px_rgba(46,211,162,0.5)]">Founder & Head Guitar Coach</p>
+                <div className="overflow-visible min-h-[120px]">
+                  <p ref={founderTextRef} className="text-neutral-200 leading-relaxed font-light text-base md:text-lg lg:text-xl xl:text-2xl text-serif-italic translate-z-[20px] transform-style-3d">
+                    {/* Typed dynamically  */}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

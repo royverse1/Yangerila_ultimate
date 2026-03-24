@@ -103,8 +103,20 @@ export default function FAQSection() {
           });
         }
       },
-      tolerance: 25,
+      tolerance: 20,
+      preventDefault: true,
       paused: true
+    });
+
+    ScrollTrigger.create({
+      trigger: containerRef.current,
+      start: "top top",
+      end: "+=100%",
+      pin: true,
+      onEnter: () => obs.enable(),
+      onEnterBack: () => obs.enable(),
+      onLeave: () => obs.disable(),
+      onLeaveBack: () => obs.disable(),
     });
 
     return () => {

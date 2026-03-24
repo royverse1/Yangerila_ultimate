@@ -31,7 +31,7 @@ export default function LegacyPanel() {
 
     // Word reveal setup
     const words = textContainerRef.current.querySelectorAll('.word');
-    gsap.set(words, { opacity: 0.1, y: 15 });
+    gsap.set(words, { opacity: 0, y: 15 });
 
     // Timeline nodes setup
     const nodes = gsap.utils.toArray('.timeline-node');
@@ -151,7 +151,8 @@ export default function LegacyPanel() {
         if (self.deltaY > 0 && currentStepIndex < steps.length - 1) self.event.preventDefault();
         if (self.deltaY < 0 && currentStepIndex > 0) self.event.preventDefault();
       },
-      tolerance: 20
+      tolerance: 20,
+      preventDefault: true
     });
 
     ScrollTrigger.create({

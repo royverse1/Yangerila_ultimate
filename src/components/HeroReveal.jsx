@@ -11,17 +11,7 @@ export default function HeroReveal() {
 
   useGSAP(() => {
     const tl = gsap.timeline({
-      paused: true,
-      onComplete: () => {
-        const nextSection = document.querySelector('section:nth-of-type(2)');
-        if (nextSection) {
-          gsap.to(window, {
-            scrollTo: nextSection.offsetTop,
-            duration: 1.5,
-            ease: "power4.inOut"
-          });
-        }
-      }
+      paused: true
     });
 
     // Scale the 'Y' mask hole up massively
@@ -31,12 +21,10 @@ export default function HeroReveal() {
       ease: 'expo.inOut',
       duration: 1.8
     })
-    // Also fade out the Y border/fill
     .to(letterYRef.current, {
       opacity: 0,
       duration: 0.6
     }, "<0.8")
-    // Fade in text behind it
     .fromTo(textRef.current, {
       opacity: 0,
       scale: 0.85,
@@ -49,23 +37,48 @@ export default function HeroReveal() {
       ease: 'power4.out'
     }, "-=1.0");
 
+    const obs = Observer.create({
+      target: window,
+      type: "wheel,touch,pointer",
+      onDown: (self) => {
+        if (tl.progress() === 0) {
+          self.event?.preventDefault();
+          tl.play();
+        } else if (!tl.isActive()) {
+          const nextSection = containerRef.current.nextElementSibling;
+          if (nextSection) {
+            gsap.to(window, {
+              scrollTo: nextSection.offsetTop,
+              duration: 1.5,
+              ease: "power4.inOut"
+            });
+          }
+        }
+      },
+      preventDefault: true,
+      tolerance: 10,
+      paused: true
+    });
+
     ScrollTrigger.create({
       trigger: containerRef.current,
-      start: 'top -50px',
+      start: 'top top',
       end: '+=100%',
       pin: true,
-      onEnter: () => {
-        if (tl.progress() === 0) tl.play();
-      },
-      onLeaveBack: () => {
-        tl.reverse();
-      }
+      onEnter: () => obs.enable(),
+      onEnterBack: () => obs.enable(),
+      onLeave: () => obs.disable(),
+      onLeaveBack: () => obs.disable(),
     });
+
+    return () => {
+      obs.kill();
+    };
 
   }, { scope: containerRef });
 
   return (
-    <section ref={containerRef} className="h-screen w-full relative bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-900/40 via-[#041a1a] to-pitch-black overflow-hidden flex items-center justify-center">
+    <section ref={containerRef} className="snap-section h-screen w-full relative bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-900/40 via-[#041a1a] to-pitch-black overflow-hidden flex items-center justify-center">
       
       {/* Brand Mantra Content (Hidden behind the mask at first) */}
       <div 

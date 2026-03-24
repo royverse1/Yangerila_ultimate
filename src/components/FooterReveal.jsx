@@ -134,6 +134,7 @@ export default function FooterReveal() {
         if (self.deltaY < 0 && currentStepIndex > 0) self.event.preventDefault();
       },
       tolerance: 20,
+      preventDefault: true,
       paused: true
     });
 
