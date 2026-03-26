@@ -1,11 +1,7 @@
 import React, { useState, useRef } from 'react';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { ChevronDown } from 'lucide-react';
-import { Observer } from 'gsap/observer';
-
-gsap.registerPlugin(ScrollTrigger, Observer);
 
 const faqCategories = {
   "About The Academy": [
@@ -30,192 +26,110 @@ const faqCategories = {
   ]
 };
 
-export default function FAQSection() {
+const FAQSection = React.memo(function FAQSection({ step, onComplete, isReversing }) {
   const [activeCategory, setActiveCategory] = useState("About The Academy");
   const [openIndex, setOpenIndex] = useState(0);
-  
+
   const containerRef = useRef(null);
   const contentRefs = useRef([]);
-  const contentContainerRef = useRef(null);
 
-  const categories = Object.keys(faqCategories);
+  const isActive = step === 7;
 
-  // Initialize GSAP states for accordion
+  useGSAP(() => {
+    const faqHeader = containerRef.current.querySelector('.faq-header');
+    const faqTabs = containerRef.current.querySelector('.faq-tabs');
+    const faqContent = containerRef.current.querySelector('.faq-content');
+
+    // 1. EXIT SCENARIOS
+    if (step < 7) {
+      gsap.to(containerRef.current, { yPercent: 100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut" });
+    }
+    if (step > 7) {
+      gsap.to(containerRef.current, { yPercent: -100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut" });
+    }
+
+    // 2. ENTRANCE & REVERSE
+    if (step === 7) {
+      if (isReversing) {
+        gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out" });
+        gsap.set([faqHeader, faqTabs, faqContent], { y: 0, autoAlpha: 1 });
+        gsap.delayedCall(0.8, onComplete);
+      } else {
+        gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out" });
+
+        const tl = gsap.timeline({ onComplete });
+        tl.to(faqHeader, { y: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out" })
+          .to(faqTabs, { y: 0, autoAlpha: 1, duration: 0.6 }, "-=0.4")
+          .to(faqContent, { y: 0, autoAlpha: 1, duration: 0.6 }, "-=0.4");
+      }
+    }
+
+  }, { scope: containerRef, dependencies: [step, isReversing] });
+
   useGSAP(() => {
     contentRefs.current.forEach((el, i) => {
       if (el) {
         if (i === openIndex) {
-          gsap.set(el, { height: "auto", opacity: 1 });
+          gsap.to(el, { height: "auto", autoAlpha: 1, duration: 0.4 });
         } else {
-          gsap.set(el, { height: 0, opacity: 0 });
+          gsap.to(el, { height: 0, autoAlpha: 0, duration: 0.4 });
         }
       }
     });
   }, { scope: containerRef, dependencies: [activeCategory, openIndex] });
 
-  // Main reveal and pinning
-  useGSAP(() => {
-    const faqTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: "top top",
-        end: "+=100%",
-        pin: true,
-        toggleActions: "play none none reverse",
-        invalidateOnRefresh: true,
-        onEnter: () => obs.enable(),
-        onEnterBack: () => obs.enable(),
-        onLeave: () => obs.disable(),
-        onLeaveBack: () => obs.disable(),
-      }
-    });
-
-    const faqHeader = containerRef.current.querySelector('.faq-header');
-    const faqTabs = containerRef.current.querySelector('.faq-tabs');
-    const faqContent = containerRef.current.querySelector('.faq-content');
-
-    gsap.set([faqHeader, faqTabs, faqContent], { y: 40, opacity: 0 });
-
-    faqTl.to(faqHeader, { y: 0, opacity: 1, duration: 1.2, ease: "power4.out" })
-         .to(faqTabs, { y: 0, opacity: 1, duration: 1, ease: "power3.out" }, "-=0.8")
-         .to(faqContent, { y: 0, opacity: 1, duration: 1, ease: "power3.out" }, "-=0.8");
-
-    const obs = Observer.create({
-      target: window,
-      type: "wheel,touch,pointer",
-      onDown: () => {
-        const nextSection = containerRef.current.nextElementSibling;
-        if (nextSection) {
-          gsap.to(window, {
-            scrollTo: nextSection.offsetTop,
-            duration: 1.5,
-            ease: "power4.inOut"
-          });
-        }
-      },
-      onUp: () => {
-        const prevSection = containerRef.current.previousElementSibling;
-        if (prevSection) {
-          gsap.to(window, {
-            scrollTo: prevSection.offsetTop,
-            duration: 1.5,
-            ease: "power4.inOut"
-          });
-        }
-      },
-      tolerance: 20,
-      preventDefault: true,
-      paused: true
-    });
-
-    ScrollTrigger.create({
-      trigger: containerRef.current,
-      start: "top top",
-      end: "+=100%",
-      pin: true,
-      onEnter: () => obs.enable(),
-      onEnterBack: () => obs.enable(),
-      onLeave: () => obs.disable(),
-      onLeaveBack: () => obs.disable(),
-    });
-
-    return () => {
-      obs.kill();
-    };
-
-  }, { scope: containerRef });
-
-  const toggleFaq = (idx) => {
-    if (openIndex === idx) {
-      setOpenIndex(-1);
-    } else {
-      setOpenIndex(idx);
-    }
-  };
-
-  useGSAP(() => {
-    contentRefs.current.forEach((el, i) => {
-      if (el) {
-        if (i === openIndex) {
-          gsap.to(el, { height: 'auto', opacity: 1, duration: 0.5, ease: 'power2.out' });
-        } else {
-          gsap.to(el, { height: 0, opacity: 0, duration: 0.5, ease: 'power2.inOut' });
-        }
-      }
-    });
-  }, { scope: containerRef, dependencies: [openIndex, activeCategory] });
+  const categories = Object.keys(faqCategories);
 
   return (
-    <section 
-      ref={containerRef} 
-      className="relative z-20 w-full min-h-screen pt-16 pb-32 flex flex-col items-center justify-start bg-pitch-black border-t border-white/5"
+    <section
+      ref={containerRef}
+      // CRITICAL FIX: z-[35] forces FAQ to cleanly slide over MethodPanel (which is z-30)
+      className={`fixed inset-0 z-[35] w-full min-h-screen pt-16 pb-32 flex flex-col items-center justify-start bg-pitch-black overflow-hidden invisible ${!isActive ? 'pointer-events-none' : ''}`}
     >
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-neon-mint/[0.03] rounded-full blur-[120px] pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10 w-full flex flex-col items-center">
-        <div className="faq-header text-center mb-10 md:mb-16 w-full pt-10">
+        <div className="faq-header text-center mb-10 md:mb-16 w-full pt-10 invisible translate-y-10">
           <span className="text-neon-mint tracking-[0.4em] font-bold text-[10px] uppercase mb-4 block opacity-80">Support</span>
           <h2 className="text-3xl md:text-7xl font-black text-white uppercase tracking-tighter leading-tight">
             Frequently Asked <br className="hidden md:block" /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-teal-400 font-light text-serif-italic lowercase">insights</span>
           </h2>
         </div>
 
-        {/* Categories - Simple Clean Navigation */}
-        <div className="faq-tabs flex flex-wrap justify-center gap-4 md:gap-12 mb-12 md:mb-20 w-full border-b border-white/10 pb-6 md:pb-8">
-          {categories.map((cat) => {
-            const isActive = activeCategory === cat;
-            return (
-              <button
-                key={cat}
-                onClick={() => {
-                  setOpenIndex(0);
-                  setActiveCategory(cat);
-                }}
-                className={`relative py-2 text-[10px] md:text-sm font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all duration-500 hover:text-neon-mint bg-transparent border-none cursor-pointer ${
-                  isActive ? 'text-neon-mint' : 'text-neutral-500'
-                }`}
-              >
-                {cat}
-                {isActive && (
-                  <div className="absolute -bottom-6 md:-bottom-8 left-1/2 -translate-x-1/2 w-6 md:w-8 h-[2px] bg-neon-mint shadow-[0_0_10px_#2ed3a2]"></div>
-                )}
-              </button>
-            );
-          })}
+        <div className="faq-tabs flex flex-wrap justify-center gap-4 md:gap-12 mb-12 md:mb-20 w-full border-b border-white/10 pb-6 md:pb-8 invisible translate-y-10">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => { setOpenIndex(0); setActiveCategory(cat); }}
+              className={`relative py-2 text-[10px] md:text-sm font-black uppercase tracking-[0.15em] transition-all duration-500 hover:text-neon-mint bg-transparent border-none cursor-pointer ${activeCategory === cat ? 'text-neon-mint' : 'text-neutral-500'}`}
+            >
+              {cat}
+              {activeCategory === cat && (
+                <div className="absolute -bottom-6 md:-bottom-8 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-neon-mint shadow-[0_0_10px_#2ed3a2]"></div>
+              )}
+            </button>
+          ))}
         </div>
 
-        {/* Accordion Content */}
-        <div ref={contentContainerRef} className="faq-content flex flex-col gap-3 md:gap-4 w-full max-w-4xl pb-20">
-          {faqCategories[activeCategory].map((faq, idx) => {
-            const isOpen = openIndex === idx;
-            return (
-              <div 
-                key={`${activeCategory}-${idx}`} 
-                className={`liquid-glass rounded-2xl md:rounded-3xl overflow-hidden border transition-all duration-500 ${isOpen ? 'border-neon-mint/30 bg-white/[0.03]' : 'border-white/5 hover:border-white/10'}`}
+        <div className="faq-content flex flex-col gap-3 md:gap-4 w-full max-w-4xl pb-20 invisible translate-y-10">
+          {faqCategories[activeCategory].map((faq, idx) => (
+            <div key={`${activeCategory}-${idx}`} className={`liquid-glass rounded-2xl md:rounded-3xl overflow-hidden border transition-all duration-500 ${openIndex === idx ? 'border-neon-mint/30 bg-white/[0.03]' : 'border-white/5'}`}>
+              <button
+                onClick={() => setOpenIndex(openIndex === idx ? -1 : idx)}
+                className="w-full px-6 md:px-8 py-5 md:py-7 flex items-center justify-between text-left group bg-transparent focus:outline-none cursor-pointer"
               >
-                <button 
-                  onClick={() => toggleFaq(idx)}
-                  className="w-full px-6 md:px-8 py-5 md:py-7 flex items-center justify-between text-left group bg-transparent focus:outline-none"
-                >
-                  <span className={`text-base md:text-xl font-bold uppercase tracking-tight transition-colors duration-300 ${isOpen ? 'text-neon-mint' : 'text-neutral-300 group-hover:text-white'}`}>
-                    {faq.question}
-                  </span>
-                  <ChevronDown size={18} className={`transition-transform duration-500 shrink-0 ml-4 ${isOpen ? 'rotate-180 text-neon-mint' : 'text-neutral-600'}`} />
-                </button>
-                
-                <div 
-                  ref={el => contentRefs.current[idx] = el}
-                  className="overflow-hidden"
-                >
-                  <div className="px-6 md:px-8 pb-6 md:pb-8 pt-0 text-neutral-400 font-light leading-relaxed text-sm md:text-lg">
-                    {faq.answer}
-                  </div>
-                </div>
+                <span className={`text-base md:text-xl font-bold uppercase tracking-tight transition-colors duration-300 ${openIndex === idx ? 'text-neon-mint' : 'text-neutral-300 group-hover:text-white'}`}>{faq.question}</span>
+                <ChevronDown size={18} className={`transition-transform duration-500 shrink-0 ml-4 ${openIndex === idx ? 'rotate-180 text-neon-mint' : 'text-neutral-600'}`} />
+              </button>
+              <div ref={el => contentRefs.current[idx] = el} className="overflow-hidden invisible h-0">
+                <div className="px-6 md:px-8 pb-6 md:pb-8 pt-0 text-neutral-400 font-light leading-relaxed text-sm md:text-lg">{faq.answer}</div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
-}
+});
+
+export default FAQSection;

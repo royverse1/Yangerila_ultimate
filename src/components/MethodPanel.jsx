@@ -3,179 +3,129 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { TextPlugin } from 'gsap/TextPlugin';
-import { Observer } from 'gsap/observer';
 
-gsap.registerPlugin(ScrollTrigger, TextPlugin, Observer);
+gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
-export default function MethodPanel() {
+const MethodPanel = React.memo(function MethodPanel({ step, onComplete, isReversing }) {
   const containerRef = useRef(null);
   const wrapperRef = useRef(null);
   const tiltCardRef = useRef(null);
-  
-  // Section refs
+
   const founderSectionRef = useRef(null);
   const coursesSectionRef = useRef(null);
   const bonusesSectionRef = useRef(null);
   const admissionSectionRef = useRef(null);
 
-  // Animation targets
   const founderBoxRef = useRef(null);
   const founderImgRef = useRef(null);
   const founderTextRef = useRef(null);
   const coursesRef = useRef([]);
   const bonusesRef = useRef([]);
 
+  const [activeBonus, setActiveBonus] = useState(null);
+
   const founderOriginalText = "“In my 20+ years as a guitarist, I’ve learned, played, performed, and composed—but teaching has always had my heart. Helping students became my true passion. I am confident in what we’ve created and in what we deliver. Give us the opportunity to serve you, and I promise it will be one of the best decisions in your musical journey.”";
 
   const xTo = useRef(null);
   const yTo = useRef(null);
 
+  const isActive = [5, 6, 8, 9].includes(step);
+
   useGSAP(() => {
-    // Initialize 3D tilt
     if (tiltCardRef.current) {
       xTo.current = gsap.quickTo(tiltCardRef.current, "rotationY", { ease: "power4.out", duration: 0.5 });
       yTo.current = gsap.quickTo(tiltCardRef.current, "rotationX", { ease: "power4.out", duration: 0.5 });
     }
 
-    const steps = [
-      { id: 'founder', ref: founderSectionRef },
-      { id: 'courses', ref: coursesSectionRef },
-      { id: 'bonuses', ref: bonusesSectionRef },
-      { id: 'admissions', ref: admissionSectionRef }
-    ];
+    // 1. EXIT SCENARIOS (Timings tightened to 0.8s)
+    if (step < 5) {
+      gsap.to(containerRef.current, { yPercent: 100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut" });
+    }
+    if (step === 7 || step > 9) {
+      gsap.to(containerRef.current, { yPercent: -100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut" });
+    }
 
-    let currentStepIndex = 0;
-    let isAnimating = false;
-
-    // Initial States
-    gsap.set(founderBoxRef.current, { scale: 0.8, opacity: 0 });
-    gsap.set(founderImgRef.current, { scale: 0, opacity: 0, rotationY: -90 });
-    if (founderTextRef.current) founderTextRef.current.innerHTML = "";
-    gsap.set(coursesRef.current, { scale: 0.8, opacity: 0, y: 100 });
-    gsap.set(bonusesRef.current, { scale: 0.8, opacity: 0, y: 80 });
-    
-    // Set admission states
-    const admissionContent = admissionSectionRef.current?.querySelector('.admission-headline');
-    const admissionText = admissionSectionRef.current?.querySelector('.admission-text');
-    const admissionBtns = admissionSectionRef.current?.querySelectorAll('a');
-    gsap.set([admissionContent, admissionText], { scale: 0.9, opacity: 0, y: 50 });
-    if (admissionBtns) gsap.set(admissionBtns, { scale: 0.6, opacity: 0, y: 30 });
-
-    const goToStep = (index, direction) => {
-      if (isAnimating || index < 0 || index >= steps.length) return;
-      isAnimating = true;
-      currentStepIndex = index;
-      const step = steps[index];
-      const duration = direction === -1 ? 1.5 : 1.2;
-      const ease = "power3.inOut";
-
-      const masterTl = gsap.timeline({
-        onComplete: () => {
-          isAnimating = false;
-        }
+    // Shared transition helper
+    function onStepEntry(section, isReverseSnap) {
+      gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out" });
+      gsap.to(wrapperRef.current, {
+        y: -section.offsetTop,
+        duration: 0.8,
+        ease: "power3.inOut",
+        onComplete: isReverseSnap ? onComplete : undefined
       });
+    }
 
-      // Move wrapper to center the current section
-      masterTl.to(wrapperRef.current, {
-        y: -step.ref.current.offsetTop,
-        duration: duration,
-        ease: ease
-      });
+    // 2. STEP LOGIC
 
-      // Trigger animations for the specific section
-      if (step.id === 'founder') {
-        masterTl.to(founderBoxRef.current, { scale: 1, opacity: 1, duration: 1, ease: "back.out(1.5)" }, "-=0.6");
-        masterTl.to(founderImgRef.current, { scale: 1, opacity: 1, rotationY: 0, duration: 1, ease: "back.out(1.5)" }, "-=0.8");
-        masterTl.to(founderTextRef.current, { text: founderOriginalText, duration: 1.5, ease: "none" }, "-=0.4");
-      } 
-      else if (step.id === 'courses') {
-        masterTl.to(coursesRef.current, { scale: 1, opacity: 1, y: 0, stagger: 0.1, duration: 1.2, ease: "back.out(1.5)" }, "-=0.6");
+    // Step 5: Note from Founder
+    if (step === 5) {
+      if (isReversing) {
+        onStepEntry(founderSectionRef.current, true);
+        gsap.set([founderBoxRef.current, founderImgRef.current], { scale: 1, autoAlpha: 1, rotationY: 0 });
+        gsap.set(founderTextRef.current, { text: founderOriginalText });
+      } else {
+        onStepEntry(founderSectionRef.current, false);
+        const tl = gsap.timeline({ onComplete });
+        tl.to(founderBoxRef.current, { scale: 1, autoAlpha: 1, duration: 0.8, ease: "back.out(1.5)" }, "-=0.2");
+        tl.to(founderImgRef.current, { scale: 1, autoAlpha: 1, rotationY: 0, duration: 0.8, ease: "back.out(1.5)" }, "-=0.6");
+        tl.to(founderTextRef.current, { text: founderOriginalText, duration: 1.5, ease: "none" }, "-=0.4");
       }
-      else if (step.id === 'bonuses') {
-        masterTl.to(bonusesRef.current, { scale: 1, opacity: 1, y: 0, stagger: 0.1, duration: 1.2, ease: "back.out(1.5)" }, "-=0.6");
+    }
+
+    // Step 6: Our Courses
+    if (step === 6) {
+      if (isReversing) {
+        onStepEntry(coursesSectionRef.current, true);
+        gsap.set(coursesRef.current, { scale: 1, autoAlpha: 1, y: 0 });
+      } else {
+        onStepEntry(coursesSectionRef.current, false);
+        gsap.to(coursesRef.current, {
+          scale: 1, autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.8, ease: "back.out(1.5)", onComplete
+        });
       }
-      else if (step.id === 'admissions') {
-        masterTl.to(admissionContent, { scale: 1, opacity: 1, y: 0, duration: 1.0, ease: "back.out(1.5)" }, "-=0.6");
-        masterTl.to(admissionText, { scale: 1, opacity: 1, y: 0, duration: 0.8 }, "-=0.4");
-        if (admissionBtns) masterTl.to(admissionBtns, { scale: 1, opacity: 1, y: 0, stagger: 0.1, duration: 0.8 }, "-=0.4");
+    }
+
+    // Step 8: Bonuses
+    if (step === 8) {
+      if (isReversing) {
+        onStepEntry(bonusesSectionRef.current, true);
+        gsap.set(bonusesRef.current, { scale: 1, autoAlpha: 1, y: 0 });
+      } else {
+        onStepEntry(bonusesSectionRef.current, false);
+        gsap.to(bonusesRef.current, {
+          scale: 1, autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.8, ease: "back.out(1.5)", onComplete
+        });
       }
-    };
+    }
 
-    // First reveal
-    goToStep(0, 1);
+    // Step 9: Admission
+    if (step === 9) {
+      const admissionContent = admissionSectionRef.current?.querySelector('.admission-headline');
+      const admissionText = admissionSectionRef.current?.querySelector('.admission-text');
+      const admissionBtns = admissionSectionRef.current?.querySelectorAll('a');
 
-    const obs = Observer.create({
-      target: window,
-      type: "wheel,touch,pointer",
-      onDown: () => {
-        if (!isAnimating) {
-          if (currentStepIndex < steps.length - 1) {
-            goToStep(currentStepIndex + 1, 1);
-          } else {
-            // Fling to FAQ
-            const nextSection = containerRef.current.nextElementSibling;
-            if (nextSection) {
-              gsap.to(window, {
-                scrollTo: nextSection.offsetTop,
-                duration: 1.5,
-                ease: "power4.inOut"
-              });
-            }
-          }
-        }
-      },
-      onUp: () => {
-        if (!isAnimating) {
-          if (currentStepIndex > 0) {
-            goToStep(currentStepIndex - 1, -1);
-          } else {
-            // Fling to Legacy
-            const prevSection = containerRef.current.previousElementSibling;
-            if (prevSection) {
-              gsap.to(window, {
-                scrollTo: prevSection.offsetTop,
-                duration: 1.5,
-                ease: "power4.inOut"
-              });
-            }
-          }
-        }
-      },
-      onChange: (self) => {
-        if (isAnimating) return;
-        if (self.deltaY > 0 && currentStepIndex < steps.length - 1) self.event.preventDefault();
-        if (self.deltaY < 0 && currentStepIndex > 0) self.event.preventDefault();
-      },
-      tolerance: 20,
-      preventDefault: true
-    });
+      if (isReversing) {
+        onStepEntry(admissionSectionRef.current, true);
+        gsap.set([admissionContent, admissionText, admissionBtns], { scale: 1, autoAlpha: 1, y: 0 });
+      } else {
+        onStepEntry(admissionSectionRef.current, false);
+        const tl = gsap.timeline({ onComplete });
+        tl.to(admissionContent, { scale: 1, autoAlpha: 1, y: 0, duration: 0.8, ease: "back.out(1.5)" });
+        tl.to(admissionText, { scale: 1, autoAlpha: 1, y: 0, duration: 0.6 }, "-=0.4");
+        if (admissionBtns) tl.to(admissionBtns, { scale: 1, autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.6 }, "-=0.4");
+      }
+    }
 
-    ScrollTrigger.create({
-      trigger: containerRef.current,
-      start: "top top",
-      end: "+=500%",
-      pin: true,
-      onEnter: () => obs.enable(),
-      onEnterBack: () => obs.enable(),
-      onLeave: () => { obs.disable(); isAnimating = false; },
-      onLeaveBack: () => { obs.disable(); isAnimating = false; },
-    });
-
-    return () => {
-      obs.kill();
-    };
-
-  }, { scope: containerRef });
+  }, { scope: containerRef, dependencies: [step, isReversing] });
 
   const handleMouseMove = (e) => {
     if (!tiltCardRef.current || !xTo.current || !yTo.current) return;
     const rect = tiltCardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -15; 
-    const rotateY = ((x - centerX) / centerX) * 15;
+    const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -15;
+    const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 15;
     xTo.current(rotateY);
     yTo.current(rotateX);
   };
@@ -186,72 +136,80 @@ export default function MethodPanel() {
   };
 
   return (
-    <section ref={containerRef} className="relative z-20 w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-900/30 via-obsidian-purple to-pitch-black block rounded-t-[4rem] shadow-[0_-30px_60px_rgba(0,0,0,1)] border-t border-fuchsia-500/20 m-0 p-0 overflow-hidden h-screen">
-      
+    <section
+      ref={containerRef}
+      className={`fixed inset-0 z-30 w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-900/30 via-obsidian-purple to-pitch-black block overflow-hidden h-screen shadow-[0_-30px_60px_rgba(0,0,0,1)] border-t border-fuchsia-500/20 invisible ${!isActive ? 'pointer-events-none' : ''}`}
+    >
+
       <div ref={wrapperRef} className="w-full h-fit relative will-change-transform">
 
-        {/* SECTION 1: The Founder Note */}
-        <div ref={founderSectionRef} className="w-full h-screen flex flex-col items-center justify-center perspective-[1000px] relative px-6 md:px-12">
+        {/* SECTION 5: The Founder Note */}
+        <div ref={founderSectionRef} className="w-full h-screen flex flex-col items-center justify-center relative px-6 md:px-12">
           <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-12 text-center drop-shadow-[0_0_15px_rgba(46,211,162,0.8)] pt-20">A Note from the Founder</h2>
-          
-          <div ref={founderBoxRef} className="liquid-glass p-8 md:p-16 rounded-[3rem] border border-white/20 relative overflow-visible group max-w-5xl mx-auto w-full h-fit shadow-[0_0_80px_rgba(192,38,211,0.35)] hover:shadow-[0_0_120px_rgba(192,38,211,0.55)] transition-shadow duration-500">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none mix-blend-overlay"></div>
-            
+          <div ref={founderBoxRef} className="liquid-glass p-8 md:p-16 rounded-[3rem] border border-white/20 relative overflow-visible group max-w-5xl mx-auto w-full h-fit shadow-[0_0_80px_rgba(192,38,211,0.35)] invisible scale-90">
             <div className="flex flex-col md:flex-row gap-8 lg:gap-12 items-center md:items-start text-center md:text-left relative z-10 perspective-[1000px]">
-              <div 
-                ref={tiltCardRef}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
-                className="relative shrink-0 will-change-transform transform-style-3d cursor-crosshair transform-gpu"
-              >
-                 <div className="absolute inset-0 rounded-2xl bg-fuchsia-500/10 shadow-[0_0_50px_rgba(217,70,239,0.3)] translate-z-[10px]"></div>
-                 <img ref={founderImgRef} src="./founder-guitar.jpg" alt="Micky Dixit - Founder" className="w-[240px] h-[240px] md:w-[320px] md:h-[320px] rounded-2xl object-cover border-2 border-white/30 shadow-[0_0_30px_rgba(255,255,255,0.2)] relative z-10 translate-z-[50px]" />
+              <div ref={tiltCardRef} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative shrink-0 transform-style-3d cursor-crosshair transition-transform duration-500">
+                <img ref={founderImgRef} src="./founder-guitar.jpg" alt="Micky Dixit" className="w-[240px] h-[240px] md:w-[320px] md:h-[320px] rounded-2xl object-cover border-2 border-white/30 shadow-2xl invisible scale-0" />
               </div>
-              
-              <div className="flex flex-col justify-center translate-z-[30px] transform-style-3d md:mt-4 overflow-visible flex-1">
-                <h3 className="text-2xl lg:text-4xl font-light text-white mb-1 drop-shadow-lg">Micky Dixit</h3>
-                <p className="text-neon-mint tracking-widest uppercase font-bold text-[10px] lg:text-xs mb-4 drop-shadow-[0_0_10px_rgba(46,211,162,0.5)]">Founder & Head Guitar Coach</p>
-                <div className="overflow-visible min-h-[120px]">
-                  <p ref={founderTextRef} className="text-neutral-200 leading-relaxed font-light text-base md:text-lg lg:text-xl xl:text-2xl text-serif-italic translate-z-[20px] transform-style-3d">
-                    {/* Typed dynamically  */}
-                  </p>
-                </div>
+              <div className="flex flex-col justify-center flex-1">
+                <h3 className="text-2xl lg:text-4xl font-light text-white mb-2 uppercase tracking-tighter">Micky Dixit</h3>
+                <p className="text-neon-mint tracking-widest uppercase font-bold text-xs mb-6">Founder & Head Guitar Coach</p>
+                <p ref={founderTextRef} className="text-neutral-200 leading-relaxed font-light text-base md:text-xl lg:text-2xl text-serif-italic min-h-[160px]"></p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* SECTION 2: Featured Courses Display */}
+        {/* SECTION 6: Courses */}
         <div ref={coursesSectionRef} className="w-full h-screen flex flex-col justify-center relative px-6 md:px-12 pt-20">
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-fuchsia-400/40 to-transparent"></div>
-          <div className="max-w-7xl mx-auto w-full relative z-10">
-            <div className="text-center mb-16 lg:mb-20">
-              <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-4 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)]">Our Curriculum</h2>
-              <h3 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tight drop-shadow-lg">Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-500 drop-shadow-[0_0_20px_rgba(232,121,249,0.5)]">Courses</span></h3>
-            </div>
-            
+          <div className="max-w-7xl mx-auto w-full text-center">
+            <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-4">Our Curriculum</h2>
+            <h3 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tight mb-16">Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-500">Courses</span></h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
               {[
-                { title: "Hobby Courses", price: "₹3200/Mo Onwards", stats: "2500+ Alums", color: "fuchsia" },
-                { title: "Rhythm Grades", price: "₹3200/Mo Onwards", stats: "2000+ Alums", color: "teal" },
-                { title: "Lead Grades", price: "₹3600/Mo Onwards", stats: "1800+ Alums", color: "amber" },
-                { title: "Finger-picking", price: "₹3600/Mo Onwards", stats: "1250+ Alums", color: "purple" }
+                { title: "Hobby Courses", price: "₹3200/Mo Onwards", stats: "2500+ Alums" },
+                { title: "Rhythm Grades", price: "₹3200/Mo Onwards", stats: "2000+ Alums" },
+                { title: "Lead Grades", price: "₹3600/Mo Onwards", stats: "1800+ Alums" },
+                { title: "Finger-picking", price: "₹3600/Mo Onwards", stats: "1250+ Alums" }
               ].map((course, idx) => (
-                <div 
-                  key={idx}
-                  ref={el => coursesRef.current[idx] = el} 
-                  className={`relative p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 hover:border-${course.color}-400/50 hover:bg-${course.color}-500/[0.05] transition-all duration-500 group overflow-hidden shadow-2xl flex flex-col items-center text-center`}
-                >
-                  <div className={`absolute -right-10 -top-10 w-32 h-32 bg-${course.color}-500/10 rounded-full blur-[40px] group-hover:bg-${course.color}-500/20 transition-colors`}></div>
-                  <h3 className="text-2xl font-black text-white mb-2 group-hover:text-white/90 transition-colors">{course.title}</h3>
+                <div key={idx} ref={el => coursesRef.current[idx] = el} className="relative p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 invisible scale-90 translate-y-10 group">
+                  <h3 className="text-2xl font-black text-white mb-2">{course.title}</h3>
                   <p className="text-neutral-500 text-[10px] tracking-[0.2em] font-bold uppercase mb-8">{course.price}</p>
-                  
-                  <div className="mt-auto space-y-4 w-full">
-                    <div className="text-neutral-400 font-medium text-sm tracking-widest uppercase opacity-60 group-hover:opacity-100 transition-opacity">{course.stats}</div>
-                    <div className="h-px w-0 bg-white/20 group-hover:w-full transition-all duration-700 mx-auto"></div>
-                    <div className={`liquid-glass py-3 px-6 rounded-xl border border-white/20 text-[10px] items-center justify-center font-black uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-500 flex gap-2 text-${course.color}-400`}>
-                      Explore <span className="translate-x-0 group-hover:translate-x-1 transition-transform">→</span>
-                    </div>
+                  <div className="text-neutral-400 font-medium text-sm tracking-widest uppercase mb-4 opacity-60">{course.stats}</div>
+                  <div className="liquid-glass py-3 px-6 rounded-xl border border-white/20 text-[10px] font-black uppercase tracking-[0.2em] flex gap-2 justify-center text-white/50">Explore →</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 8: Bonuses */}
+        <div ref={bonusesSectionRef} className="w-full h-screen flex flex-col justify-center relative px-6 md:px-12 pt-20">
+          <div className="max-w-7xl mx-auto w-full text-center">
+            <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-4">Exclusive Perks</h2>
+            <h3 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tight mb-16">Premium <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-teal-400">Rewards</span></h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 perspective-[1500px]">
+              {[
+                { title: "INR 1,000", desc: "Referral Reward", offer: "Amazon Gift Card for every joining reference." },
+                { title: "30% OFF", desc: "Group Discount", offer: "Valid for groups of 3 or more students." },
+                { title: "50% OFF", desc: "Next Fee Reward", offer: "For your next month fee on student referral." },
+                { title: "Exclusive", desc: "Festive Perks", offer: "Special discounts and events all year round." }
+              ].map((bonus, idx) => (
+                <div
+                  key={idx}
+                  ref={el => bonusesRef.current[idx] = el}
+                  onClick={() => setActiveBonus(activeBonus === idx ? null : idx)}
+                  className="relative h-[250px] w-full cursor-pointer preserve-3d transition-transform duration-1000 invisible scale-90 translate-y-10"
+                  style={{ transform: activeBonus === idx ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
+                >
+                  <div className="absolute inset-0 backface-hidden liquid-glass p-8 rounded-[2.5rem] flex flex-col items-center justify-center border border-white/10">
+                    <h4 className={`text-4xl font-black mb-4 uppercase tracking-tighter ${idx === 1 || idx === 2 ? 'text-neon-mint' : 'text-white'}`}>{bonus.title}</h4>
+                    <p className="text-neutral-400 text-xs font-light uppercase tracking-widest">{bonus.desc}</p>
+                    <p className="text-[10px] text-white/20 mt-4 uppercase tracking-widest">Click to reveal</p>
+                  </div>
+                  <div className="absolute inset-0 backface-hidden liquid-glass p-8 rounded-[2.5rem] flex flex-col items-center justify-center border border-neon-mint/30 bg-neon-mint/5" style={{ transform: 'rotateY(180deg)' }}>
+                    <h4 className="text-xl font-bold text-neon-mint mb-4 uppercase tracking-widest">{bonus.desc}</h4>
+                    <p className="text-white text-sm font-light leading-relaxed">{bonus.offer}</p>
                   </div>
                 </div>
               ))}
@@ -259,55 +217,23 @@ export default function MethodPanel() {
           </div>
         </div>
 
-        {/* SECTION 3: The Bonuses Display (RESTORED ORIGINAL REWARDS) */}
-        <div ref={bonusesSectionRef} className="w-full h-screen flex flex-col justify-center relative px-6 md:px-12 pt-20">
-           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-fuchsia-400/40 to-transparent"></div>
-           <div className="max-w-7xl mx-auto w-full relative z-10">
-            <div className="text-center mb-16 lg:mb-20">
-              <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-4 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)]">Exclusive Perks</h2>
-              <h3 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tight drop-shadow-lg">Premium <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-teal-400 drop-shadow-[0_0_20px_rgba(46,211,162,0.5)]">Rewards</span></h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 w-full max-w-7xl mx-auto">
-               {[
-                { title: "INR 1,000", desc: "Referral Reward (Amazon Gift Card)", color: "blue" },
-                { title: "30% OFF", desc: "Group Discount United We Stand", color: "emerald" },
-                { title: "50% OFF", desc: "Next Fee Student Referral", color: "amber" },
-                { title: "Exclusive", desc: "Festive Discounts Throughout the Year", color: "rose" }
-              ].map((bonus, idx) => (
-                <div 
-                  key={idx}
-                  ref={el => bonusesRef.current[idx] = el}
-                  className={`liquid-glass p-8 md:p-12 rounded-[2.5rem] flex flex-col items-center text-center hover:bg-${bonus.color}-500/[0.05] border border-white/10 hover:border-${bonus.color}-500/30 transition-all duration-500 group shadow-2xl h-full`}
-                >
-                  <h4 className={`text-4xl font-black mb-4 uppercase tracking-tighter ${idx === 1 || idx === 2 ? 'text-neon-mint' : 'text-white'}`}>{bonus.title}</h4>
-                  <p className="text-neutral-400 text-sm font-light leading-relaxed uppercase tracking-widest">{bonus.desc}</p>
-                </div>
-              ))}
-            </div>
-           </div>
-        </div>
-
-        {/* SECTION 4: High-impact Brochure CTA */}
+        {/* SECTION 9: Admission */}
         <div ref={admissionSectionRef} className="w-full h-screen flex flex-col items-center justify-center text-center relative px-6 md:px-12 pt-20">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-fuchsia-900/20 via-transparent to-transparent pointer-events-none"></div>
-          <h2 className="admission-headline text-5xl md:text-8xl font-black text-white mb-8 uppercase tracking-tight drop-shadow-2xl relative z-10 block w-full">
-            Admissions <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-[#1a9570] drop-shadow-[0_0_40px_rgba(46,211,162,0.6)]">Are Open</span>
+          <h2 className="admission-headline text-5xl md:text-8xl font-black text-white mb-8 uppercase tracking-tight invisible translate-y-10">
+            Admissions <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-[#1a9570]">Are Open</span>
           </h2>
-          <p className="admission-text text-xl md:text-2xl text-neutral-300 font-light max-w-3xl mx-auto mb-16 text-serif-italic relative z-10 drop-shadow-md">
+          <p className="admission-text text-xl md:text-2xl text-neutral-300 font-light max-w-3xl mx-auto mb-16 text-serif-italic invisible translate-y-10">
             Whether you want to simply play your favourite songs, or pursue mastery of the instrument, our teaching style and courses adapt to your precise needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 lg:gap-8 justify-center items-center w-full max-w-2xl mx-auto relative z-10">
-            <a href="https://www.yangerila.com/demo_form.html" target="_blank" rel="noreferrer" className="liquid-glass w-full sm:w-auto text-center px-12 py-6 rounded-full text-white font-bold tracking-widest uppercase hover:bg-white hover:text-black hover:shadow-[0_0_30px_rgba(255,255,255,0.6)] transition-all duration-300 border border-white/30">
-              Free Demo Session
-            </a>
-            <a href="https://www.yangerila.com/admin_form.html" target="_blank" rel="noreferrer" className="liquid-glass bg-neon-mint/20 w-full sm:w-auto text-center text-neon-mint px-12 py-6 rounded-full font-black tracking-widest uppercase hover:bg-neon-mint hover:text-pitch-black transition-all duration-300 shadow-[0_0_40px_rgba(46,211,162,0.6)] hover:shadow-[0_0_60px_rgba(46,211,162,1)] border border-neon-mint/50">
-              Begin Admissions
-            </a>
+            <a href="#" className="liquid-glass w-full sm:w-auto text-center px-12 py-6 rounded-full text-white font-bold tracking-widest uppercase border border-white/30 invisible translate-y-10">Free Demo Session</a>
+            <a href="#" className="liquid-glass bg-neon-mint/20 w-full sm:w-auto text-center text-neon-mint px-12 py-6 rounded-full font-black tracking-widest uppercase border border-neon-mint/50 invisible translate-y-10">Begin Admissions</a>
           </div>
         </div>
       </div>
     </section>
   );
-}
+});
+
+export default MethodPanel;
