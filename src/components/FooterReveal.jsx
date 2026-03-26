@@ -151,24 +151,22 @@ const FooterReveal = React.memo(function FooterReveal({ step, onComplete, isReve
     <div className="w-full flex whitespace-nowrap overflow-visible relative py-1 md:py-2">
       <div ref={ref} className="flex gap-3 md:gap-4 items-center px-4 w-max text-left">
         {[...testimonials, ...testimonials, ...testimonials].map((t, idx) => (
-          <div
-            key={idx}
-            onClick={handleCardClick}
-            // Scaled down the box width to 320px/340px and reduced padding to p-5/p-6
-            className="testimonial-card relative bg-gradient-to-br from-[#0c1821] to-[#040a0f] p-5 lg:p-6 rounded-[1.5rem] md:rounded-[2rem] border border-white/10 w-[65vw] md:w-[320px] lg:w-[340px] whitespace-normal flex-shrink-0 transition-all duration-500 overflow-visible group cursor-pointer"
-          >
-            {/* Shrunk text so it fits properly without expanding the box height */}
-            <p className="text-white text-sm md:text-base font-light text-serif-italic mb-4 md:mb-5 leading-relaxed italic">"{t.text}"</p>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-neon-mint/20 text-neon-mint flex items-center justify-center font-black text-[10px] md:text-xs border border-neon-mint/30 shrink-0">
-                {t.name.split(' ').map(n => n[0]).join('')}
-              </div>
-              <div>
-                <h4 className="font-bold text-white tracking-wide text-xs md:text-sm">{t.name}</h4>
-                <p className="text-[8px] md:text-[9px] text-neon-mint uppercase tracking-[0.15em] mt-0.5 font-bold opacity-80">{t.role}</p>
+            <div
+              key={idx}
+              onClick={handleCardClick}
+              className="testimonial-card relative bg-gradient-to-br from-[#0c1821] to-[#040a0f] p-5 sm:p-6 rounded-[2rem] border border-white/10 w-[80vw] sm:w-[280px] md:w-[320px] lg:w-[340px] whitespace-normal flex-shrink-0 transition-all duration-500 overflow-visible group cursor-pointer"
+            >
+              <p className="text-white text-xs sm:text-sm md:text-base font-light text-serif-italic mb-4 md:mb-5 leading-relaxed italic">"{t.text}"</p>
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-neon-mint/20 text-neon-mint flex items-center justify-center font-black text-[8px] sm:text-[10px] md:text-xs border border-neon-mint/30 shrink-0">
+                  {t.name.split(' ').map(n => n[0]).join('')}
+                </div>
+                <div>
+                  <h4 className="font-bold text-white tracking-wide text-[10px] sm:text-xs md:text-sm">{t.name}</h4>
+                  <p className="text-[7px] sm:text-[8px] md:text-[9px] text-neon-mint uppercase tracking-[0.15em] mt-0.5 font-bold opacity-80">{t.role}</p>
+                </div>
               </div>
             </div>
-          </div>
         ))}
       </div>
     </div>
@@ -185,17 +183,17 @@ const FooterReveal = React.memo(function FooterReveal({ step, onComplete, isReve
         {/* SECTION 10: Fun Fact */}
         <div ref={funFactRef} className="w-full h-screen flex flex-col items-center justify-center text-center bg-pitch-black bg-[linear-gradient(to_bottom,#0d2a1c,var(--color-pitch-black))] relative px-6 md:px-12 border-t border-emerald-900/50">
           <div className="max-w-5xl mx-auto flex flex-col items-center justify-center w-full">
-            <h2 className="fun-fact-el text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-12 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)] invisible translate-y-10">Fun Fact</h2>
-            <p className="fun-fact-el text-4xl md:text-6xl text-white font-light text-serif-italic mb-12 leading-relaxed drop-shadow-xl invisible translate-y-10">
+            <h2 className="fun-fact-el text-neon-mint tracking-[0.3em] font-bold text-[10px] sm:text-sm uppercase mb-8 md:mb-12 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)] invisible translate-y-10">Fun Fact</h2>
+            <p className="fun-fact-el text-2xl sm:text-4xl md:text-6xl text-white font-light text-serif-italic mb-8 md:mb-12 leading-relaxed drop-shadow-xl invisible translate-y-10">
               "Fender published a study stating that about 90% of guitar students quit playing within their first year."
             </p>
-            <div className="fun-fact-el w-full h-[1px] bg-white/10 my-12 relative overflow-hidden max-w-5xl invisible translate-y-10">
+            <div className="fun-fact-el w-full h-[1px] bg-white/10 my-8 md:my-12 relative overflow-hidden max-w-5xl invisible translate-y-10">
               <div className="absolute inset-y-0 left-0 bg-neon-mint w-1/3 blur-md shadow-[0_0_20px_#2ed3a2]"></div>
             </div>
-            <h3 className="fun-fact-el text-4xl md:text-6xl text-white font-black uppercase tracking-tighter drop-shadow-2xl invisible translate-y-10">
+            <h3 className="fun-fact-el text-2xl sm:text-4xl md:text-6xl text-white font-black uppercase tracking-tighter drop-shadow-2xl invisible translate-y-10">
               At Yangerila, more than <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-[#1a9570]">90% don't quit.</span>
             </h3>
-            <p className="fun-fact-el text-xl text-neutral-300 font-light mt-8 invisible translate-y-10">This opposite statistic fills us with both happiness and confidence in our teaching methods.</p>
+            <p className="fun-fact-el text-base sm:text-xl text-neutral-300 font-light mt-6 md:mt-8 invisible translate-y-10">This opposite statistic fills us with both happiness and confidence in our teaching methods.</p>
           </div>
         </div>
 
@@ -204,10 +202,10 @@ const FooterReveal = React.memo(function FooterReveal({ step, onComplete, isReve
 
           {/* Dynamic Flex Header: Takes only the space it needs */}
           <div className="voices-header shrink-0 flex flex-col px-6 md:px-12 xl:px-24 invisible translate-y-10">
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white uppercase tracking-tight leading-none">
+            <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white uppercase tracking-tight leading-none">
               Voices of <br /><span className="text-serif-italic font-light text-neon-mint lowercase">excellence</span>
             </h2>
-            <p className="text-neutral-300 mt-3 md:mt-4 max-w-xl text-xs md:text-sm lg:text-base opacity-80">
+            <p className="text-neutral-300 mt-2 sm:mt-4 max-w-xl text-[10px] sm:text-xs md:text-sm lg:text-base opacity-80">
               “Out of hundreds of testimonials over the years, we’ve handpicked a few.”
             </p>
           </div>
@@ -242,24 +240,24 @@ const FooterReveal = React.memo(function FooterReveal({ step, onComplete, isReve
             backgroundPosition: 'center'
           }}>
             <div className="absolute inset-0 bg-black/60 z-0"></div>
-            <div className="relative z-10 w-full section-padding max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-16 reveal-content-inner invisible translate-y-10">
+            <div className="relative z-10 w-full section-padding max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16 reveal-content-inner invisible translate-y-10">
               <div className="flex-1 text-center lg:text-left text-white">
-                <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tight mb-6">Ready to Start?</h2>
-                <p className="text-xl font-light mb-12">Enroll today and begin your premium guitar journey.</p>
-                <div className="flex flex-col gap-4">
-                  <a href="tel:+918076530550" className="flex items-center gap-4 hover:text-neon-mint transition-colors tracking-widest uppercase font-bold text-sm"><Phone size={18} /> +91 8076 530 550</a>
-                  <a href="mailto:care@yangerila.com" className="flex items-center gap-4 hover:text-neon-mint transition-colors tracking-widest uppercase font-bold text-sm"><Mail size={18} /> care@yangerila.com</a>
+                <h2 className="text-3xl sm:text-5xl md:text-7xl font-black uppercase tracking-tight mb-4 md:mb-6">Ready to Start?</h2>
+                <p className="text-lg sm:text-xl font-light mb-8 md:mb-12">Enroll today and begin your premium guitar journey.</p>
+                <div className="flex flex-col gap-3 md:gap-4 items-center lg:items-start">
+                  <a href="tel:+918076530550" className="flex items-center gap-3 md:gap-4 hover:text-neon-mint transition-colors tracking-widest uppercase font-bold text-xs"><Phone size={16} /> +91 8076 530 550</a>
+                  <a href="mailto:care@yangerila.com" className="flex items-center gap-3 md:gap-4 hover:text-neon-mint transition-colors tracking-widest uppercase font-bold text-xs"><Mail size={16} /> care@yangerila.com</a>
                 </div>
               </div>
 
               <div className="flex-1 w-full flex justify-center lg:justify-end">
-                <div className="p-8 md:p-12 rounded-[3rem] w-full max-w-md bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl relative">
-                  <h3 className="text-2xl font-black uppercase text-white tracking-widest mb-1">Waitlist</h3>
-                  <p className="text-xs text-neon-mint uppercase tracking-widest font-black mb-8">Secure your slot</p>
-                  <form className="flex flex-col gap-4">
-                    <input type="text" placeholder="FULL NAME" className="bg-white/10 border border-white/20 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-neon-mint" />
-                    <input type="email" placeholder="EMAIL ADDRESS" className="bg-white/10 border border-white/40 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-neon-mint" />
-                    <button type="button" className="liquid-glass bg-white/10 text-white border border-white/20 font-black p-5 w-full rounded-xl hover:bg-neon-mint hover:text-pitch-black transition-all">Request Admission</button>
+                <div className="p-6 sm:p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] w-full max-w-md bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl relative">
+                  <h3 className="text-xl sm:text-2xl font-black uppercase text-white tracking-widest mb-1">Waitlist</h3>
+                  <p className="text-[10px] text-neon-mint uppercase tracking-widest font-black mb-6 md:mb-8">Secure your slot</p>
+                  <form className="flex flex-col gap-3 md:gap-4">
+                    <input type="text" placeholder="FULL NAME" className="bg-white/10 border border-white/20 rounded-xl p-3 md:p-4 text-xs md:text-sm text-white focus:outline-none focus:border-neon-mint" />
+                    <input type="email" placeholder="EMAIL ADDRESS" className="bg-white/10 border border-white/40 rounded-xl p-3 md:p-4 text-xs md:text-sm text-white focus:outline-none focus:border-neon-mint" />
+                    <button type="button" className="liquid-glass bg-white/10 text-white border border-white/20 font-black p-4 md:p-5 w-full rounded-xl hover:bg-neon-mint hover:text-pitch-black transition-all text-xs md:text-base">Request Admission</button>
                   </form>
                 </div>
               </div>

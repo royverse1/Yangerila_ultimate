@@ -121,17 +121,17 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         ref={textRef}
         className="z-0 absolute inset-0 flex flex-col items-center justify-center text-center px-6 max-w-5xl mx-auto invisible translate-y-10"
       >
-        <span className="text-neon-mint tracking-[0.3em] text-xs md:text-sm font-bold uppercase mb-8 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)] block">
+        <span className="text-neon-mint tracking-[0.3em] text-[10px] sm:text-xs md:text-sm font-bold uppercase mb-4 md:mb-8 drop-shadow-[0_0_15px_rgba(46,211,162,0.8)] block">
           Yangerila Creative Studio
         </span>
-        <h1 className="text-5xl md:text-8xl font-black text-white tracking-tighter mb-6 uppercase leading-tight drop-shadow-2xl">
+        <h1 className="text-4xl sm:text-6xl md:text-8xl font-black text-white tracking-tighter mb-4 md:mb-6 uppercase leading-tight drop-shadow-2xl">
           Always Performance <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-[#1a9570] drop-shadow-[0_0_30px_rgba(46,211,162,0.5)]">Ready</span>
         </h1>
 
         <p
           ref={paragraphRef}
-          className="mt-8 text-neutral-300 max-w-2xl mx-auto text-lg md:text-xl font-light text-serif-italic shadow-black drop-shadow-lg invisible translate-y-10"
+          className="mt-4 md:mt-8 text-neutral-300 max-w-2xl mx-auto text-base sm:text-lg md:text-xl font-light text-serif-italic shadow-black drop-shadow-lg invisible translate-y-10"
         >
           A guitar-specialty academy bridging clinical precision and artistic mastery. Serving students nationwide and across 12 countries.
         </p>
@@ -140,16 +140,16 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       {/* NEW ABOUT CONTENT */}
       <div ref={aboutRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center invisible translate-y-10 px-6 md:px-12 bg-pitch-black/80 backdrop-blur-sm">
         <div className="absolute inset-0 bg-[url('./noise.svg')] opacity-[0.03]"></div>
-        <div className="max-w-5xl mx-auto w-full flex flex-col md:flex-row gap-12 items-start relative z-10">
-          <div className="md:w-1/3 border-t-2 border-neon-mint pt-6">
-            <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter leading-none mb-2">About</h2>
-            <h3 className="text-2xl md:text-3xl text-neon-mint font-light text-serif-italic">Yangerila.</h3>
+        <div className="max-w-5xl mx-auto w-full flex flex-col md:flex-row gap-8 md:gap-12 items-start relative z-10">
+          <div className="w-full md:w-1/3 border-t-2 border-neon-mint pt-4 md:pt-6">
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-white uppercase tracking-tighter leading-none mb-1 md:mb-2">About</h2>
+            <h3 className="text-xl sm:text-2xl md:text-3xl text-neon-mint font-light text-serif-italic">Yangerila.</h3>
           </div>
 
-          <div className="md:w-2/3 border-t border-white/20 pt-6 flex flex-col gap-6">
-            <p ref={p1Ref} className="text-neutral-300 font-light text-lg md:text-xl leading-relaxed font-serif min-h-[80px]"></p>
-            <p ref={p2Ref} className="text-neutral-300 font-light text-lg md:text-xl leading-relaxed font-serif min-h-[80px]"></p>
-            <p ref={p3Ref} className="text-neutral-300 font-light text-lg md:text-xl leading-relaxed font-serif min-h-[80px]"></p>
+          <div className="w-full md:w-2/3 border-t border-white/20 pt-4 md:pt-6 flex flex-col gap-4 md:gap-6">
+            <p ref={p1Ref} className="text-neutral-300 font-light text-base md:text-xl leading-relaxed font-serif min-h-[60px] md:min-h-[80px] break-words"></p>
+            <p ref={p2Ref} className="text-neutral-300 font-light text-base md:text-xl leading-relaxed font-serif min-h-[60px] md:min-h-[80px] break-words"></p>
+            <p ref={p3Ref} className="text-neutral-300 font-light text-base md:text-xl leading-relaxed font-serif min-h-[60px] md:min-h-[80px] break-words"></p>
           </div>
         </div>
       </div>

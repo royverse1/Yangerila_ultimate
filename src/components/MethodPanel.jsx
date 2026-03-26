@@ -145,16 +145,16 @@ const MethodPanel = React.memo(function MethodPanel({ step, onComplete, isRevers
 
         {/* SECTION 5: The Founder Note */}
         <div ref={founderSectionRef} className="w-full h-screen flex flex-col items-center justify-center relative px-6 md:px-12">
-          <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-12 text-center drop-shadow-[0_0_15px_rgba(46,211,162,0.8)] pt-20">A Note from the Founder</h2>
-          <div ref={founderBoxRef} className="liquid-glass p-8 md:p-16 rounded-[3rem] border border-white/20 relative overflow-visible group max-w-5xl mx-auto w-full h-fit shadow-[0_0_80px_rgba(192,38,211,0.35)] invisible scale-90">
-            <div className="flex flex-col md:flex-row gap-8 lg:gap-12 items-center md:items-start text-center md:text-left relative z-10 perspective-[1000px]">
+          <h2 className="text-neon-mint tracking-[0.3em] font-bold text-[10px] sm:text-sm uppercase mb-8 md:mb-12 text-center drop-shadow-[0_0_15px_rgba(46,211,162,0.8)] pt-20">A Note from the Founder</h2>
+          <div ref={founderBoxRef} className="liquid-glass p-6 sm:p-8 md:p-16 rounded-3xl md:rounded-[3rem] border border-white/20 relative overflow-visible group max-w-5xl mx-auto w-full h-fit shadow-[0_0_80px_rgba(192,38,211,0.35)] invisible scale-90">
+            <div className="flex flex-col md:flex-row gap-6 md:gap-8 lg:gap-12 items-center md:items-start text-center md:text-left relative z-10 perspective-[1000px]">
               <div ref={tiltCardRef} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative shrink-0 transform-style-3d cursor-crosshair transition-transform duration-500">
-                <img ref={founderImgRef} src="./founder-guitar.jpg" alt="Micky Dixit" className="w-[240px] h-[240px] md:w-[320px] md:h-[320px] rounded-2xl object-cover border-2 border-white/30 shadow-2xl invisible scale-0" />
+                <img ref={founderImgRef} src="./founder-guitar.jpg" alt="Micky Dixit" className="w-[180px] h-[180px] sm:w-[240px] sm:h-[240px] md:w-[320px] md:h-[320px] rounded-2xl object-cover border-2 border-white/30 shadow-2xl invisible scale-0" />
               </div>
               <div className="flex flex-col justify-center flex-1">
-                <h3 className="text-2xl lg:text-4xl font-light text-white mb-2 uppercase tracking-tighter">Micky Dixit</h3>
-                <p className="text-neon-mint tracking-widest uppercase font-bold text-xs mb-6">Founder & Head Guitar Coach</p>
-                <p ref={founderTextRef} className="text-neutral-200 leading-relaxed font-light text-base md:text-xl lg:text-2xl text-serif-italic min-h-[160px]"></p>
+                <h3 className="text-xl sm:text-2xl lg:text-4xl font-light text-white mb-1 md:mb-2 uppercase tracking-tighter">Micky Dixit</h3>
+                <p className="text-neon-mint tracking-widest uppercase font-bold text-[10px] md:text-xs mb-4 md:mb-6">Founder & Head Guitar Coach</p>
+                <p ref={founderTextRef} className="text-neutral-200 leading-relaxed font-light text-base md:text-xl lg:text-2xl text-serif-italic min-h-[120px] md:min-h-[160px]"></p>
               </div>
             </div>
           </div>
@@ -163,20 +163,20 @@ const MethodPanel = React.memo(function MethodPanel({ step, onComplete, isRevers
         {/* SECTION 6: Courses */}
         <div ref={coursesSectionRef} className="w-full h-screen flex flex-col justify-center relative px-6 md:px-12 pt-20">
           <div className="max-w-7xl mx-auto w-full text-center">
-            <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-4">Our Curriculum</h2>
-            <h3 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tight mb-16">Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-500">Courses</span></h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            <h2 className="text-neon-mint tracking-[0.3em] font-bold text-[10px] sm:text-sm uppercase mb-4">Our Curriculum</h2>
+            <h3 className="text-3xl sm:text-4xl md:text-6xl font-black text-white uppercase tracking-tight mb-8 md:mb-16">Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-500">Courses</span></h3>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
               {[
                 { title: "Hobby Courses", price: "₹3200/Mo Onwards", stats: "2500+ Alums" },
                 { title: "Rhythm Grades", price: "₹3200/Mo Onwards", stats: "2000+ Alums" },
                 { title: "Lead Grades", price: "₹3600/Mo Onwards", stats: "1800+ Alums" },
                 { title: "Finger-picking", price: "₹3600/Mo Onwards", stats: "1250+ Alums" }
               ].map((course, idx) => (
-                <div key={idx} ref={el => coursesRef.current[idx] = el} className="relative p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 invisible scale-90 translate-y-10 group">
-                  <h3 className="text-2xl font-black text-white mb-2">{course.title}</h3>
-                  <p className="text-neutral-500 text-[10px] tracking-[0.2em] font-bold uppercase mb-8">{course.price}</p>
-                  <div className="text-neutral-400 font-medium text-sm tracking-widest uppercase mb-4 opacity-60">{course.stats}</div>
-                  <div className="liquid-glass py-3 px-6 rounded-xl border border-white/20 text-[10px] font-black uppercase tracking-[0.2em] flex gap-2 justify-center text-white/50">Explore →</div>
+                <div key={idx} ref={el => coursesRef.current[idx] = el} className="relative p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[2.5rem] bg-white/[0.03] border border-white/10 invisible scale-90 translate-y-10 group">
+                  <h3 className="text-base sm:text-xl md:text-2xl font-black text-white mb-1 md:mb-2">{course.title}</h3>
+                  <p className="text-neutral-500 text-[8px] md:text-[10px] tracking-[0.2em] font-bold uppercase mb-4 md:mb-8">{course.price}</p>
+                  <div className="text-neutral-400 font-medium text-[9px] md:text-sm tracking-widest uppercase mb-2 md:mb-4 opacity-60">{course.stats}</div>
+                  <div className="liquid-glass py-2 md:py-3 px-4 md:px-6 rounded-lg md:rounded-xl border border-white/20 text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] flex gap-2 justify-center text-white/50">Explore →</div>
                 </div>
               ))}
             </div>
@@ -186,9 +186,9 @@ const MethodPanel = React.memo(function MethodPanel({ step, onComplete, isRevers
         {/* SECTION 8: Bonuses */}
         <div ref={bonusesSectionRef} className="w-full h-screen flex flex-col justify-center relative px-6 md:px-12 pt-20">
           <div className="max-w-7xl mx-auto w-full text-center">
-            <h2 className="text-neon-mint tracking-[0.3em] font-bold text-sm uppercase mb-4">Exclusive Perks</h2>
-            <h3 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tight mb-16">Premium <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-teal-400">Rewards</span></h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 perspective-[1500px]">
+            <h2 className="text-neon-mint tracking-[0.3em] font-bold text-[10px] sm:text-sm uppercase mb-4">Exclusive Perks</h2>
+            <h3 className="text-3xl sm:text-4xl md:text-6xl font-black text-white uppercase tracking-tight mb-8 md:mb-16">Premium <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-teal-400">Rewards</span></h3>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 perspective-[1500px]">
               {[
                 { title: "INR 1,000", desc: "Referral Reward", offer: "Amazon Gift Card for every joining reference." },
                 { title: "30% OFF", desc: "Group Discount", offer: "Valid for groups of 3 or more students." },
@@ -202,14 +202,14 @@ const MethodPanel = React.memo(function MethodPanel({ step, onComplete, isRevers
                   className="relative h-[250px] w-full cursor-pointer preserve-3d transition-transform duration-1000 invisible scale-90 translate-y-10"
                   style={{ transform: activeBonus === idx ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
                 >
-                  <div className="absolute inset-0 backface-hidden liquid-glass p-8 rounded-[2.5rem] flex flex-col items-center justify-center border border-white/10">
-                    <h4 className={`text-4xl font-black mb-4 uppercase tracking-tighter ${idx === 1 || idx === 2 ? 'text-neon-mint' : 'text-white'}`}>{bonus.title}</h4>
-                    <p className="text-neutral-400 text-xs font-light uppercase tracking-widest">{bonus.desc}</p>
-                    <p className="text-[10px] text-white/20 mt-4 uppercase tracking-widest">Click to reveal</p>
+                  <div className="absolute inset-0 backface-hidden liquid-glass p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[2.5rem] flex flex-col items-center justify-center border border-white/10">
+                    <h4 className={`text-xl sm:text-2xl md:text-4xl font-black mb-2 md:mb-4 uppercase tracking-tighter ${idx === 1 || idx === 2 ? 'text-neon-mint' : 'text-white'}`}>{bonus.title}</h4>
+                    <p className="text-neutral-400 text-[8px] sm:text-[10px] md:text-xs font-light uppercase tracking-widest text-center">{bonus.desc}</p>
+                    <p className="text-[8px] text-white/20 mt-2 md:mt-4 uppercase tracking-widest text-center">Click to reveal</p>
                   </div>
-                  <div className="absolute inset-0 backface-hidden liquid-glass p-8 rounded-[2.5rem] flex flex-col items-center justify-center border border-neon-mint/30 bg-neon-mint/5" style={{ transform: 'rotateY(180deg)' }}>
-                    <h4 className="text-xl font-bold text-neon-mint mb-4 uppercase tracking-widest">{bonus.desc}</h4>
-                    <p className="text-white text-sm font-light leading-relaxed">{bonus.offer}</p>
+                  <div className="absolute inset-0 backface-hidden liquid-glass p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[2.5rem] flex flex-col items-center justify-center border border-neon-mint/30 bg-neon-mint/5" style={{ transform: 'rotateY(180deg)' }}>
+                    <h4 className="text-sm sm:text-base md:text-xl font-bold text-neon-mint mb-2 md:mb-4 uppercase tracking-widest text-center">{bonus.desc}</h4>
+                    <p className="text-white text-[10px] sm:text-xs md:text-sm font-light leading-relaxed text-center">{bonus.offer}</p>
                   </div>
                 </div>
               ))}
@@ -219,16 +219,16 @@ const MethodPanel = React.memo(function MethodPanel({ step, onComplete, isRevers
 
         {/* SECTION 9: Admission */}
         <div ref={admissionSectionRef} className="w-full h-screen flex flex-col items-center justify-center text-center relative px-6 md:px-12 pt-20">
-          <h2 className="admission-headline text-5xl md:text-8xl font-black text-white mb-8 uppercase tracking-tight invisible translate-y-10">
+          <h2 className="admission-headline text-4xl sm:text-6xl md:text-8xl font-black text-white mb-4 md:mb-8 uppercase tracking-tight invisible translate-y-10">
             Admissions <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-[#1a9570]">Are Open</span>
           </h2>
-          <p className="admission-text text-xl md:text-2xl text-neutral-300 font-light max-w-3xl mx-auto mb-16 text-serif-italic invisible translate-y-10">
+          <p className="admission-text text-base sm:text-xl md:text-2xl text-neutral-300 font-light max-w-3xl mx-auto mb-8 md:mb-16 text-serif-italic invisible translate-y-10">
             Whether you want to simply play your favourite songs, or pursue mastery of the instrument, our teaching style and courses adapt to your precise needs.
           </p>
-          <div className="flex flex-col sm:flex-row gap-6 lg:gap-8 justify-center items-center w-full max-w-2xl mx-auto relative z-10">
-            <a href="#" className="liquid-glass w-full sm:w-auto text-center px-12 py-6 rounded-full text-white font-bold tracking-widest uppercase border border-white/30 invisible translate-y-10">Free Demo Session</a>
-            <a href="#" className="liquid-glass bg-neon-mint/20 w-full sm:w-auto text-center text-neon-mint px-12 py-6 rounded-full font-black tracking-widest uppercase border border-neon-mint/50 invisible translate-y-10">Begin Admissions</a>
+          <div className="flex flex-col sm:flex-row gap-4 md:gap-8 justify-center items-center w-full max-w-2xl mx-auto relative z-10">
+            <a href="#" className="liquid-glass w-full sm:w-auto text-center px-8 md:px-12 py-4 md:py-6 rounded-full text-white font-bold tracking-widest text-[10px] sm:text-sm uppercase border border-white/30 invisible translate-y-10">Free Demo Session</a>
+            <a href="#" className="liquid-glass bg-neon-mint/20 w-full sm:w-auto text-center text-neon-mint px-8 md:px-12 py-4 md:py-6 rounded-full font-black tracking-widest text-[10px] sm:text-sm uppercase border border-neon-mint/50 invisible translate-y-10">Begin Admissions</a>
           </div>
         </div>
       </div>

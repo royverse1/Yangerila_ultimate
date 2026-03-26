@@ -143,7 +143,7 @@ export default function App() {
   }, [goToStep]);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-pitch-black selection:bg-neon-mint selection:text-pitch-black font-sans">
+    <div className="relative w-full h-screen overflow-x-hidden overflow-y-hidden bg-pitch-black selection:bg-neon-mint selection:text-pitch-black font-sans">
       <BackgroundGradients />
       <Header />
 

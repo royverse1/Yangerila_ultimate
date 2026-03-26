@@ -214,19 +214,19 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
             <div className="absolute inset-y-0 left-0 w-[200vw] bg-gradient-to-r from-transparent via-fuchsia-500/50 to-transparent blur-md opacity-30 animate-pulse"></div>
           </div>
 
-          <div ref={timelineWrapRef} className="flex flex-nowrap items-center px-12 md:px-32 gap-0 w-max relative h-[60vh] md:h-[50vh]">
+          <div ref={timelineWrapRef} className="flex flex-nowrap items-center px-6 sm:px-12 md:px-32 gap-0 w-max relative h-[60vh] md:h-[50vh]">
             {timelineData.map((item, idx) => {
               const isTop = idx % 2 === 0;
               return (
                 <div key={idx} className="timeline-node w-[85vw] md:w-[45vw] lg:w-[35vw] shrink-0 relative flex flex-col items-center justify-center group h-full">
                   <div className={`center-dot absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 rounded-full bg-white border-4 ${item.border} shadow-[0_0_20px_rgba(255,255,255,0.6)] z-20 invisible scale-0`}></div>
 
-                  <div className={`content-box absolute w-full px-6 flex flex-col invisible scale-95 translate-y-10 ${isTop ? 'bottom-[55%] items-start text-left' : 'top-[55%] items-start text-left'}`}>
-                    <div className={`vertical-line absolute left-1/2 ${isTop ? 'bottom-[-10%] h-[50px] border-l-2' : 'top-[-10%] h-[50px] border-l-2'} -translate-x-1/2 ${item.border} invisible scale-y-0`}></div>
-                    <div className="liquid-glass p-6 md:p-8 rounded-3xl w-full max-w-[400px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] border border-white/10">
-                      <h4 className={`text-3xl md:text-4xl font-black mb-2 ${item.color} drop-shadow-md`}>{item.year}</h4>
-                      <h5 className="text-white font-bold tracking-widest uppercase mb-4 text-sm md:text-base opacity-90">{item.title}</h5>
-                      <p className="text-neutral-300 font-light leading-relaxed text-sm md:text-base">{item.desc}</p>
+                  <div className={`content-box absolute w-full px-6 flex flex-col invisible scale-95 translate-y-10 ${isTop ? 'bottom-[52%] md:bottom-[55%] items-center md:items-start text-center md:text-left' : 'top-[52%] md:top-[55%] items-center md:items-start text-center md:text-left'}`}>
+                    <div className={`vertical-line absolute left-1/2 ${isTop ? 'bottom-[-10%] h-[30px] md:h-[50px] border-l-2' : 'top-[-10%] h-[30px] md:h-[50px] border-l-2'} -translate-x-1/2 ${item.border} invisible scale-y-0`}></div>
+                    <div className="liquid-glass p-5 md:p-8 rounded-2xl md:rounded-3xl w-[85vw] max-w-[400px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] border border-white/10">
+                      <h4 className={`text-3xl md:text-4xl font-black mb-1 md:mb-2 ${item.color} drop-shadow-md`}>{item.year}</h4>
+                      <h5 className="text-white font-bold tracking-widest uppercase mb-2 md:mb-4 text-xs md:text-base opacity-90">{item.title}</h5>
+                      <p className="text-neutral-300 font-light leading-relaxed text-xs md:text-base">{item.desc}</p>
                     </div>
                   </div>
                 </div>
@@ -235,18 +235,18 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
           </div>
         </div>
 
-        <div ref={statsBlockRef} className="px-6 md:px-24 shrink-0 w-full max-w-7xl grid grid-cols-1 sm:grid-cols-3 gap-8 stat-cards-wrapper h-screen content-center invisible">
-          <div className="stat-card liquid-glass p-8 md:p-10 rounded-3xl flex flex-col justify-center items-start border border-white/20 invisible scale-90 translate-y-10">
-            <span className="text-5xl md:text-6xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]"><span className="counter-val" data-target="20">0</span>+</span>
-            <span className="text-sm tracking-widest text-[#a8b8b8] uppercase mt-3">Years Exp</span>
+        <div ref={statsBlockRef} className="px-6 md:px-24 shrink-0 w-full max-w-7xl grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8 stat-cards-wrapper h-screen content-center invisible">
+          <div className="stat-card liquid-glass p-6 md:p-10 rounded-2xl md:rounded-3xl flex flex-col justify-center items-start border border-white/20 invisible scale-90 translate-y-10">
+            <span className="text-4xl md:text-6xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]"><span className="counter-val" data-target="20">0</span>+</span>
+            <span className="text-[10px] md:text-sm tracking-widest text-[#a8b8b8] uppercase mt-2 md:mt-3">Years Exp</span>
           </div>
-          <div className="stat-card liquid-glass p-8 md:p-10 rounded-3xl flex flex-col justify-center items-start border border-neon-mint/30 invisible scale-90 translate-y-10">
-            <span className="text-5xl md:text-6xl font-black text-neon-mint drop-shadow-[0_0_20px_rgba(46,211,162,0.6)]"><span className="counter-val" data-target="4000">0</span>+</span>
-            <span className="text-sm tracking-widest text-white uppercase mt-3">Students Taught</span>
+          <div className="stat-card liquid-glass p-6 md:p-10 rounded-2xl md:rounded-3xl flex flex-col justify-center items-start border border-neon-mint/30 invisible scale-90 translate-y-10">
+            <span className="text-4xl md:text-6xl font-black text-neon-mint drop-shadow-[0_0_20px_rgba(46,211,162,0.6)]"><span className="counter-val" data-target="4000">0</span>+</span>
+            <span className="text-[10px] md:text-sm tracking-widest text-white uppercase mt-2 md:mt-3">Students Taught</span>
           </div>
-          <div className="stat-card liquid-glass p-8 md:p-10 rounded-3xl flex flex-col justify-center items-start border border-white/20 invisible scale-90 translate-y-10">
-            <span className="text-5xl md:text-6xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]"><span className="counter-val" data-target="12">0</span>+</span>
-            <span className="text-sm tracking-widest text-[#a8b8b8] uppercase mt-3">Countries Worldwide</span>
+          <div className="stat-card liquid-glass p-6 md:p-10 rounded-2xl md:rounded-3xl flex flex-col justify-center items-start border border-white/20 invisible scale-90 translate-y-10">
+            <span className="text-4xl md:text-6xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]"><span className="counter-val" data-target="12">0</span>+</span>
+            <span className="text-[10px] md:text-sm tracking-widest text-[#a8b8b8] uppercase mt-2 md:mt-3">Countries Worldwide</span>
           </div>
         </div>
 
