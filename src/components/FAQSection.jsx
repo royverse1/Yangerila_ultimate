@@ -26,54 +26,31 @@ const faqCategories = {
   ]
 };
 
-const FAQSection = React.memo(function FAQSection({ step, onComplete, isReversing }) {
+const FAQSection = React.memo(function FAQSection({ step }) {
   const [activeCategory, setActiveCategory] = useState("About The Academy");
   const [openIndex, setOpenIndex] = useState(0);
 
   const containerRef = useRef(null);
   const contentRefs = useRef([]);
 
-  const isActive = step === 7;
-
   useGSAP(() => {
     const faqHeader = containerRef.current.querySelector('.faq-header');
     const faqTabs = containerRef.current.querySelector('.faq-tabs');
     const faqContent = containerRef.current.querySelector('.faq-content');
 
-    // 1. EXIT SCENARIOS
-    if (step < 7) {
-      gsap.to(containerRef.current, { yPercent: 100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut" });
-    }
-    if (step > 7) {
-      gsap.to(containerRef.current, { yPercent: -100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut" });
-    }
-
-    // 2. ENTRANCE & REVERSE
     if (step === 7) {
-      if (isReversing) {
-        gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out" });
-        gsap.set([faqHeader, faqTabs, faqContent], { y: 0, autoAlpha: 1 });
-        gsap.delayedCall(0.8, onComplete);
-      } else {
-        gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out" });
-
-        const tl = gsap.timeline({ onComplete });
-        tl.to(faqHeader, { y: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out" })
-          .to(faqTabs, { y: 0, autoAlpha: 1, duration: 0.6 }, "-=0.4")
-          .to(faqContent, { y: 0, autoAlpha: 1, duration: 0.6 }, "-=0.4");
-      }
+      const tl = gsap.timeline({ delay: 0.2 });
+      tl.fromTo(faqHeader, { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" })
+        .fromTo(faqTabs, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.6 }, "-=0.4")
+        .fromTo(faqContent, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.6 }, "-=0.4");
     }
-
-  }, { scope: containerRef, dependencies: [step, isReversing] });
+  }, { scope: containerRef, dependencies: [step] });
 
   useGSAP(() => {
     contentRefs.current.forEach((el, i) => {
       if (el) {
-        if (i === openIndex) {
-          gsap.to(el, { height: "auto", autoAlpha: 1, duration: 0.4 });
-        } else {
-          gsap.to(el, { height: 0, autoAlpha: 0, duration: 0.4 });
-        }
+        if (i === openIndex) gsap.to(el, { height: "auto", autoAlpha: 1, duration: 0.4 });
+        else gsap.to(el, { height: 0, autoAlpha: 0, duration: 0.4 });
       }
     });
   }, { scope: containerRef, dependencies: [activeCategory, openIndex] });
@@ -83,46 +60,36 @@ const FAQSection = React.memo(function FAQSection({ step, onComplete, isReversin
   return (
     <section
       ref={containerRef}
-      // CRITICAL FIX: z-[35] forces FAQ to cleanly slide over MethodPanel (which is z-30)
-      className={`fixed inset-0 z-[35] w-full min-h-screen pt-16 pb-32 flex flex-col items-center justify-start bg-pitch-black overflow-hidden invisible ${!isActive ? 'pointer-events-none' : ''}`}
+      className="w-full h-screen shrink-0 relative flex flex-col items-center justify-start bg-pitch-black overflow-hidden pt-16 pb-32"
     >
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-neon-mint/[0.03] rounded-full blur-[120px] pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10 w-full flex flex-col items-center">
-        <div className="faq-header text-center mb-8 md:mb-16 w-full pt-10 invisible translate-y-10">
-          <span className="text-neon-mint tracking-[0.4em] font-bold text-[8px] md:text-[10px] uppercase mb-2 md:mb-4 block opacity-80">Support</span>
-          <h2 className="text-2xl sm:text-4xl md:text-7xl font-black text-white uppercase tracking-tighter leading-tight">
+        <div className="faq-header text-center mb-10 md:mb-16 w-full pt-10 invisible">
+          <span className="text-neon-mint tracking-[0.4em] font-bold text-[10px] uppercase mb-4 block opacity-80">Support</span>
+          <h2 className="text-3xl md:text-7xl font-black text-white uppercase tracking-tighter leading-tight">
             Frequently Asked <br className="hidden md:block" /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-teal-400 font-light text-serif-italic lowercase">insights</span>
           </h2>
         </div>
 
-        <div className="faq-tabs flex flex-wrap justify-center gap-3 md:gap-12 mb-8 md:mb-20 w-full border-b border-white/10 pb-4 md:pb-8 invisible translate-y-10">
+        <div className="faq-tabs flex flex-wrap justify-center gap-4 md:gap-12 mb-12 md:mb-20 w-full border-b border-white/10 pb-6 md:pb-8 invisible">
           {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => { setOpenIndex(0); setActiveCategory(cat); }}
-              className={`relative py-2 text-[8px] md:text-sm font-black uppercase tracking-[0.15em] transition-all duration-500 hover:text-neon-mint bg-transparent border-none cursor-pointer ${activeCategory === cat ? 'text-neon-mint' : 'text-neutral-500'}`}
-            >
+            <button key={cat} onClick={() => { setOpenIndex(0); setActiveCategory(cat); }} className={`relative py-2 text-[10px] md:text-sm font-black uppercase tracking-[0.15em] transition-all duration-500 hover:text-neon-mint bg-transparent border-none cursor-pointer ${activeCategory === cat ? 'text-neon-mint' : 'text-neutral-500'}`}>
               {cat}
-              {activeCategory === cat && (
-                <div className="absolute -bottom-4 md:-bottom-8 left-1/2 -translate-x-1/2 w-6 md:w-8 h-[2px] bg-neon-mint shadow-[0_0_10px_#2ed3a2]"></div>
-              )}
+              {activeCategory === cat && <div className="absolute -bottom-6 md:-bottom-8 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-neon-mint shadow-[0_0_10px_#2ed3a2]"></div>}
             </button>
           ))}
         </div>
 
-        <div className="faq-content flex flex-col gap-3 md:gap-4 w-full max-w-4xl pb-20 invisible translate-y-10">
+        <div className="faq-content flex flex-col gap-3 md:gap-4 w-full max-w-4xl pb-20 invisible">
           {faqCategories[activeCategory].map((faq, idx) => (
             <div key={`${activeCategory}-${idx}`} className={`liquid-glass rounded-2xl md:rounded-3xl overflow-hidden border transition-all duration-500 ${openIndex === idx ? 'border-neon-mint/30 bg-white/[0.03]' : 'border-white/5'}`}>
-              <button
-                onClick={() => setOpenIndex(openIndex === idx ? -1 : idx)}
-                className="w-full px-5 md:px-8 py-4 md:py-7 flex items-center justify-between text-left group bg-transparent focus:outline-none cursor-pointer"
-              >
-                <span className={`text-sm sm:text-base md:text-xl font-bold uppercase tracking-tight transition-colors duration-300 ${openIndex === idx ? 'text-neon-mint' : 'text-neutral-300 group-hover:text-white'}`}>{faq.question}</span>
-                <ChevronDown size={16} className={`transition-transform duration-500 shrink-0 ml-4 ${openIndex === idx ? 'rotate-180 text-neon-mint' : 'text-neutral-600'}`} />
+              <button onClick={() => setOpenIndex(openIndex === idx ? -1 : idx)} className="w-full px-6 md:px-8 py-5 md:py-7 flex items-center justify-between text-left group bg-transparent focus:outline-none cursor-pointer">
+                <span className={`text-base md:text-xl font-bold uppercase tracking-tight transition-colors duration-300 ${openIndex === idx ? 'text-neon-mint' : 'text-neutral-300 group-hover:text-white'}`}>{faq.question}</span>
+                <ChevronDown size={18} className={`transition-transform duration-500 shrink-0 ml-4 ${openIndex === idx ? 'rotate-180 text-neon-mint' : 'text-neutral-600'}`} />
               </button>
               <div ref={el => contentRefs.current[idx] = el} className="overflow-hidden invisible h-0">
-                <div className="px-5 md:px-8 pb-4 md:pb-8 pt-0 text-neutral-400 font-light leading-relaxed text-[11px] sm:text-sm md:text-lg">{faq.answer}</div>
+                <div className="px-6 md:px-8 pb-6 md:pb-8 pt-0 text-neutral-400 font-light leading-relaxed text-sm md:text-lg">{faq.answer}</div>
               </div>
             </div>
           ))}

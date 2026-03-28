@@ -56,12 +56,13 @@ const BackgroundGradients = React.memo(function BackgroundGradients() {
 export default function App() {
   const [currentStep, setCurrentStep] = useState(0);
 
-  // Using refs for synchronous state tracking prevents the rapid-fire scroll skipping
   const currentStepRef = useRef(0);
   const isLockedRef = useRef(false);
   const isReversingRef = useRef(false);
   const lastTransitionTime = useRef(0);
-  const COOLDOWN_MS = 1200; // Mandatory wait between major scene changes
+  const COOLDOWN_MS = 1200;
+
+  const elevatorRef = useRef(null);
 
   const onStepComplete = useCallback(() => {
     isLockedRef.current = false;
@@ -69,38 +70,44 @@ export default function App() {
 
   const goToStep = useCallback((nextStep) => {
     const now = Date.now();
-    // 1. Check global lock
     if (isLockedRef.current) return;
-    // 2. Check timing cooldown to prevent "double-flick" skips
     if (now - lastTransitionTime.current < COOLDOWN_MS) return;
-    // 3. Boundary check
     if (nextStep < 0 || nextStep > 12) return;
 
     lastTransitionTime.current = now;
     isReversingRef.current = nextStep < currentStepRef.current;
     isLockedRef.current = true;
     currentStepRef.current = nextStep;
-    setCurrentStep(nextStep); // Trigger React re-render for UI updates
-
-    console.log(`Step Change: ${nextStep} (Reversing: ${isReversingRef.current})`);
+    setCurrentStep(nextStep);
   }, []);
+
+  useGSAP(() => {
+    if (currentStepRef.current < 5) {
+      gsap.to(elevatorRef.current, { y: '100vh', duration: 0.8, ease: "power3.inOut" });
+    } else {
+      const floor = currentStepRef.current - 5;
+      gsap.to(elevatorRef.current, {
+        y: `-${floor * 100}vh`,
+        duration: 0.8,
+        ease: "power3.inOut",
+        onComplete: () => {
+          isLockedRef.current = false;
+        }
+      });
+    }
+  }, [currentStep]);
 
   useGSAP(() => {
     const obs = Observer.create({
       target: window,
       type: "wheel,touch,pointer",
       onDown: () => {
-        // Global observer disabled while at Step 3 (Timeline) - that uses its own observer
-        if (!isLockedRef.current && currentStepRef.current !== 3) {
-          goToStep(currentStepRef.current + 1);
-        }
+        if (!isLockedRef.current && currentStepRef.current !== 3) goToStep(currentStepRef.current + 1);
       },
       onUp: () => {
-        if (!isLockedRef.current && currentStepRef.current !== 3) {
-          goToStep(currentStepRef.current - 1);
-        }
+        if (!isLockedRef.current && currentStepRef.current !== 3) goToStep(currentStepRef.current - 1);
       },
-      preventDefault: false, // CRITICAL FIX: Allows buttons to be clicked and screens swiped
+      preventDefault: false,
       tolerance: 40
     });
 
@@ -108,11 +115,8 @@ export default function App() {
       if (isLockedRef.current) return;
       if (currentStepRef.current === 3) return;
 
-      if (e.key === 'ArrowDown' || e.key === 'PageDown') {
-        goToStep(currentStepRef.current + 1);
-      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
-        goToStep(currentStepRef.current - 1);
-      }
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') goToStep(currentStepRef.current + 1);
+      else if (e.key === 'ArrowUp' || e.key === 'PageUp') goToStep(currentStepRef.current - 1);
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -121,17 +125,11 @@ export default function App() {
       obs.kill();
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []); // Static observer
+  }, []);
 
   useEffect(() => {
-    const handleNextStepRequested = () => {
-      // The child component requested an advance (e.g. from Timeline)
-      // We must check the lock and cooldown here too
-      goToStep(currentStepRef.current + 1);
-    };
-    const handlePrevStepRequested = () => {
-      goToStep(currentStepRef.current - 1);
-    };
+    const handleNextStepRequested = () => goToStep(currentStepRef.current + 1);
+    const handlePrevStepRequested = () => goToStep(currentStepRef.current - 1);
 
     window.addEventListener('requestNextStep', handleNextStepRequested);
     window.addEventListener('requestPrevStep', handlePrevStepRequested);
@@ -143,40 +141,29 @@ export default function App() {
   }, [goToStep]);
 
   return (
-    <div className="relative w-full h-screen overflow-x-hidden overflow-y-hidden bg-pitch-black selection:bg-neon-mint selection:text-pitch-black font-sans">
+    <div className="relative w-full h-screen overflow-hidden bg-pitch-black selection:bg-neon-mint selection:text-pitch-black font-sans">
       <BackgroundGradients />
       <Header />
 
       <main className="relative z-10 w-full h-full">
-        <HeroReveal
-          step={currentStep}
-          onComplete={onStepComplete}
-          isReversing={isReversingRef.current}
-        />
+        {/* Fixed Position Deck (Steps 0 - 4) */}
+        <HeroReveal step={currentStep} onComplete={onStepComplete} isReversing={isReversingRef.current} />
+        <LegacyPanel step={currentStep} onComplete={onStepComplete} isReversing={isReversingRef.current} />
 
-        <LegacyPanel
-          step={currentStep}
-          onComplete={onStepComplete}
-          isReversing={isReversingRef.current}
-        />
-
-        <MethodPanel
-          step={currentStep}
-          onComplete={onStepComplete}
-          isReversing={isReversingRef.current}
-        />
-
-        <FAQSection
-          step={currentStep}
-          onComplete={onStepComplete}
-          isReversing={isReversingRef.current}
-        />
-
-        <FooterReveal
-          step={currentStep}
-          onComplete={onStepComplete}
-          isReversing={isReversingRef.current}
-        />
+        {/* The Elevator Shaft (Steps 5 - 12) */}
+        <div
+          ref={elevatorRef}
+          className="fixed top-0 left-0 w-full flex flex-col will-change-transform z-30"
+          style={{
+            transform: 'translateY(100vh)',
+            pointerEvents: currentStep >= 5 ? 'auto' : 'none'
+          }}
+        >
+          <MethodPanel step={currentStep} isReversing={isReversingRef.current}>
+            <FAQSection step={currentStep} isReversing={isReversingRef.current} />
+          </MethodPanel>
+          <FooterReveal step={currentStep} isReversing={isReversingRef.current} />
+        </div>
       </main>
     </div>
   );
