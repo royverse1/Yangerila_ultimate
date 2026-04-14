@@ -13,42 +13,24 @@ import FooterReveal from './components/FooterReveal';
 
 gsap.registerPlugin(ScrollTrigger, Observer);
 
-const BackgroundGradients = React.memo(function BackgroundGradients() {
-  const bgRef = useRef(null);
-
-  useGSAP(() => {
-    gsap.config({ force3D: true });
-
-    gsap.to(".blob-1", {
-      xPercent: 50,
-      yPercent: 40,
-      rotation: 90,
-      scale: 1.8,
-      duration: 9.6,
-      repeat: -1,
-      yoyo: true,
-      ease: "power4.out"
-    });
-
-    gsap.to(".blob-2", {
-      xPercent: -40,
-      yPercent: -35,
-      rotation: -60,
-      scale: 1.5,
-      duration: 11.2,
-      repeat: -1,
-      yoyo: true,
-      ease: "power4.out"
-    });
-  }, { scope: bgRef });
+// --- OPTIMIZED STATIC PASTEL BACKGROUND ---
+const StaticPastelBackground = React.memo(function StaticPastelBackground({ step }) {
+  // Returns a soft gradient based on the current step section
+  const getBgStyle = (currentStep) => {
+    if (currentStep <= 2) return 'linear-gradient(135deg, var(--color-paper-bg) 0%, var(--color-pastel-blue) 100%)';
+    if (currentStep <= 4) return 'linear-gradient(135deg, var(--color-paper-bg) 0%, var(--color-pastel-pink) 100%)';
+    if (currentStep <= 9) return 'linear-gradient(135deg, var(--color-pastel-purple) 0%, var(--color-paper-bg) 100%)';
+    return 'linear-gradient(135deg, var(--color-pastel-mint) 0%, var(--color-pastel-blue) 100%)';
+  };
 
   return (
-    <div ref={bgRef} className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-pitch-black">
-      <div className="absolute inset-0 w-full h-full will-change-transform">
-        <div className="blob-1 absolute top-[10%] left-[20%] w-[40vw] h-[40vw] md:w-[30vw] md:h-[30vw] bg-[radial-gradient(circle_at_center,_rgba(46,211,162,0.15)_0%,_transparent_60%)] will-change-transform opacity-60" style={{ transform: 'translateZ(0)' }}></div>
-        <div className="blob-2 absolute bottom-[20%] right-[10%] w-[50vw] h-[50vw] md:w-[40vw] md:h-[40vw] bg-[radial-gradient(circle_at_center,_rgba(217,70,239,0.15)_0%,_transparent_60%)] will-change-transform opacity-60" style={{ transform: 'translateZ(0)' }}></div>
-      </div>
-      <div className="absolute inset-0 bg-[url('./noise.svg')] opacity-[0.02] will-change-transform" style={{ transform: 'translateZ(0)' }}></div>
+    <div
+      className="fixed inset-0 z-[-3] pointer-events-none transition-all duration-1000 ease-in-out"
+      style={{ background: getBgStyle(step) }}
+    >
+      {/* High-performance static radial gradients to fake the blurred blobs without the CSS blur filter */}
+      <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] rounded-full mix-blend-multiply opacity-20" style={{ background: 'radial-gradient(circle, var(--color-pastel-pink) 0%, transparent 70%)' }}></div>
+      <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full mix-blend-multiply opacity-20" style={{ background: 'radial-gradient(circle, var(--color-pastel-blue) 0%, transparent 70%)' }}></div>
     </div>
   );
 });
@@ -62,10 +44,19 @@ export default function App() {
   const lastTransitionTime = useRef(0);
   const COOLDOWN_MS = 1200;
 
+  // Intro Video State Lock
+  const [isIntroPlaying, setIsIntroPlaying] = useState(true);
+  const isIntroPlayingRef = useRef(true);
+
   const elevatorRef = useRef(null);
 
   const onStepComplete = useCallback(() => {
     isLockedRef.current = false;
+  }, []);
+
+  const handleIntroComplete = useCallback(() => {
+    isIntroPlayingRef.current = false;
+    setIsIntroPlaying(false);
   }, []);
 
   const goToStep = useCallback((nextStep) => {
@@ -102,17 +93,21 @@ export default function App() {
       target: window,
       type: "wheel,touch,pointer",
       onDown: () => {
-        if (!isLockedRef.current && currentStepRef.current !== 3) goToStep(currentStepRef.current + 1);
+        if (!isLockedRef.current && currentStepRef.current !== 3 && !isIntroPlayingRef.current) {
+          goToStep(currentStepRef.current + 1);
+        }
       },
       onUp: () => {
-        if (!isLockedRef.current && currentStepRef.current !== 3) goToStep(currentStepRef.current - 1);
+        if (!isLockedRef.current && currentStepRef.current !== 3 && !isIntroPlayingRef.current) {
+          goToStep(currentStepRef.current - 1);
+        }
       },
       preventDefault: false,
       tolerance: 40
     });
 
     const handleKeyDown = (e) => {
-      if (isLockedRef.current) return;
+      if (isLockedRef.current || isIntroPlayingRef.current) return;
       if (currentStepRef.current === 3) return;
 
       if (e.key === 'ArrowDown' || e.key === 'PageDown') goToStep(currentStepRef.current + 1);
@@ -141,16 +136,19 @@ export default function App() {
   }, [goToStep]);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-pitch-black selection:bg-neon-mint selection:text-pitch-black font-sans">
-      <BackgroundGradients />
+    <div className="relative w-full h-screen overflow-hidden bg-transparent font-sans">
+      <StaticPastelBackground step={currentStep} />
       <Header />
 
       <main className="relative z-10 w-full h-full">
-        {/* Fixed Position Deck (Steps 0 - 4) */}
-        <HeroReveal step={currentStep} onComplete={onStepComplete} isReversing={isReversingRef.current} />
+        <HeroReveal
+          step={currentStep}
+          onComplete={onStepComplete}
+          isReversing={isReversingRef.current}
+          onIntroComplete={handleIntroComplete}
+        />
         <LegacyPanel step={currentStep} onComplete={onStepComplete} isReversing={isReversingRef.current} />
 
-        {/* The Elevator Shaft (Steps 5 - 12) */}
         <div
           ref={elevatorRef}
           className="fixed top-0 left-0 w-full flex flex-col will-change-transform z-30"

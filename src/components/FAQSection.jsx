@@ -60,36 +60,34 @@ const FAQSection = React.memo(function FAQSection({ step }) {
   return (
     <section
       ref={containerRef}
-      className="w-full h-screen shrink-0 relative flex flex-col items-center justify-start bg-pitch-black overflow-hidden pt-16 pb-32"
+      className="w-full h-screen shrink-0 relative flex flex-col items-center justify-start bg-transparent overflow-hidden pt-16 pb-32"
     >
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-neon-mint/[0.03] rounded-full blur-[120px] pointer-events-none"></div>
-
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10 w-full flex flex-col items-center">
         <div className="faq-header text-center mb-10 md:mb-16 w-full pt-10 invisible">
-          <span className="text-neon-mint tracking-[0.4em] font-bold text-[10px] uppercase mb-4 block opacity-80">Support</span>
-          <h2 className="text-3xl md:text-7xl font-black text-white uppercase tracking-tighter leading-tight">
-            Frequently Asked <br className="hidden md:block" /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-mint to-teal-400 font-light text-serif-italic lowercase">insights</span>
+          <span className="text-accent-teal tracking-[0.4em] font-bold text-[10px] uppercase mb-4 block">Support</span>
+          <h2 className="text-3xl md:text-7xl font-black text-ink-dark uppercase tracking-tighter leading-tight">
+            Frequently Asked <br className="hidden md:block" /> <span className="text-transparent bg-clip-text bg-linear-to-r from-accent-magenta to-accent-teal font-light text-serif-italic lowercase">insights</span>
           </h2>
         </div>
 
-        <div className="faq-tabs flex flex-wrap justify-center gap-4 md:gap-12 mb-12 md:mb-20 w-full border-b border-white/10 pb-6 md:pb-8 invisible">
+        <div className="faq-tabs flex flex-wrap justify-center gap-4 md:gap-12 mb-12 md:mb-20 w-full border-b border-ink-dark/10 pb-6 md:pb-8 invisible">
           {categories.map((cat) => (
-            <button key={cat} onClick={() => { setOpenIndex(0); setActiveCategory(cat); }} className={`relative py-2 text-[10px] md:text-sm font-black uppercase tracking-[0.15em] transition-all duration-500 hover:text-neon-mint bg-transparent border-none cursor-pointer ${activeCategory === cat ? 'text-neon-mint' : 'text-neutral-500'}`}>
+            <button key={cat} onClick={() => { setOpenIndex(0); setActiveCategory(cat); }} className={`relative py-2 text-[10px] md:text-sm font-black uppercase tracking-[0.15em] transition-all duration-500 hover:text-accent-teal bg-transparent border-none cursor-pointer ${activeCategory === cat ? 'text-accent-teal' : 'text-ink-medium'}`}>
               {cat}
-              {activeCategory === cat && <div className="absolute -bottom-6 md:-bottom-8 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-neon-mint shadow-[0_0_10px_#2ed3a2]"></div>}
+              {activeCategory === cat && <div className="absolute -bottom-6 md:-bottom-8 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-accent-teal"></div>}
             </button>
           ))}
         </div>
 
         <div className="faq-content flex flex-col gap-3 md:gap-4 w-full max-w-4xl pb-20 invisible">
           {faqCategories[activeCategory].map((faq, idx) => (
-            <div key={`${activeCategory}-${idx}`} className={`liquid-glass rounded-2xl md:rounded-3xl overflow-hidden border transition-all duration-500 ${openIndex === idx ? 'border-neon-mint/30 bg-white/[0.03]' : 'border-white/5'}`}>
+            <div key={`${activeCategory}-${idx}`} className={`bg-white/60 backdrop-blur-md rounded-2xl md:rounded-3xl overflow-hidden border transition-all duration-500 ${openIndex === idx ? 'border-pastel-mint shadow-md' : 'border-white/80'}`}>
               <button onClick={() => setOpenIndex(openIndex === idx ? -1 : idx)} className="w-full px-6 md:px-8 py-5 md:py-7 flex items-center justify-between text-left group bg-transparent focus:outline-none cursor-pointer">
-                <span className={`text-base md:text-xl font-bold uppercase tracking-tight transition-colors duration-300 ${openIndex === idx ? 'text-neon-mint' : 'text-neutral-300 group-hover:text-white'}`}>{faq.question}</span>
-                <ChevronDown size={18} className={`transition-transform duration-500 shrink-0 ml-4 ${openIndex === idx ? 'rotate-180 text-neon-mint' : 'text-neutral-600'}`} />
+                <span className={`text-base md:text-xl font-bold uppercase tracking-tight transition-colors duration-300 ${openIndex === idx ? 'text-accent-teal' : 'text-ink-dark group-hover:text-accent-teal'}`}>{faq.question}</span>
+                <ChevronDown size={18} className={`transition-transform duration-500 shrink-0 ml-4 ${openIndex === idx ? 'rotate-180 text-accent-teal' : 'text-ink-medium'}`} />
               </button>
               <div ref={el => contentRefs.current[idx] = el} className="overflow-hidden invisible h-0">
-                <div className="px-6 md:px-8 pb-6 md:pb-8 pt-0 text-neutral-400 font-light leading-relaxed text-sm md:text-lg">{faq.answer}</div>
+                <div className="px-6 md:px-8 pb-6 md:pb-8 pt-0 text-ink-medium font-medium leading-relaxed text-sm md:text-lg">{faq.answer}</div>
               </div>
             </div>
           ))}

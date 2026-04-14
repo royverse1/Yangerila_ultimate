@@ -1,76 +1,208 @@
 import React, { useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Observer } from 'gsap/observer';
 import { useGSAP } from '@gsap/react';
-import { ArrowRight, ArrowDown, ArrowUp, ArrowLeft } from 'lucide-react';
+
+// --- VITE IMAGE SEQUENCE IMPORTER ---
+const imagesGlob = import.meta.glob('../assets/y_scroll/*.jpg', { eager: true, query: '?url', import: 'default' });
+const imageUrls = Object.keys(imagesGlob).sort().map(key => imagesGlob[key]);
+const TOTAL_FRAMES = Math.max(0, imageUrls.length - 1);
+
+const TRANSITION_DURATION = 1.4;
+const SCROLL_COOLDOWN = 1500;
 
 const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isReversing }) {
   const containerRef = useRef(null);
   const wrapperRef = useRef(null);
-  const timelineBlockRef = useRef(null);
+  const cameraRef = useRef(null);
+  const cardsRef = useRef([]);
   const statsBlockRef = useRef(null);
-  const timelineWrapRef = useRef(null);
+  const canvasRef = useRef(null);
+  const overlayRef = useRef(null);
 
-  const [timelineIndex, setTimelineIndex] = useState(0);
-  const [showArrows, setShowArrows] = useState(false);
-  const timelineIndexRef = useRef(0);
+  const [zIndexPos, setZIndexPos] = useState(0);
+  const zIndexPosRef = useRef(0);
+  const lastScrollTime = useRef(0);
 
-  const timelineData = [
-    { year: '2011', title: 'Rockford Academy', desc: "With this vision, our head guitar coach Micky Dixit started his own classes, 'Rockford Academy Of Music'. With over two decades of teaching experience, establishing our innovative styles.", color: 'text-blue-400', border: 'border-blue-400' },
-    { year: '2017', title: 'A New Identity', desc: "The academy was rebranded as a Guitar Specialty academy, giving birth to the new identity: 'Yangerila Creative Studio'.", color: 'text-purple-400', border: 'border-purple-400' },
-    { year: '2023', title: 'www.yangerila.com', desc: "We expanded our vision globally with our digital platform, breaking geographical barriers and connecting with passionate students worldwide.", color: 'text-fuchsia-400', border: 'border-fuchsia-400' },
-    { year: '2025', title: 'Modular Structure', desc: "Integrating the Advanced Modular Grading Structure, a system that accelerates learning and helps everyone—school students, professionals, homemakers—make guitar a part of life.", color: 'text-neon-mint', border: 'border-neon-mint' },
-    { year: 'Future', title: 'A Global Hub', desc: "Soon launching our learning app to host classes and serve as a hub for musicians to interact, dreaming of being a one-stop hub for all music learning.", color: 'text-teal-400', border: 'border-teal-400' }
+  // Canvas Image Sequence Refs
+  const imagesRef = useRef([]);
+  const frameRef = useRef({ current: 0 });
+  const isLoadedRef = useRef(false);
+
+  const cardsData = [
+    {
+      title: 'Past',
+      date: '2011 - 2017',
+      desc: "From Rockford Academy to A New Identity. Micky Dixit established our innovative styles, giving birth to the vision of Yangerila Creative Studio.",
+      textColor: 'text-[#0F172A]',
+      dateColor: 'text-[#1E293B]',
+      bg: 'bg-[var(--color-pastel-blue)]',
+    },
+    {
+      title: 'Present',
+      date: '2023 - 2025',
+      desc: "Expanding globally via our digital platform. We integrated the Advanced Modular Grading Structure to help everyone make guitar a part of life.",
+      textColor: 'text-[#31102A]',
+      dateColor: 'text-[#4A1D41]',
+      bg: 'bg-[var(--color-pastel-pink)]',
+    },
+    {
+      title: 'Future',
+      date: 'Beyond',
+      desc: "Launching our learning app to host classes and serve as a unified hub for musicians to interact and grow worldwide.",
+      textColor: 'text-[#064E3B]',
+      dateColor: 'text-[#065F46]',
+      bg: 'bg-[var(--color-pastel-mint)]',
+    }
   ];
 
   const isActive = step === 3 || step === 4;
 
+  // --- CANVAS RENDERING LOGIC ---
+  const renderFrame = (index) => {
+    if (!canvasRef.current || !imagesRef.current[index]) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const img = imagesRef.current[index];
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const hRatio = canvas.width / img.width;
+    const vRatio = canvas.height / img.height;
+    const ratio = Math.max(hRatio, vRatio);
+    const centerShift_x = (canvas.width - img.width * ratio) / 2;
+    const centerShift_y = (canvas.height - img.height * ratio) / 2;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(
+      img, 0, 0, img.width, img.height,
+      centerShift_x, centerShift_y, img.width * ratio, img.height * ratio
+    );
+  };
+
+  useEffect(() => {
+    if (imageUrls.length === 0) {
+      console.warn("No images found in src/assets/y_scroll/. Check your folder path!");
+      return;
+    }
+
+    imageUrls.forEach((url, i) => {
+      const img = new Image();
+      img.src = url;
+      imagesRef.current.push(img);
+
+      if (i === 0) {
+        img.onload = () => {
+          isLoadedRef.current = true;
+          renderFrame(0);
+        };
+      }
+    });
+
+    const handleResize = () => {
+      renderFrame(Math.round(frameRef.current.current));
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const moveCamera = (targetIndex, duration = TRANSITION_DURATION) => {
+    cardsRef.current.forEach((card, i) => {
+      const isPast = i < targetIndex;
+      const offset = i - targetIndex;
+
+      let zVal, yVal, scaleVal, alphaVal;
+
+      if (isPast) {
+        zVal = 600;
+        yVal = 200;
+        scaleVal = 1.2;
+        alphaVal = 0;
+      } else {
+        zVal = offset * -800;
+        yVal = offset * -140;
+        scaleVal = 1 - (offset * 0.05);
+        alphaVal = 1 - (offset * 0.15);
+      }
+
+      // We no longer tween zIndex here. The static CSS handles stacking flawlessly.
+      gsap.to(card, {
+        z: zVal,
+        y: yVal,
+        scale: scaleVal,
+        autoAlpha: alphaVal,
+        duration: duration,
+        ease: "power3.inOut",
+        overwrite: "auto"
+      });
+    });
+
+    const targetFrame = Math.floor((targetIndex / (cardsData.length - 1)) * TOTAL_FRAMES);
+
+    gsap.to(frameRef.current, {
+      current: targetFrame,
+      duration: duration,
+      ease: "power3.inOut",
+      onUpdate: () => {
+        renderFrame(Math.round(frameRef.current.current));
+      },
+      overwrite: "auto"
+    });
+  };
+
   useGSAP(() => {
-    const nodes = gsap.utils.toArray('.timeline-node');
     const statCards = statsBlockRef.current.querySelectorAll('.stat-card');
     const counters = statsBlockRef.current.querySelectorAll('.counter-val');
 
+    const bgElements = [canvasRef.current, cameraRef.current, overlayRef.current];
+
     if (step < 3) {
       gsap.to(containerRef.current, { yPercent: 100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut" });
-      setShowArrows(false);
+      gsap.to(bgElements, { filter: "blur(0px)", opacity: 1, duration: 0.8 });
     }
+
     if (step > 4) {
       gsap.to(containerRef.current, { yPercent: -100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut" });
-      gsap.set([timelineBlockRef.current, statsBlockRef.current], { autoAlpha: 0, delay: 0.4 });
+      gsap.set([cameraRef.current, statsBlockRef.current], { autoAlpha: 0, delay: 0.4 });
+      gsap.to(bgElements, { filter: "blur(0px)", opacity: 1, duration: 0.8 });
     }
 
     if (step === 3) {
-      const enterTl = gsap.timeline({ onComplete: () => { setShowArrows(true); onComplete(); } });
+      const enterTl = gsap.timeline({ onComplete });
+
+      gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out" });
+      gsap.to(bgElements, { filter: "blur(0px)", opacity: 1, duration: 0.8, ease: "power3.out" });
 
       if (isReversing) {
-        gsap.set(timelineBlockRef.current, { autoAlpha: 1 });
+        zIndexPosRef.current = cardsData.length - 1;
+        setZIndexPos(cardsData.length - 1);
+
+        gsap.set(cameraRef.current, { autoAlpha: 1 });
         gsap.set(statsBlockRef.current, { autoAlpha: 0 });
-        const timelineTop = -(timelineBlockRef.current.offsetTop + timelineBlockRef.current.offsetHeight / 2 - window.innerHeight / 2);
-        enterTl.to(wrapperRef.current, { y: timelineTop, duration: 0.8, ease: "power3.inOut" });
+        const cameraTop = -(cameraRef.current.offsetTop + cameraRef.current.offsetHeight / 2 - window.innerHeight / 2);
+        enterTl.to(wrapperRef.current, { y: cameraTop, duration: 0.8, ease: "power3.inOut" });
+
+        moveCamera(zIndexPosRef.current, 0.8);
       } else {
-        gsap.set(timelineBlockRef.current, { autoAlpha: 1 });
+        zIndexPosRef.current = 0;
+        setZIndexPos(0);
+
+        gsap.set(cameraRef.current, { autoAlpha: 1 });
         gsap.set(statsBlockRef.current, { autoAlpha: 0 });
-        enterTl.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out" });
+        const cameraTop = -(cameraRef.current.offsetTop + cameraRef.current.offsetHeight / 2 - window.innerHeight / 2);
+        enterTl.to(wrapperRef.current, { y: cameraTop, duration: 0.8, ease: "power3.inOut" }, "-=0.4");
 
-        const node = nodes[timelineIndex];
-        const timelineTop = -(timelineBlockRef.current.offsetTop + timelineBlockRef.current.offsetHeight / 2 - window.innerHeight / 2);
-        enterTl.to(wrapperRef.current, { y: timelineTop, duration: 0.8, ease: "power3.inOut" }, "-=0.4");
-
-        const targetX = -node.offsetLeft + (window.innerWidth / 2 - node.offsetWidth / 2);
-        gsap.set(timelineWrapRef.current, { x: targetX });
-
-        const box = node.querySelector('.content-box');
-        const line = node.querySelector('.vertical-line');
-        const dot = node.querySelector('.center-dot');
-        enterTl.to(dot, { scale: 1, autoAlpha: 1, duration: 0.4 }, "-=0.3");
-        enterTl.to(line, { scaleY: 1, autoAlpha: 0.6, duration: 0.4 }, "-=0.2");
-        enterTl.to(box, { y: 0, autoAlpha: 1, scale: 1, duration: 0.6 }, "-=0.1");
+        moveCamera(0, 0);
       }
     }
 
     if (step === 4) {
-      setShowArrows(false);
+      gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out" });
+      gsap.to(bgElements, { filter: "blur(15px)", opacity: 0.3, duration: 0.8, ease: "power3.inOut" });
+
       const statsTop = -(statsBlockRef.current.offsetTop + statsBlockRef.current.offsetHeight / 2 - window.innerHeight / 2);
       gsap.set(statsBlockRef.current, { autoAlpha: 1 });
 
@@ -92,72 +224,51 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
 
   useGSAP(() => {
     if (step !== 3) return;
-    const nodes = gsap.utils.toArray('.timeline-node');
 
-    const moveTimeline = (index) => {
-      const node = nodes[index];
-      const targetX = -node.offsetLeft + (window.innerWidth / 2 - node.offsetWidth / 2);
-      gsap.to(timelineWrapRef.current, { x: targetX, duration: 0.8, ease: "power3.inOut" });
+    lastScrollTime.current = Date.now() + 600;
 
-      const box = node.querySelector('.content-box');
-      const line = node.querySelector('.vertical-line');
-      const dot = node.querySelector('.center-dot');
-      gsap.to(dot, { scale: 1, autoAlpha: 1, duration: 0.4 });
-      gsap.to(line, { scaleY: 1, autoAlpha: 0.6, duration: 0.4 });
-      gsap.to(box, { y: 0, autoAlpha: 1, scale: 1, duration: 0.6 });
-    };
+    const advanceZ = () => {
+      const now = Date.now();
+      if (now - lastScrollTime.current < SCROLL_COOLDOWN) return;
 
-    const nextYear = () => {
-      if (timelineIndexRef.current < timelineData.length - 1) {
-        const next = timelineIndexRef.current + 1;
-        timelineIndexRef.current = next;
-        setTimelineIndex(next);
-        moveTimeline(next);
+      if (zIndexPosRef.current < cardsData.length - 1) {
+        lastScrollTime.current = now;
+        const next = zIndexPosRef.current + 1;
+        zIndexPosRef.current = next;
+        setZIndexPos(next);
+        moveCamera(next);
+      } else {
+        window.dispatchEvent(new CustomEvent('requestNextStep'));
       }
     };
 
-    const prevYear = () => {
-      if (timelineIndexRef.current > 0) {
-        const prev = timelineIndexRef.current - 1;
-        timelineIndexRef.current = prev;
-        setTimelineIndex(prev);
-        moveTimeline(prev);
+    const reverseZ = () => {
+      const now = Date.now();
+      if (now - lastScrollTime.current < SCROLL_COOLDOWN) return;
+
+      if (zIndexPosRef.current > 0) {
+        lastScrollTime.current = now;
+        const prev = zIndexPosRef.current - 1;
+        zIndexPosRef.current = prev;
+        setZIndexPos(prev);
+        moveCamera(prev);
+      } else {
+        window.dispatchEvent(new CustomEvent('requestPrevStep'));
       }
     };
-
-    const exitToNext = () => window.dispatchEvent(new CustomEvent('requestNextStep'));
-    const exitToPrev = () => window.dispatchEvent(new CustomEvent('requestPrevStep'));
-
-    window.legacyNextYear = nextYear;
-    window.legacyPrevYear = prevYear;
-    window.legacyExitToNext = exitToNext;
-    window.legacyExitToPrev = exitToPrev;
 
     const obs = Observer.create({
       target: window,
       type: "wheel,touch,pointer",
-      onRight: nextYear,
-      onLeft: prevYear,
-      onDown: exitToNext,
-      onUp: exitToPrev,
-      onChange: (self) => {
-        if (Math.abs(self.deltaX) > Math.abs(self.deltaY) + 15) {
-          if (self.deltaX < -20) nextYear();
-          else if (self.deltaX > 20) prevYear();
-        } else {
-          if (self.deltaY > 30) exitToNext();
-          else if (self.deltaY < -30) exitToPrev();
-        }
-      },
+      onDown: advanceZ,
+      onUp: reverseZ,
       preventDefault: false,
-      tolerance: 20
+      tolerance: 50
     });
 
     const handleKeyDown = (e) => {
-      if (e.key === 'ArrowRight') nextYear();
-      else if (e.key === 'ArrowLeft') prevYear();
-      else if (e.key === 'ArrowDown') exitToNext();
-      else if (e.key === 'ArrowUp') exitToPrev();
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') advanceZ();
+      else if (e.key === 'ArrowUp' || e.key === 'PageUp') reverseZ();
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -165,78 +276,66 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
     return () => {
       obs.kill();
       window.removeEventListener('keydown', handleKeyDown);
-      delete window.legacyNextYear; delete window.legacyPrevYear;
-      delete window.legacyExitToNext; delete window.legacyExitToPrev;
     };
   }, { scope: containerRef, dependencies: [step] });
 
   return (
-    <div ref={containerRef} className={`fixed inset-0 w-full h-screen z-40 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-blue-900/30 via-obsidian-blue to-pitch-black overflow-hidden ${!isActive ? 'pointer-events-none' : ''}`}>
+    <div
+      ref={containerRef}
+      className={`fixed inset-0 w-full h-screen z-20 bg-[#0A0A0A] overflow-hidden ${!isActive ? 'pointer-events-none' : ''}`}
+    >
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full z-0 object-cover"
+      />
+
+      <div ref={overlayRef} className="absolute inset-0 z-0 bg-black/20 pointer-events-none"></div>
+
       <div ref={wrapperRef} className="absolute top-0 left-0 w-full z-10 flex flex-col gap-[30vh] items-center text-center pb-[50vh] will-change-transform">
         <div className="h-screen shrink-0 invisible"></div>
 
-        <div ref={timelineBlockRef} className="w-full relative flex flex-col justify-center h-screen invisible">
-          <div className="absolute left-0 w-full h-[6px] md:h-[8px] rounded-full bg-white/10 top-1/2 -translate-y-1/2 shadow-[0_0_20px_rgba(255,255,255,0.1)] z-0">
-            <div className="absolute inset-y-0 left-0 w-[200vw] bg-gradient-to-r from-transparent via-fuchsia-500/50 to-transparent blur-md opacity-30 animate-pulse"></div>
-          </div>
+        <div
+          ref={cameraRef}
+          className="w-full relative flex flex-col justify-center items-center h-screen"
+          style={{ perspective: '2000px', transformStyle: 'preserve-3d' }}
+        >
+          {cardsData.map((item, idx) => (
+            <div
+              key={idx}
+              ref={el => cardsRef.current[idx] = el}
+              // STATIC Z-INDEX FIX: The first card (idx 0) gets 100, the second gets 99, etc.
+              // This permanently locks the visual stacking order to match the physical 3D order.
+              style={{ zIndex: 100 - idx }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] md:w-[65vw] lg:w-[50vw] will-change-transform transform-style-3d drop-shadow-[0_25px_35px_rgba(0,0,0,0.5)]"
+            >
+              <div className={`p-10 md:p-16 rounded-[2.5rem] w-full border-[6px] border-white/40 backdrop-blur-md ${item.bg} text-left flex flex-col gap-4 relative overflow-hidden`}>
+                <div className="absolute inset-0 bg-linear-to-br from-white/60 via-transparent to-black/5 pointer-events-none mix-blend-overlay"></div>
 
-          <div ref={timelineWrapRef} className="flex flex-nowrap items-center px-12 md:px-32 gap-0 w-max relative h-[60vh] md:h-[50vh]">
-            {timelineData.map((item, idx) => {
-              const isTop = idx % 2 === 0;
-              return (
-                <div key={idx} className="timeline-node w-[85vw] md:w-[45vw] lg:w-[35vw] shrink-0 relative flex flex-col items-center justify-center group h-full">
-                  <div className={`center-dot absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 rounded-full bg-white border-4 ${item.border} shadow-[0_0_20px_rgba(255,255,255,0.6)] z-20 invisible scale-0`}></div>
-
-                  <div className={`content-box absolute w-full px-6 flex flex-col invisible scale-95 translate-y-10 ${isTop ? 'bottom-[55%] items-start text-left' : 'top-[55%] items-start text-left'}`}>
-                    <div className={`vertical-line absolute left-1/2 ${isTop ? 'bottom-[-10%] h-[50px] border-l-2' : 'top-[-10%] h-[50px] border-l-2'} -translate-x-1/2 ${item.border} invisible scale-y-0`}></div>
-                    <div className="liquid-glass p-6 md:p-8 rounded-3xl w-full max-w-[400px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] border border-white/10">
-                      <h4 className={`text-3xl md:text-4xl font-black mb-2 ${item.color} drop-shadow-md`}>{item.year}</h4>
-                      <h5 className="text-white font-bold tracking-widest uppercase mb-4 text-sm md:text-base opacity-90">{item.title}</h5>
-                      <p className="text-neutral-300 font-light leading-relaxed text-sm md:text-base">{item.desc}</p>
-                    </div>
-                  </div>
+                <div className="relative z-10">
+                  <span className={`text-sm md:text-base tracking-[0.4em] font-black uppercase ${item.dateColor} opacity-70 mb-2 block`}>{item.date}</span>
+                  <h4 className={`text-6xl md:text-8xl font-black ${item.textColor} mb-6 uppercase tracking-tighter drop-shadow-sm leading-none`}>{item.title}</h4>
+                  <p className={`${item.textColor} font-medium leading-relaxed text-lg md:text-2xl opacity-90`}>{item.desc}</p>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            </div>
+          ))}
         </div>
 
         <div ref={statsBlockRef} className="px-6 md:px-24 shrink-0 w-full max-w-7xl grid grid-cols-1 sm:grid-cols-3 gap-8 stat-cards-wrapper h-screen content-center invisible">
-          <div className="stat-card liquid-glass p-8 md:p-10 rounded-3xl flex flex-col justify-center items-start border border-white/20 invisible scale-90 translate-y-10">
-            <span className="text-5xl md:text-6xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]"><span className="counter-val" data-target="20">0</span>+</span>
-            <span className="text-sm tracking-widest text-[#a8b8b8] uppercase mt-3">Years Exp</span>
+          <div className="stat-card bg-white p-8 md:p-12 rounded-3xl flex flex-col justify-center items-start border-4 border-pastel-blue invisible scale-90 translate-y-10 shadow-xl relative overflow-hidden">
+            <span className="text-5xl md:text-7xl font-black text-ink-dark relative z-10"><span className="counter-val" data-target="20">0</span>+</span>
+            <span className="text-sm md:text-base tracking-widest text-ink-dark/70 uppercase mt-4 font-bold relative z-10">Years Exp</span>
           </div>
-          <div className="stat-card liquid-glass p-8 md:p-10 rounded-3xl flex flex-col justify-center items-start border border-neon-mint/30 invisible scale-90 translate-y-10">
-            <span className="text-5xl md:text-6xl font-black text-neon-mint drop-shadow-[0_0_20px_rgba(46,211,162,0.6)]"><span className="counter-val" data-target="4000">0</span>+</span>
-            <span className="text-sm tracking-widest text-white uppercase mt-3">Students Taught</span>
+          <div className="stat-card bg-white p-8 md:p-12 rounded-3xl flex flex-col justify-center items-start border-4 border-pastel-pink invisible scale-90 translate-y-10 shadow-xl relative overflow-hidden">
+            <span className="text-5xl md:text-7xl font-black text-[#31102A] relative z-10"><span className="counter-val" data-target="4000">0</span>+</span>
+            <span className="text-sm md:text-base tracking-widest text-[#31102A]/70 uppercase mt-4 font-bold relative z-10">Students Taught</span>
           </div>
-          <div className="stat-card liquid-glass p-8 md:p-10 rounded-3xl flex flex-col justify-center items-start border border-white/20 invisible scale-90 translate-y-10">
-            <span className="text-5xl md:text-6xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]"><span className="counter-val" data-target="12">0</span>+</span>
-            <span className="text-sm tracking-widest text-[#a8b8b8] uppercase mt-3">Countries Worldwide</span>
+          <div className="stat-card bg-white p-8 md:p-12 rounded-3xl flex flex-col justify-center items-start border-4 border-pastel-mint invisible scale-90 translate-y-10 shadow-xl relative overflow-hidden">
+            <span className="text-5xl md:text-7xl font-black text-[#064E3B] relative z-10"><span className="counter-val" data-target="12">0</span>+</span>
+            <span className="text-sm md:text-base tracking-widest text-[#064E3B]/70 uppercase mt-4 font-bold relative z-10">Countries Worldwide</span>
           </div>
         </div>
       </div>
-
-      {showArrows && (
-        <div className="fixed bottom-24 md:bottom-10 left-1/2 -translate-x-1/2 z-[100] flex gap-6 items-center pointer-events-auto">
-          <button onClick={() => window.legacyPrevYear && window.legacyPrevYear()} className={`p-4 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-white transition-opacity duration-300 hover:bg-white/20 hover:scale-105 active:scale-95 ${timelineIndex > 0 ? 'opacity-100 cursor-pointer' : 'opacity-0 pointer-events-none'}`}>
-            <ArrowLeft size={20} />
-          </button>
-
-          <div className="flex gap-4 bg-pitch-black/50 backdrop-blur-md p-2 rounded-full border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-            <button onClick={() => window.legacyExitToPrev && window.legacyExitToPrev()} className="p-3 bg-white/5 rounded-full border border-white/10 text-white hover:bg-neon-mint hover:text-pitch-black hover:border-neon-mint transition-all duration-300" title="Go Up">
-              <ArrowUp size={20} />
-            </button>
-            <button onClick={() => window.legacyExitToNext && window.legacyExitToNext()} className="p-3 bg-neon-mint/20 rounded-full border border-neon-mint/30 text-neon-mint hover:bg-neon-mint hover:text-pitch-black transition-all duration-300 shadow-[0_0_15px_rgba(46,211,162,0.2)]" title="Go Down">
-              <ArrowDown size={20} />
-            </button>
-          </div>
-
-          <button onClick={() => window.legacyNextYear && window.legacyNextYear()} className={`p-4 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-white transition-opacity duration-300 hover:bg-white/20 hover:scale-105 active:scale-95 ${timelineIndex < timelineData.length - 1 ? 'opacity-100 cursor-pointer' : 'opacity-0 pointer-events-none'}`}>
-            <ArrowRight size={20} />
-          </button>
-        </div>
-      )}
     </div>
   );
 });
