@@ -115,8 +115,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
     const counters = statsBlockRef.current.querySelectorAll('.counter-val');
     const bgElements = [canvasRef.current, cameraRef.current, overlayRef.current];
 
-    // FIX: Removed gsap.to("body")
-
     if (step < 3) {
       gsap.to(containerRef.current, { yPercent: 100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut", force3D: true });
       gsap.to(bgElements, { filter: "blur(0px)", opacity: 1, duration: 0.8 });
@@ -204,8 +202,22 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
     const obs = Observer.create({
       target: window,
       type: "wheel,touch,pointer",
-      onDown: () => advanceZ(),
-      onUp: () => reverseZ(),
+      onDown: (self) => {
+        // DECOUPLED LOGIC
+        if (self.event.type === "wheel") {
+          advanceZ(); // PC Original: Wheel UP = Forward
+        } else {
+          reverseZ(); // Mobile Native: Swipe DOWN = Backward
+        }
+      },
+      onUp: (self) => {
+        // DECOUPLED LOGIC
+        if (self.event.type === "wheel") {
+          reverseZ(); // PC Original: Wheel DOWN = Backward
+        } else {
+          advanceZ(); // Mobile Native: Swipe UP = Forward
+        }
+      },
       preventDefault: false,
       tolerance: 40
     });

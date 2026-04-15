@@ -100,7 +100,8 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   const bentoRowsRef = useRef([]);
 
   const [introDone, setIntroDone] = useState(false);
-  const [loadingPhase, setLoadingPhase] = useState(0); // 0 = Loader, 1 = Video
+  const [loadingPhase, setLoadingPhase] = useState(0);
+  const [videoBuffered, setVideoBuffered] = useState(false);
   const [videoBlocked, setVideoBlocked] = useState(false);
   const [showSkip, setShowSkip] = useState(false);
   const [videoSrc, setVideoSrc] = useState(heroVideoDesktop);
@@ -117,6 +118,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     const checkOrientation = () => {
       const isVertical = window.matchMedia("(max-aspect-ratio: 1/1)").matches;
       setVideoSrc(isVertical ? heroVideoMobile : heroVideoDesktop);
+      setVideoBuffered(false); // Reset buffer state if video swaps
     };
     checkOrientation();
     window.addEventListener('resize', checkOrientation);
@@ -133,49 +135,61 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     });
   }, [introDone, onIntroComplete]);
 
+  // FALLBACK: If video takes longer than 4 seconds to buffer, force it through
+  useEffect(() => {
+    const forceLoad = setTimeout(() => {
+      if (!videoBuffered) setVideoBuffered(true);
+    }, 4000);
+    return () => clearTimeout(forceLoad);
+  }, [videoSrc, videoBuffered]);
+
+  // Phase 0: Animate progress bar quickly to 80% and wait for video buffer
   useGSAP(() => {
     if (loadingPhase === 0) {
+      gsap.to(progressBarRef.current, { width: "80%", duration: 0.6, ease: "power2.out" });
+    }
+  }, { scope: containerRef, dependencies: [loadingPhase] });
+
+  // Phase 0 -> 1: Once buffered, push bar to 100% and drop loader screen
+  useEffect(() => {
+    if (videoBuffered && loadingPhase === 0) {
       gsap.to(progressBarRef.current, {
         width: "100%",
-        duration: 0.5, // Reduced from 1.5s to 0.5s for a snappy entrance
-        ease: "power2.inOut",
+        duration: 0.3,
+        ease: "power1.inOut",
         onComplete: () => {
           gsap.to(loadingScreenRef.current, {
             autoAlpha: 0,
-            duration: 0.5,
+            duration: 0.4,
             onComplete: () => setLoadingPhase(1)
           });
         }
       });
     }
-  }, { scope: containerRef, dependencies: [loadingPhase] });
+  }, [videoBuffered, loadingPhase]);
 
+  // Phase 1: Actually start video playback once loader is gone
   useEffect(() => {
     if (loadingPhase !== 1) return;
 
     const safetyTimer = setTimeout(() => handleVideoEnd(), 5200);
     const skipTimer = setTimeout(() => setShowSkip(true), 3000);
-    let playTimeout;
 
-    // Removed videoRef.current.load() to prevent native autoplay race conditions
     if (videoRef.current) {
-      playTimeout = setTimeout(() => {
-        if (videoRef.current && videoRef.current.paused) {
-          const playPromise = videoRef.current.play();
-          if (playPromise !== undefined) {
-            playPromise.catch((e) => {
-              console.warn("Autoplay blocked by OS LPM:", e);
-              setVideoBlocked(true);
-              clearTimeout(safetyTimer);
-              clearTimeout(skipTimer);
-            });
-          }
-        }
-      }, 100);
+      videoRef.current.currentTime = 0; // Ensure it starts from 0
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((e) => {
+          console.warn("Autoplay blocked by OS LPM:", e);
+          setVideoBlocked(true);
+          clearTimeout(safetyTimer);
+          clearTimeout(skipTimer);
+        });
+      }
     }
 
-    return () => { clearTimeout(safetyTimer); clearTimeout(skipTimer); clearTimeout(playTimeout); };
-  }, [loadingPhase, handleVideoEnd, videoSrc]);
+    return () => { clearTimeout(safetyTimer); clearTimeout(skipTimer); };
+  }, [loadingPhase, handleVideoEnd]);
 
   useGSAP(() => {
     if (step > 2) {
@@ -237,11 +251,29 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   return (
     <section ref={containerRef} className={`fixed inset-0 w-full h-dvh z-50 bg-transparent overflow-hidden flex items-center justify-center will-change-transform ${step > 2 ? 'pointer-events-none' : ''}`}>
       {!introDone && (
-        <div ref={videoWrapperRef} className="absolute inset-0 w-full h-full z-100 bg-paper-bg">
+        <div
+          ref={videoWrapperRef}
+          // Match the exact color of the first frame of the video
+          className="absolute inset-0 w-full h-full z-100 bg-[radial-gradient(circle_at_center,#FFFFFF_0%,#C6BCFF_100%)]"
+        >
 
-          {/* Loading Phase */}
+          <video
+            key={videoSrc}
+            ref={videoRef}
+            src={videoSrc}
+            preload="auto"
+            muted
+            playsInline
+            onLoadedData={() => setVideoBuffered(true)}
+            onCanPlayThrough={() => setVideoBuffered(true)}
+            onEnded={handleVideoEnd}
+            onError={handleVideoEnd}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${videoBlocked ? 'opacity-30 blur-sm scale-105' : 'opacity-100 blur-none scale-100'} ${loadingPhase === 0 ? 'invisible' : 'visible'}`}
+          />
+
+          {/* Loading Phase UI - Now transparent so the matched background shows through */}
           {loadingPhase === 0 && (
-            <div ref={loadingScreenRef} className="absolute inset-0 z-120 flex flex-col items-center justify-center bg-paper-bg">
+            <div ref={loadingScreenRef} className="absolute inset-0 z-120 flex flex-col items-center justify-center bg-transparent">
               <h2 className="text-xs sm:text-sm md:text-lg font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-ink-dark mb-4 drop-shadow-sm">Welcome to <span className="text-transparent bg-clip-text bg-linear-to-r from-accent-teal to-[#2563EB]">Yangerila</span></h2>
               <p className="text-[10px] md:text-xs text-ink-medium tracking-widest font-serif italic mb-8 md:mb-12">Loading the Experience</p>
               <div className="w-48 md:w-64 h-px md:h-[2px] bg-ink-dark/10 overflow-hidden relative rounded-full">
@@ -250,22 +282,9 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
             </div>
           )}
 
-          {/* Video Phase */}
+          {/* Video Phase Extra UI */}
           {loadingPhase === 1 && (
             <>
-              <video
-                key={videoSrc}
-                ref={videoRef}
-                src={videoSrc}
-                autoPlay
-                muted
-                playsInline
-                decoding="async"
-                onEnded={handleVideoEnd}
-                onError={handleVideoEnd}
-                className={`w-full h-full object-cover transition-all duration-1000 ${videoBlocked ? 'opacity-30 blur-sm scale-105' : 'opacity-100 blur-none scale-100'}`}
-              />
-
               {/* Battery Saver Fallback */}
               {videoBlocked && (
                 <div className="absolute inset-0 z-110 flex items-center justify-center bg-black/5 backdrop-blur-[2px]">

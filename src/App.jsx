@@ -80,15 +80,24 @@ export default function App() {
     const obs = Observer.create({
       target: window,
       type: "wheel,touch,pointer",
-      // NORMALIZED SCROLL: onDown = swipe up/scroll down (Next). onUp = swipe down/scroll up (Prev).
-      onDown: () => {
-        if (!isLockedRef.current && currentStepRef.current !== 3 && !isIntroPlayingRef.current) {
-          goToStep(currentStepRef.current + 1);
+      onDown: (self) => {
+        if (isLockedRef.current || currentStepRef.current === 3 || isIntroPlayingRef.current) return;
+
+        // DECOUPLED LOGIC
+        if (self.event.type === "wheel") {
+          goToStep(currentStepRef.current + 1); // PC Original: Wheel UP = Forward
+        } else {
+          goToStep(currentStepRef.current - 1); // Mobile Native: Swipe DOWN = Backward
         }
       },
-      onUp: () => {
-        if (!isLockedRef.current && currentStepRef.current !== 3 && !isIntroPlayingRef.current) {
-          goToStep(currentStepRef.current - 1);
+      onUp: (self) => {
+        if (isLockedRef.current || currentStepRef.current === 3 || isIntroPlayingRef.current) return;
+
+        // DECOUPLED LOGIC
+        if (self.event.type === "wheel") {
+          goToStep(currentStepRef.current - 1); // PC Original: Wheel DOWN = Backward
+        } else {
+          goToStep(currentStepRef.current + 1); // Mobile Native: Swipe UP = Forward
         }
       },
       preventDefault: false,
