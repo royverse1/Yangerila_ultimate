@@ -102,11 +102,15 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   const bentoRowsRef = useRef([]);
 
   const [introDone, setIntroDone] = useState(false);
+  const [loadingPhase, setLoadingPhase] = useState(0); // 0 = Loader, 1 = Video
+  const [videoBlocked, setVideoBlocked] = useState(false);
   const [showSkip, setShowSkip] = useState(false);
   const [videoSrc, setVideoSrc] = useState(heroVideoDesktop);
 
   const videoWrapperRef = useRef(null);
   const videoRef = useRef(null);
+  const loadingScreenRef = useRef(null);
+  const progressBarRef = useRef(null);
 
   const isActive = step >= 0 && step <= 2;
   const isAboutActive = step === 2;
@@ -131,13 +135,32 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     });
   }, [introDone, onIntroComplete]);
 
+  useGSAP(() => {
+    if (loadingPhase === 0) {
+      gsap.to(progressBarRef.current, {
+        width: "100%",
+        duration: 1.5,
+        ease: "power2.inOut",
+        onComplete: () => {
+          gsap.to(loadingScreenRef.current, {
+            autoAlpha: 0,
+            duration: 0.5,
+            onComplete: () => setLoadingPhase(1)
+          });
+        }
+      });
+    }
+  }, { scope: containerRef, dependencies: [loadingPhase] });
+
   useEffect(() => {
-    const safetyTimer = setTimeout(() => handleVideoEnd(), 10000);
+    if (loadingPhase !== 1) return;
+
+    // Fixed exactly at 5.2 seconds to smoothly end if native 'onEnded' glitches
+    const safetyTimer = setTimeout(() => handleVideoEnd(), 5200); 
     const skipTimer = setTimeout(() => setShowSkip(true), 3000);
     let playTimeout;
 
     if (videoRef.current) {
-      // Force load the new src in case it changed due to orientation
       videoRef.current.load();
       
       playTimeout = setTimeout(() => {
@@ -145,16 +168,18 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
           const playPromise = videoRef.current.play();
           if (playPromise !== undefined) {
             playPromise.catch((e) => {
-              console.warn("Autoplay failed:", e);
-              handleVideoEnd();
+              console.warn("Autoplay blocked by OS LPM:", e);
+              setVideoBlocked(true);
+              clearTimeout(safetyTimer); // Wait for user tap
+              clearTimeout(skipTimer);
             });
           }
         }
-      }, 250);
+      }, 100);
     }
     
     return () => { clearTimeout(safetyTimer); clearTimeout(skipTimer); clearTimeout(playTimeout); };
-  }, [handleVideoEnd, videoSrc]);
+  }, [loadingPhase, handleVideoEnd, videoSrc]);
 
   useGSAP(() => {
     // FIX: Removed gsap.to("body")
@@ -219,10 +244,57 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     <section ref={containerRef} className={`fixed inset-0 w-full h-dvh z-50 bg-transparent overflow-hidden flex items-center justify-center will-change-transform ${step > 2 ? 'pointer-events-none' : ''}`}>
       {!introDone && (
         <div ref={videoWrapperRef} className="absolute inset-0 w-full h-full z-100 bg-[#F8FAFC]">
-          <video key={videoSrc} ref={videoRef} src={videoSrc} autoPlay muted playsInline decoding="async" onEnded={handleVideoEnd} onError={handleVideoEnd} className="w-full h-full object-cover" />
-          {showSkip && (
-            <button onClick={handleVideoEnd} className="absolute bottom-10 right-8 z-101 text-ink-dark bg-white/60 hover:bg-white border border-ink-dark/20 px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest backdrop-blur-md transition-all duration-300 shadow-lg">Skip Intro</button>
+          
+          {/* Loading Phase */}
+          {loadingPhase === 0 && (
+            <div ref={loadingScreenRef} className="absolute inset-0 z-120 flex flex-col items-center justify-center bg-[#F8FAFC]">
+               <h2 className="text-xs sm:text-sm md:text-lg font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-ink-dark mb-4 drop-shadow-sm">Welcome to <span className="text-transparent bg-clip-text bg-linear-to-r from-accent-teal to-[#2563EB]">Yangerila</span></h2>
+               <p className="text-[10px] md:text-xs text-ink-medium tracking-widest font-serif italic mb-8 md:mb-12">Loading the Experience</p>
+               <div className="w-48 md:w-64 h-[1px] md:h-[2px] bg-ink-dark/10 overflow-hidden relative rounded-full">
+                  <div ref={progressBarRef} className="absolute top-0 left-0 h-full bg-accent-teal w-0 shadow-[0_0_10px_rgba(13,148,136,0.5)]" />
+               </div>
+            </div>
           )}
+
+          {/* Video Phase */}
+          {loadingPhase === 1 && (
+             <>
+               <video 
+                 key={videoSrc} 
+                 ref={videoRef} 
+                 src={videoSrc} 
+                 autoPlay 
+                 muted 
+                 playsInline 
+                 decoding="async" 
+                 onEnded={handleVideoEnd} 
+                 onError={handleVideoEnd} 
+                 className={`w-full h-full object-cover transition-all duration-1000 ${videoBlocked ? 'opacity-30 blur-sm scale-105' : 'opacity-100 blur-none scale-100'}`} 
+               />
+               
+               {/* Battery Saver Fallback */}
+               {videoBlocked && (
+                 <div className="absolute inset-0 z-110 flex items-center justify-center bg-black/5 backdrop-blur-[2px]">
+                   <button 
+                     onClick={() => {
+                        setVideoBlocked(false);
+                        if(videoRef.current) {
+                           videoRef.current.play().catch(() => handleVideoEnd());
+                           setTimeout(() => handleVideoEnd(), 5200); 
+                        }
+                     }}
+                     className="px-6 py-3 md:px-8 md:py-4 bg-ink-dark/95 hover:bg-ink-dark text-white rounded-[2rem] uppercase tracking-[0.25em] font-black text-[10px] md:text-xs animate-[pulse_2s_ease-in-out_infinite] shadow-[0_10px_40px_rgba(0,0,0,0.3)] transition-all duration-300 border border-white/10 hover:scale-105 active:scale-95">
+                     Tap to Enter
+                   </button>
+                 </div>
+               )}
+
+               {showSkip && !videoBlocked && (
+                 <button onClick={handleVideoEnd} className="absolute bottom-10 right-8 z-101 text-ink-dark bg-white/60 hover:bg-white border border-ink-dark/20 px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest backdrop-blur-md transition-all duration-300 shadow-lg">Skip Intro</button>
+               )}
+             </>
+          )}
+
         </div>
       )}
 
