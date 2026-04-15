@@ -87,7 +87,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children }) {
       <div className="w-full h-dvh flex flex-col items-center justify-center relative px-4 sm:px-6 md:px-12 shrink-0">
         <h2 className="text-accent-teal tracking-[0.3em] font-bold text-xs uppercase mb-8 md:mb-12 text-center">A Note from the Founder</h2>
 
-        <div ref={founderBoxRef} className="bg-white/85 backdrop-blur-md p-6 sm:p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] border border-white/80 relative overflow-y-auto max-h-[80dvh] scrollbar-hide max-w-5xl mx-auto w-full shadow-xl invisible premium-glow">
+        <div ref={founderBoxRef} className="bg-white/85 backdrop-blur-md p-6 sm:p-8 md:p-16 rounded-4xl md:rounded-[3rem] border border-white/80 relative overflow-y-auto max-h-[80dvh] scrollbar-hide max-w-5xl mx-auto w-full shadow-xl invisible premium-glow">
           <div className="flex flex-col md:flex-row gap-6 md:gap-12 items-center md:items-start text-center md:text-left relative z-10 perspective-[1000px]">
 
             <div ref={tiltCardRef} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative shrink-0 transform-style-3d cursor-crosshair transition-transform duration-500">
@@ -124,10 +124,10 @@ const MethodPanel = React.memo(function MethodPanel({ step, children }) {
               <div key={idx} ref={el => coursesRef.current[idx] = el} className="relative p-4 md:p-8 rounded-2xl md:rounded-[2.5rem] bg-white/85 backdrop-blur-md border border-white/80 invisible premium-glow flex flex-col justify-between">
                 <div>
                   <h3 className="text-sm sm:text-xl md:text-2xl font-black text-ink-dark mb-1 md:mb-2 leading-tight">{course.title}</h3>
-                  <p className="text-ink-medium text-[8px] md:text-[10px] tracking-[0.1em] md:tracking-[0.2em] font-bold uppercase mb-3 md:mb-8">{course.price}</p>
+                  <p className="text-ink-medium text-[8px] md:text-[10px] tracking-widest md:tracking-[0.2em] font-bold uppercase mb-3 md:mb-8">{course.price}</p>
                   <div className="text-ink-medium font-medium text-[9px] md:text-sm tracking-widest uppercase mb-3 md:mb-4 opacity-70">{course.stats}</div>
                 </div>
-                <div className="bg-white py-2 md:py-3 px-2 md:px-6 rounded-lg md:rounded-xl border border-ink-dark/10 text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] md:tracking-[0.2em] flex gap-1 justify-center items-center text-ink-dark/70 hover:text-accent-teal transition-colors cursor-pointer">Explore &rarr;</div>
+                <div className="bg-white py-2 md:py-3 px-2 md:px-6 rounded-lg md:rounded-xl border border-ink-dark/10 text-[9px] md:text-[10px] font-black uppercase tracking-widest md:tracking-[0.2em] flex gap-1 justify-center items-center text-ink-dark/70 hover:text-accent-teal transition-colors cursor-pointer">Explore &rarr;</div>
               </div>
             ))}
           </div>
@@ -158,12 +158,12 @@ const MethodPanel = React.memo(function MethodPanel({ step, children }) {
                 {/* Front Side */}
                 <div className="absolute inset-0 backface-hidden bg-white/85 backdrop-blur-md p-3 sm:p-5 md:p-8 rounded-2xl md:rounded-[2.5rem] flex flex-col items-center justify-center border border-white/80 text-center">
                   <h4 className={`text-lg sm:text-2xl md:text-4xl font-black mb-1 md:mb-3 uppercase tracking-tighter ${idx === 1 || idx === 2 ? 'text-accent-teal' : 'text-ink-dark'}`}>{bonus.title}</h4>
-                  <p className="text-ink-medium text-[8px] md:text-xs font-bold uppercase tracking-[0.1em] md:tracking-widest">{bonus.desc}</p>
+                  <p className="text-ink-medium text-[8px] md:text-xs font-bold uppercase tracking-widest md:tracking-widest">{bonus.desc}</p>
                   <p className="text-[7px] md:text-[10px] text-ink-dark/40 mt-2 md:mt-4 uppercase tracking-widest">Tap to reveal</p>
                 </div>
                 {/* Back Side */}
                 <div className="absolute inset-0 backface-hidden bg-white p-3 sm:p-5 md:p-8 rounded-2xl md:rounded-[2.5rem] flex flex-col items-center justify-center border-2 border-pastel-mint shadow-lg text-center" style={{ transform: 'rotateY(180deg)' }}>
-                  <h4 className="text-[10px] sm:text-sm md:text-xl font-bold text-accent-teal mb-1 md:mb-3 uppercase tracking-[0.1em] md:tracking-widest">{bonus.desc}</h4>
+                  <h4 className="text-[10px] sm:text-sm md:text-xl font-bold text-accent-teal mb-1 md:mb-3 uppercase tracking-widest md:tracking-widest">{bonus.desc}</h4>
                   <p className="text-ink-dark text-[9px] sm:text-xs md:text-sm font-medium leading-snug md:leading-relaxed">{bonus.offer}</p>
                 </div>
               </div>

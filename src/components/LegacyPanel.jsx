@@ -240,7 +240,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
               style={{ zIndex: 100 - idx }}
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] md:w-[65vw] lg:w-[50vw] will-change-transform transform-style-3d backface-hidden drop-shadow-[0_25px_35px_rgba(0,0,0,0.5)]"
             >
-              <div className={`p-8 md:p-16 rounded-[2rem] md:rounded-[2.5rem] w-full border-[4px] md:border-[6px] border-white/60 backdrop-blur-md ${item.bg} text-left flex flex-col gap-3 md:gap-4 relative overflow-hidden`}>
+              <div className={`p-8 md:p-16 rounded-4xl md:rounded-[2.5rem] w-full border-4 md:border-[6px] border-white/60 backdrop-blur-md ${item.bg} text-left flex flex-col gap-3 md:gap-4 relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-linear-to-br from-white/60 via-transparent to-black/10 pointer-events-none mix-blend-overlay"></div>
                 <div className="relative z-10">
                   <span className={`text-[10px] md:text-base tracking-[0.4em] font-black uppercase ${item.dateColor} opacity-70 mb-2 block`}>{item.date}</span>
@@ -255,15 +255,15 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
 
       <div ref={statsBlockRef} className="absolute inset-0 z-20 flex items-center justify-center px-4 sm:px-6 md:px-24 invisible will-change-transform">
         <div className="w-full max-w-7xl grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-8">
-          <div className="stat-card col-span-2 md:col-span-1 bg-white/95 backdrop-blur-md p-6 md:p-12 rounded-[1.5rem] md:rounded-3xl flex flex-col justify-center items-start border-[3px] md:border-4 border-pastel-blue shadow-xl relative overflow-hidden">
+          <div className="stat-card col-span-2 md:col-span-1 bg-white/95 backdrop-blur-md p-6 md:p-12 rounded-3xl md:rounded-3xl flex flex-col justify-center items-start border-[3px] md:border-4 border-pastel-blue shadow-xl relative overflow-hidden">
             <span className="text-4xl md:text-7xl font-black text-ink-dark relative z-10"><span className="counter-val" data-target="20">0</span>+</span>
             <span className="text-[10px] md:text-base tracking-widest text-ink-dark/70 uppercase mt-2 md:mt-4 font-bold relative z-10">Years Exp</span>
           </div>
-          <div className="stat-card bg-white/95 backdrop-blur-md p-6 md:p-12 rounded-[1.5rem] md:rounded-3xl flex flex-col justify-center items-start border-[3px] md:border-4 border-pastel-pink shadow-xl relative overflow-hidden">
+          <div className="stat-card bg-white/95 backdrop-blur-md p-6 md:p-12 rounded-3xl md:rounded-3xl flex flex-col justify-center items-start border-[3px] md:border-4 border-pastel-pink shadow-xl relative overflow-hidden">
             <span className="text-4xl md:text-7xl font-black text-[#31102A] relative z-10"><span className="counter-val" data-target="4000">0</span>+</span>
             <span className="text-[10px] md:text-base tracking-widest text-[#31102A]/70 uppercase mt-2 md:mt-4 font-bold relative z-10">Students</span>
           </div>
-          <div className="stat-card bg-white/95 backdrop-blur-md p-6 md:p-12 rounded-[1.5rem] md:rounded-3xl flex flex-col justify-center items-start border-[3px] md:border-4 border-pastel-mint shadow-xl relative overflow-hidden">
+          <div className="stat-card bg-white/95 backdrop-blur-md p-6 md:p-12 rounded-3xl md:rounded-3xl flex flex-col justify-center items-start border-[3px] md:border-4 border-pastel-mint shadow-xl relative overflow-hidden">
             <span className="text-4xl md:text-7xl font-black text-[#064E3B] relative z-10"><span className="counter-val" data-target="12">0</span>+</span>
             <span className="text-[10px] md:text-base tracking-widest text-[#064E3B]/70 uppercase mt-2 md:mt-4 font-bold relative z-10">Countries</span>
           </div>
