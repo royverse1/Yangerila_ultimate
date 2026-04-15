@@ -132,18 +132,27 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   }, [introDone, onIntroComplete]);
 
   useEffect(() => {
-    const safetyTimer = setTimeout(() => handleVideoEnd(), 8000);
+    const safetyTimer = setTimeout(() => handleVideoEnd(), 10000);
     const skipTimer = setTimeout(() => setShowSkip(true), 3000);
     let playTimeout;
 
     if (videoRef.current) {
+      // Force load the new src in case it changed due to orientation
+      videoRef.current.load();
+      
       playTimeout = setTimeout(() => {
-        if (videoRef.current) {
+        if (videoRef.current && videoRef.current.paused) {
           const playPromise = videoRef.current.play();
-          if (playPromise !== undefined) playPromise.catch(() => handleVideoEnd());
+          if (playPromise !== undefined) {
+            playPromise.catch((e) => {
+              console.warn("Autoplay failed:", e);
+              handleVideoEnd();
+            });
+          }
         }
-      }, 1500);
+      }, 250);
     }
+    
     return () => { clearTimeout(safetyTimer); clearTimeout(skipTimer); clearTimeout(playTimeout); };
   }, [handleVideoEnd, videoSrc]);
 
@@ -210,7 +219,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     <section ref={containerRef} className={`fixed inset-0 w-full h-dvh z-50 bg-transparent overflow-hidden flex items-center justify-center will-change-transform ${step > 2 ? 'pointer-events-none' : ''}`}>
       {!introDone && (
         <div ref={videoWrapperRef} className="absolute inset-0 w-full h-full z-100 bg-[#F8FAFC]">
-          <video ref={videoRef} src={videoSrc} autoPlay muted playsInline decoding="async" onEnded={handleVideoEnd} onError={handleVideoEnd} className="w-full h-full object-cover" />
+          <video key={videoSrc} ref={videoRef} src={videoSrc} autoPlay muted playsInline decoding="async" onEnded={handleVideoEnd} onError={handleVideoEnd} className="w-full h-full object-cover" />
           {showSkip && (
             <button onClick={handleVideoEnd} className="absolute bottom-10 right-8 z-101 text-ink-dark bg-white/60 hover:bg-white border border-ink-dark/20 px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest backdrop-blur-md transition-all duration-300 shadow-lg">Skip Intro</button>
           )}
