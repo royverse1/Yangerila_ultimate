@@ -117,7 +117,7 @@ export default function App() {
   }, [goToStep]);
 
   return (
-    <div className="relative w-full h-[100dvh] overflow-hidden bg-transparent font-sans">
+    <div className="relative w-full h-dvh overflow-hidden bg-transparent font-sans">
       <StaticPastelBackground step={currentStep} />
       <Header />
 

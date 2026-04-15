@@ -134,7 +134,7 @@ const FooterReveal = React.memo(function FooterReveal({ step }) {
     <div ref={containerRef} className="w-full flex flex-col shrink-0 pointer-events-auto">
 
       {/* SECTION 10: Fun Fact */}
-      <div ref={funFactRef} className="w-full h-[100dvh] flex flex-col items-center justify-center text-center bg-transparent relative px-4 sm:px-6 md:px-12 shrink-0">
+      <div ref={funFactRef} className="w-full h-dvh flex flex-col items-center justify-center text-center bg-transparent relative px-4 sm:px-6 md:px-12 shrink-0">
         <div className="max-w-5xl mx-auto flex flex-col items-center justify-center w-full">
           <h2 className="fun-fact-el text-accent-teal tracking-[0.3em] font-bold text-[10px] md:text-sm uppercase mb-8 md:mb-12 invisible">Fun Fact</h2>
           <p className="fun-fact-el text-2xl sm:text-4xl md:text-6xl text-ink-dark font-medium text-serif-italic mb-8 md:mb-12 leading-relaxed invisible px-2">
@@ -151,7 +151,7 @@ const FooterReveal = React.memo(function FooterReveal({ step }) {
       </div>
 
       {/* SECTION 11: Voices */}
-      <div ref={voicesRef} className="w-full h-[100dvh] overflow-hidden flex flex-col justify-center bg-transparent relative py-10 lg:py-16 px-0 shrink-0 border-t border-white/20">
+      <div ref={voicesRef} className="w-full h-dvh overflow-hidden flex flex-col justify-center bg-transparent relative py-10 lg:py-16 px-0 shrink-0 border-t border-white/20">
         <div className="voices-header shrink-0 flex flex-col px-4 sm:px-6 md:px-12 xl:px-24 mb-2 md:mb-8 invisible">
           <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-ink-dark uppercase tracking-tight leading-none">
             Voices of <br /><span className="text-serif-italic font-light text-accent-teal lowercase">excellence</span>
@@ -166,7 +166,7 @@ const FooterReveal = React.memo(function FooterReveal({ step }) {
       </div>
 
       {/* SECTION 12: Reveal & Contact */}
-      <section ref={revealSectionRef} className="reveal-section w-full h-[100dvh] relative overflow-hidden bg-cover bg-center shrink-0">
+      <section ref={revealSectionRef} className="reveal-section w-full h-dvh relative overflow-hidden bg-cover bg-center shrink-0">
         <svg width="0" height="0" className="absolute pointer-events-none">
           <defs>
             <clipPath id="curve-reveal-presentation" clipPathUnits="objectBoundingBox">
@@ -190,7 +190,7 @@ const FooterReveal = React.memo(function FooterReveal({ step }) {
             </div>
 
             <div className="flex-1 w-full flex justify-center lg:justify-end mt-4 lg:mt-0">
-              <div className="p-6 md:p-12 rounded-[2rem] md:rounded-[3rem] w-full max-w-md bg-white/85 backdrop-blur-md border border-white premium-glow relative">
+              <div className="p-6 md:p-12 rounded-4xl md:rounded-[3rem] w-full max-w-md bg-white/85 backdrop-blur-md border border-white premium-glow relative">
                 <h3 className="text-xl md:text-2xl font-black uppercase text-ink-dark tracking-widest mb-1">Waitlist</h3>
                 <p className="text-[10px] md:text-xs text-accent-teal uppercase tracking-widest font-black mb-6 md:mb-8">Secure your slot</p>
                 <form className="flex flex-col gap-3 md:gap-4">

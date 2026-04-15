@@ -84,7 +84,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children }) {
     <div ref={containerRef} className="w-full flex flex-col shrink-0 relative pointer-events-auto border-t border-white/20 bg-transparent">
 
       {/* SECTION 5: The Founder Note */}
-      <div className="w-full h-[100dvh] flex flex-col items-center justify-center relative px-4 sm:px-6 md:px-12 shrink-0">
+      <div className="w-full h-dvh flex flex-col items-center justify-center relative px-4 sm:px-6 md:px-12 shrink-0">
         <h2 className="text-accent-teal tracking-[0.3em] font-bold text-xs uppercase mb-8 md:mb-12 text-center">A Note from the Founder</h2>
 
         <div ref={founderBoxRef} className="bg-white/85 backdrop-blur-md p-6 sm:p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] border border-white/80 relative overflow-y-auto max-h-[80dvh] scrollbar-hide max-w-5xl mx-auto w-full shadow-xl invisible premium-glow">
@@ -110,7 +110,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children }) {
       </div>
 
       {/* SECTION 6: Courses (Perfect Mobile 2x2 Grid) */}
-      <div className="w-full h-[100dvh] flex flex-col justify-center relative px-2 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0">
+      <div className="w-full h-dvh flex flex-col justify-center relative px-2 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0">
         <div className="max-w-6xl mx-auto w-full text-center">
           <h2 className="text-accent-teal tracking-[0.3em] font-bold text-xs uppercase mb-3 md:mb-4">Our Curriculum</h2>
           <h3 className="text-3xl sm:text-4xl md:text-6xl font-black text-ink-dark uppercase tracking-tight mb-6 md:mb-16">Featured <span className="text-transparent bg-clip-text bg-linear-to-r from-accent-magenta to-accent-teal">Courses</span></h3>
@@ -137,7 +137,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children }) {
       {children}
 
       {/* SECTION 8: Bonuses (Perfect Mobile 2x2 Grid) */}
-      <div className="w-full h-[100dvh] flex flex-col justify-center relative px-2 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0">
+      <div className="w-full h-dvh flex flex-col justify-center relative px-2 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0">
         <div className="max-w-6xl mx-auto w-full text-center">
           <h2 className="text-accent-teal tracking-[0.3em] font-bold text-xs uppercase mb-3 md:mb-4">Exclusive Perks</h2>
           <h3 className="text-3xl sm:text-4xl md:text-6xl font-black text-ink-dark uppercase tracking-tight mb-6 md:mb-16">Premium <span className="text-transparent bg-clip-text bg-linear-to-r from-accent-teal to-[#2563EB]">Rewards</span></h3>
@@ -173,7 +173,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children }) {
       </div>
 
       {/* SECTION 9: Admission */}
-      <div ref={admissionSectionRef} className="w-full h-[100dvh] flex flex-col items-center justify-center text-center relative px-4 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0">
+      <div ref={admissionSectionRef} className="w-full h-dvh flex flex-col items-center justify-center text-center relative px-4 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0">
         <h2 className="admission-headline text-4xl sm:text-5xl md:text-8xl font-black text-ink-dark mb-6 md:mb-8 uppercase tracking-tight invisible">
           Admissions <br />
           <span className="text-transparent bg-clip-text bg-linear-to-r from-accent-teal to-[#2563EB]">Are Open</span>

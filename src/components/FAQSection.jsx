@@ -57,7 +57,7 @@ const FAQSection = React.memo(function FAQSection({ step }) {
   const categories = Object.keys(faqCategories);
 
   return (
-    <section ref={containerRef} className="w-full h-[100dvh] shrink-0 relative flex flex-col items-center justify-start bg-transparent pt-12 md:pt-16 pb-8">
+    <section ref={containerRef} className="w-full h-dvh shrink-0 relative flex flex-col items-center justify-start bg-transparent pt-12 md:pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 relative z-10 w-full flex flex-col items-center h-full">
 
         <div className="faq-header text-center mb-6 md:mb-10 w-full pt-4 md:pt-10 invisible shrink-0">

@@ -115,9 +115,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
     const counters = statsBlockRef.current.querySelectorAll('.counter-val');
     const bgElements = [canvasRef.current, cameraRef.current, overlayRef.current];
 
-    if (step === 3 || step === 4) {
-      gsap.to("body", { backgroundColor: "#0A0A0A", duration: 1 });
-    }
+    // FIX: Removed gsap.to("body")
 
     if (step < 3) {
       gsap.to(containerRef.current, { yPercent: 100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut", force3D: true });
@@ -224,12 +222,11 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
   return (
     <div
       ref={containerRef}
-      className={`fixed inset-0 w-full h-[100dvh] z-20 bg-transparent overflow-hidden will-change-transform ${!isActive ? 'pointer-events-none' : ''}`}
+      className={`fixed inset-0 w-full h-dvh z-20 bg-transparent overflow-hidden will-change-transform ${!isActive ? 'pointer-events-none' : ''}`}
     >
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-0 object-cover" />
       <div ref={overlayRef} className="absolute inset-0 z-0 bg-black/40 pointer-events-none"></div>
 
-      {/* TIMELINE CARDS - Fixed absolutely so they freeze perfectly during stats overlay */}
       <div className="absolute inset-0 z-10 flex items-center justify-center will-change-transform">
         <div
           ref={cameraRef}
@@ -256,7 +253,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         </div>
       </div>
 
-      {/* STATS OVERLAY - Separated so it overlays cleanly without moving the timeline behind it */}
       <div ref={statsBlockRef} className="absolute inset-0 z-20 flex items-center justify-center px-4 sm:px-6 md:px-24 invisible will-change-transform">
         <div className="w-full max-w-7xl grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-8">
           <div className="stat-card col-span-2 md:col-span-1 bg-white/95 backdrop-blur-md p-6 md:p-12 rounded-[1.5rem] md:rounded-3xl flex flex-col justify-center items-start border-[3px] md:border-4 border-pastel-blue shadow-xl relative overflow-hidden">

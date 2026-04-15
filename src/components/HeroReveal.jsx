@@ -18,7 +18,7 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
       setIsInteracting(true);
       clearTimeout(pauseTimeoutRef.current);
       playPromiseRef.current = videoRef.current.play();
-      if (playPromiseRef.current !== undefined) {
+      if (playPromiseRef.current) {
         playPromiseRef.current.catch(() => { });
       }
     }
@@ -29,7 +29,8 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
       pauseTimeoutRef.current = setTimeout(() => {
         setIsInteracting(false);
         if (videoRef.current) {
-          if (playPromiseRef.current !== undefined) {
+          // FIX: Strictly checking for a valid promise, not just undefined
+          if (playPromiseRef.current) {
             playPromiseRef.current.then(() => {
               videoRef.current.pause();
               videoRef.current.currentTime = 0;
@@ -47,7 +48,8 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
       setIsInteracting(false);
       clearTimeout(pauseTimeoutRef.current);
       if (videoRef.current) {
-        if (playPromiseRef.current !== undefined) {
+        // FIX: Strictly checking for a valid promise, not just undefined
+        if (playPromiseRef.current) {
           playPromiseRef.current.then(() => {
             videoRef.current.pause();
             videoRef.current.currentTime = 0;
@@ -66,7 +68,6 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
   const handleMouseEnter = useCallback(() => handlePlay(), [handlePlay]);
   const handleMouseLeave = useCallback(() => handleStop(0), [handleStop]);
 
-  // Mobile Touch specific handlers (Plays + leaves a 3 second active trail on release)
   const handleTouchStart = useCallback(() => handlePlay(), [handlePlay]);
   const handleTouchEnd = useCallback(() => handleStop(3000), [handleStop]);
 
@@ -78,7 +79,7 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
 
   return (
     <div
-      className={`relative w-full aspect-square overflow-hidden rounded-[1.25rem] md:rounded-[2rem] cursor-pointer bg-white/50 shrink-0 transition-all duration-500 ${isInteracting ? 'scale-[1.05] shadow-[0_20px_50px_rgba(13,148,136,0.3)] -translate-y-2 border-2 border-accent-teal' : 'scale-100 shadow-[0_8px_30px_rgba(15,23,42,0.06)] border border-white/80'}`}
+      className={`relative w-full aspect-square overflow-hidden rounded-[1.25rem] md:rounded-4xl cursor-pointer bg-white/50 shrink-0 transition-all duration-500 ${isInteracting ? 'scale-[1.05] shadow-[0_20px_50px_rgba(13,148,136,0.3)] -translate-y-2 border-2 border-accent-teal' : 'scale-100 shadow-[0_8px_30px_rgba(15,23,42,0.06)] border border-white/80'}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleTouchStart}
@@ -147,9 +148,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   }, [handleVideoEnd, videoSrc]);
 
   useGSAP(() => {
-    if (step <= 2) {
-      gsap.to("body", { backgroundColor: "#F8FAFC", duration: 1 });
-    }
+    // FIX: Removed gsap.to("body")
 
     if (step > 2) {
       gsap.to(containerRef.current, { yPercent: -100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut", force3D: true });
@@ -197,7 +196,6 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       const tl = gsap.timeline({ onComplete });
       tl.to([textRef.current, paragraphRef.current], { autoAlpha: 0, y: -50, duration: 0.6, ease: 'power3.inOut', force3D: true });
       tl.to(aboutRef.current, { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power3.out', force3D: true }, "-=0.2");
-      // Added clearProps: "transform" to prevent any desktop clipping after animation
       tl.fromTo(bentoRowsRef.current,
         { autoAlpha: 0, y: 30 },
         { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.15, ease: "power3.out", force3D: true, clearProps: "transform" },
@@ -209,7 +207,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   const addToBentoRefs = useCallback((el, index) => { if (el) bentoRowsRef.current[index] = el; }, []);
 
   return (
-    <section ref={containerRef} className={`fixed inset-0 w-full h-[100dvh] z-50 bg-transparent overflow-hidden flex items-center justify-center will-change-transform ${step > 2 ? 'pointer-events-none' : ''}`}>
+    <section ref={containerRef} className={`fixed inset-0 w-full h-dvh z-50 bg-transparent overflow-hidden flex items-center justify-center will-change-transform ${step > 2 ? 'pointer-events-none' : ''}`}>
       {!introDone && (
         <div ref={videoWrapperRef} className="absolute inset-0 w-full h-full z-100 bg-[#F8FAFC]">
           <video ref={videoRef} src={videoSrc} autoPlay muted playsInline decoding="async" onEnded={handleVideoEnd} onError={handleVideoEnd} className="w-full h-full object-cover" />
@@ -219,14 +217,12 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         </div>
       )}
 
-      {/* Main Title */}
       <div ref={textRef} className="z-0 absolute inset-0 flex flex-col items-center justify-center text-center px-4 md:px-6 max-w-5xl mx-auto invisible translate-y-10 will-change-transform">
         <span className="text-ink-medium tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-sm font-bold uppercase mb-4 md:mb-8 block">Yangerila Creative Studio</span>
         <h1 className="text-4xl sm:text-5xl md:text-8xl font-black text-ink-dark tracking-tighter mb-4 md:mb-6 uppercase leading-tight">Always Performance <br /><span className="text-transparent bg-clip-text bg-linear-to-r from-accent-teal to-[#2563EB] drop-shadow-sm">Ready</span></h1>
         <p ref={paragraphRef} className="mt-4 md:mt-8 text-ink-dark max-w-2xl mx-auto text-sm sm:text-lg md:text-xl font-medium text-serif-italic shadow-sm invisible translate-y-10 will-change-transform">A guitar-specialty academy bridging clinical precision and artistic mastery. Serving students nationwide and across 12 countries.</p>
       </div>
 
-      {/* About Bento (md:max-h-none md:overflow-visible fixes desktop cutoffs) */}
       <div ref={aboutRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center invisible translate-y-10 px-4 sm:px-6 md:px-12 lg:px-24 bg-white/85 backdrop-blur-md border-t border-white/80 shadow-2xl will-change-transform">
         <div className="max-w-6xl mx-auto w-full flex flex-col gap-6 sm:gap-8 md:gap-12 relative z-10 max-h-[85dvh] overflow-y-auto md:max-h-none md:overflow-visible pb-8 scrollbar-hide">
 
