@@ -13,11 +13,10 @@ import FooterReveal from './components/FooterReveal';
 
 gsap.registerPlugin(ScrollTrigger, Observer);
 
-// HIGH-PERFORMANCE STATIC BACKGROUND
 const StaticPastelBackground = React.memo(function StaticPastelBackground({ step }) {
   const getBgStyle = (currentStep) => {
     if (currentStep <= 2) return 'linear-gradient(135deg, #F8FAFC 0%, #E0F2FE 100%)';
-    if (currentStep <= 4) return '#0A0A0A'; // Dark for timeline
+    if (currentStep <= 4) return '#0A0A0A';
     if (currentStep <= 9) return 'linear-gradient(135deg, #F3E8FF 0%, #F8FAFC 100%)';
     return 'linear-gradient(135deg, #D1FAE5 0%, #E0F2FE 100%)';
   };
@@ -62,13 +61,15 @@ export default function App() {
   }, []);
 
   useGSAP(() => {
+    const speed = isReversingRef.current ? 0.3 : 0.8;
+
     if (currentStepRef.current < 5) {
-      gsap.to(elevatorRef.current, { y: '100dvh', duration: 0.8, ease: "power3.inOut", force3D: true });
+      gsap.to(elevatorRef.current, { y: '100dvh', duration: speed, ease: "power3.inOut", force3D: true });
     } else {
       const floor = currentStepRef.current - 5;
       gsap.to(elevatorRef.current, {
         y: `-${floor * 100}dvh`,
-        duration: 0.8,
+        duration: speed,
         ease: "power3.inOut",
         force3D: true,
         onComplete: () => { isLockedRef.current = false; }
@@ -82,22 +83,18 @@ export default function App() {
       type: "wheel,touch,pointer",
       onDown: (self) => {
         if (isLockedRef.current || currentStepRef.current === 3 || isIntroPlayingRef.current) return;
-
-        // DECOUPLED LOGIC
         if (self.event.type === "wheel") {
-          goToStep(currentStepRef.current + 1); // PC Original: Wheel UP = Forward
+          goToStep(currentStepRef.current + 1);
         } else {
-          goToStep(currentStepRef.current - 1); // Mobile Native: Swipe DOWN = Backward
+          goToStep(currentStepRef.current - 1);
         }
       },
       onUp: (self) => {
         if (isLockedRef.current || currentStepRef.current === 3 || isIntroPlayingRef.current) return;
-
-        // DECOUPLED LOGIC
         if (self.event.type === "wheel") {
-          goToStep(currentStepRef.current - 1); // PC Original: Wheel DOWN = Backward
+          goToStep(currentStepRef.current - 1);
         } else {
-          goToStep(currentStepRef.current + 1); // Mobile Native: Swipe UP = Forward
+          goToStep(currentStepRef.current + 1);
         }
       },
       preventDefault: false,

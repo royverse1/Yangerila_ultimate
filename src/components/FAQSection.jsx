@@ -26,7 +26,7 @@ const faqCategories = {
   ]
 };
 
-const FAQSection = React.memo(function FAQSection({ step }) {
+const FAQSection = React.memo(function FAQSection({ step, isReversing }) {
   const [activeCategory, setActiveCategory] = useState("About The Academy");
   const [openIndex, setOpenIndex] = useState(0);
   const containerRef = useRef(null);
@@ -38,12 +38,16 @@ const FAQSection = React.memo(function FAQSection({ step }) {
     const faqContent = containerRef.current.querySelector('.faq-content');
 
     if (step === 7) {
-      const tl = gsap.timeline({ delay: 0.2 });
-      tl.fromTo(faqHeader, { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" })
-        .fromTo(faqTabs, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.6 }, "-=0.4")
-        .fromTo(faqContent, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.6 }, "-=0.4");
+      if (isReversing) {
+        gsap.set([faqHeader, faqTabs, faqContent], { autoAlpha: 1, y: 0 });
+      } else {
+        const tl = gsap.timeline({ delay: 0.2 });
+        tl.fromTo(faqHeader, { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" })
+          .fromTo(faqTabs, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.6 }, "-=0.4")
+          .fromTo(faqContent, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.6 }, "-=0.4");
+      }
     }
-  }, { scope: containerRef, dependencies: [step] });
+  }, { scope: containerRef, dependencies: [step, isReversing] });
 
   useGSAP(() => {
     contentRefs.current.forEach((el, i) => {
@@ -69,17 +73,16 @@ const FAQSection = React.memo(function FAQSection({ step }) {
 
         <div className="faq-tabs flex flex-wrap justify-center gap-3 md:gap-12 mb-6 md:mb-12 w-full border-b border-ink-dark/10 pb-4 md:pb-8 invisible shrink-0">
           {categories.map((cat) => (
-            <button key={cat} onClick={() => { setOpenIndex(0); setActiveCategory(cat); }} className={`relative py-1 md:py-2 text-[9px] sm:text-[10px] md:text-sm font-black uppercase tracking-widest md:tracking-[0.15em] transition-all duration-500 hover:text-accent-teal bg-transparent border-none cursor-pointer ${activeCategory === cat ? 'text-accent-teal' : 'text-ink-medium'}`}>
+            <button key={cat} onClick={() => { setOpenIndex(0); setActiveCategory(cat); }} className={`relative py-1 md:py-2 text-[9px] sm:text-[10px] md:text-sm font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all duration-500 hover:text-accent-teal bg-transparent border-none cursor-pointer ${activeCategory === cat ? 'text-accent-teal' : 'text-ink-medium'}`}>
               {cat}
               {activeCategory === cat && <div className="absolute -bottom-4 md:-bottom-8 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-accent-teal"></div>}
             </button>
           ))}
         </div>
 
-        {/* Scrollable area for FAQ questions to prevent cutoffs on short phones */}
         <div className="faq-content flex flex-col gap-3 w-full max-w-4xl pb-4 invisible flex-1 overflow-y-auto scrollbar-hide px-2">
           {faqCategories[activeCategory].map((faq, idx) => (
-            <div key={`${activeCategory}-${idx}`} className={`bg-white/85 backdrop-blur-md rounded-3xl md:rounded-4xl overflow-hidden border transition-all duration-500 shrink-0 ${openIndex === idx ? 'border-accent-teal premium-glow' : 'border-white/80 shadow-sm'}`}>
+            <div key={`${activeCategory}-${idx}`} className={`bg-white/85 backdrop-blur-md rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border transition-all duration-500 shrink-0 ${openIndex === idx ? 'border-accent-teal premium-glow' : 'border-white/80 shadow-sm'}`}>
               <button onClick={() => setOpenIndex(openIndex === idx ? -1 : idx)} className="w-full px-5 md:px-8 py-4 md:py-6 flex items-center justify-between text-left group bg-transparent focus:outline-none cursor-pointer">
                 <span className={`text-sm sm:text-base md:text-xl font-bold uppercase tracking-tight transition-colors duration-300 pr-4 ${openIndex === idx ? 'text-accent-teal' : 'text-ink-dark group-hover:text-accent-teal'}`}>{faq.question}</span>
                 <ChevronDown size={18} className={`transition-transform duration-500 shrink-0 ${openIndex === idx ? 'rotate-180 text-accent-teal' : 'text-ink-medium'}`} />
