@@ -3,6 +3,9 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Observer } from 'gsap/observer';
 import { useGSAP } from '@gsap/react';
+import { Menu, X, Play } from 'lucide-react';
+
+import ambientMusic from './assets/bg_music.mp3';
 
 import Header from './components/Header';
 import HeroReveal from './components/HeroReveal';
@@ -16,7 +19,8 @@ gsap.registerPlugin(ScrollTrigger, Observer);
 const StaticPastelBackground = React.memo(function StaticPastelBackground({ step }) {
   const getBgStyle = (currentStep) => {
     if (currentStep <= 2) return 'linear-gradient(135deg, #F8FAFC 0%, #E0F2FE 100%)';
-    if (currentStep <= 4) return '#0A0A0A';
+    if (currentStep === 3) return '#0A0A0A';
+    if (currentStep === 4) return 'linear-gradient(135deg, #F0F9FF 0%, #E0E7FF 100%)';
     if (currentStep <= 9) return 'linear-gradient(135deg, #F3E8FF 0%, #F8FAFC 100%)';
     return 'linear-gradient(135deg, #D1FAE5 0%, #E0F2FE 100%)';
   };
@@ -33,8 +37,6 @@ export default function App() {
   const [currentStep, setCurrentStep] = useState(0);
 
   const currentStepRef = useRef(0);
-  const isLockedRef = useRef(false);
-  const isReversingRef = useRef(false);
   const lastTransitionTime = useRef(0);
   const COOLDOWN_MS = 1200;
 
@@ -42,23 +44,151 @@ export default function App() {
   const isIntroPlayingRef = useRef(true);
   const elevatorRef = useRef(null);
 
-  const onStepComplete = useCallback(() => { isLockedRef.current = false; }, []);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUIMinimized, setIsUIMinimized] = useState(false);
+  const [musicExpanded, setMusicExpanded] = useState(false);
+
+  const audioRef = useRef(null);
+  const musicExpandTimeoutRef = useRef(null);
+  const isReversingRef = useRef(false);
+
+  const onStepComplete = useCallback(() => {}, []);
   const handleIntroComplete = useCallback(() => {
     isIntroPlayingRef.current = false;
     setIsIntroPlaying(false);
   }, []);
 
+  useEffect(() => {
+    // Global Inertia Shield Initialization
+    window.__yangerila_lock_time = window.__yangerila_lock_time || 0;
+    window.__yangerila_inertia_time = window.__yangerila_inertia_time || 0;
+
+    window.setGlobalLock = (ms) => {
+      const target = Date.now() + ms;
+      window.__yangerila_lock_time = Math.max(window.__yangerila_lock_time, target);
+      window.__yangerila_inertia_time = target + 50;
+    };
+
+    window.isGlobalLocked = () => {
+      return Date.now() < window.__yangerila_lock_time || Date.now() < window.__yangerila_inertia_time;
+    };
+
+    const swallowInertia = () => {
+      const now = Date.now();
+      if (now < window.__yangerila_lock_time || now < window.__yangerila_inertia_time) {
+        window.__yangerila_inertia_time = now + 150;
+      }
+    };
+    
+    window.addEventListener('wheel', swallowInertia, { passive: true });
+    window.addEventListener('touchmove', swallowInertia, { passive: true });
+    return () => {
+      window.removeEventListener('wheel', swallowInertia);
+      window.removeEventListener('touchmove', swallowInertia);
+    };
+  }, []);
+
   const goToStep = useCallback((nextStep) => {
     const now = Date.now();
-    if (isLockedRef.current || now - lastTransitionTime.current < COOLDOWN_MS) return;
-    if (nextStep < 0 || nextStep > 12) return;
+    if (window.isGlobalLocked && window.isGlobalLocked()) return;
+    if (now - lastTransitionTime.current < COOLDOWN_MS) return;
+
+    let finalStep = nextStep;
+    if (currentStepRef.current >= 1 && finalStep < 1) {
+      finalStep = 1; // Cannot scroll back to HeroReveal SVG step 0
+    }
+
+    if (finalStep < 0 || finalStep > 12) return;
+    if (finalStep === currentStepRef.current) return;
 
     lastTransitionTime.current = now;
-    isReversingRef.current = nextStep < currentStepRef.current;
-    isLockedRef.current = true;
-    currentStepRef.current = nextStep;
-    setCurrentStep(nextStep);
+    isReversingRef.current = finalStep < currentStepRef.current;
+
+    if (window.setGlobalLock) window.setGlobalLock(COOLDOWN_MS);
+
+    currentStepRef.current = finalStep;
+    setCurrentStep(finalStep);
+    setIsMenuOpen(false);
   }, []);
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    audioRef.current.volume = 0;
+    const playPromise = audioRef.current.play();
+
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        setIsMusicPlaying(true);
+        gsap.to(audioRef.current, { volume: 0.4, duration: 2, ease: "power2.inOut" });
+      }).catch(() => {
+        const handleFirstInteraction = () => {
+          if (!isMusicPlaying && audioRef.current) {
+            const fallbackPromise = audioRef.current.play();
+            if (fallbackPromise !== undefined) {
+              fallbackPromise.then(() => {
+                setIsMusicPlaying(true);
+                gsap.to(audioRef.current, { volume: 0.4, duration: 2, ease: "power2.inOut" });
+                
+                window.removeEventListener('click', handleFirstInteraction);
+                window.removeEventListener('wheel', handleFirstInteraction);
+                window.removeEventListener('touchstart', handleFirstInteraction);
+                window.removeEventListener('keydown', handleFirstInteraction);
+              }).catch(e => console.log("Audio still blocked by browser:", e));
+            }
+          }
+        };
+        window.addEventListener('click', handleFirstInteraction);
+        window.addEventListener('wheel', handleFirstInteraction);
+        window.addEventListener('touchstart', handleFirstInteraction);
+        window.addEventListener('keydown', handleFirstInteraction);
+      });
+    }
+  }, [isMusicPlaying]);
+
+  const handleMusicClick = () => {
+    if (!audioRef.current) return;
+
+    setIsUIMinimized(false);
+    setMusicExpanded(true);
+    clearTimeout(musicExpandTimeoutRef.current);
+
+    musicExpandTimeoutRef.current = setTimeout(() => {
+      setMusicExpanded(false);
+    }, 3500);
+
+    if (isMusicPlaying) {
+      gsap.to(audioRef.current, {
+        volume: 0,
+        duration: 0.5,
+        onComplete: () => { audioRef.current.pause(); setIsMusicPlaying(false); }
+      });
+    } else {
+      audioRef.current.play();
+      setIsMusicPlaying(true);
+      gsap.to(audioRef.current, { volume: 0.4, duration: 1, ease: "power2.out" });
+    }
+  };
+
+  const handleMenuClick = () => {
+    setIsUIMinimized(false);
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleDesktopHoverEnter = () => {
+    if (window.innerWidth >= 768) {
+      setIsUIMinimized(false);
+      setMusicExpanded(true);
+    }
+  };
+
+  const handleDesktopHoverLeave = () => {
+    if (window.innerWidth >= 768) {
+      clearTimeout(musicExpandTimeoutRef.current);
+      setMusicExpanded(false);
+    }
+  };
 
   useGSAP(() => {
     const speed = isReversingRef.current ? 0.3 : 0.8;
@@ -71,49 +201,71 @@ export default function App() {
         y: `-${floor * 100}dvh`,
         duration: speed,
         ease: "power3.inOut",
-        force3D: true,
-        onComplete: () => { isLockedRef.current = false; }
+        force3D: true
       });
     }
   }, [currentStep]);
+
+  const handleScrollIntent = useCallback((direction) => {
+    const now = Date.now();
+
+    if (window.isGlobalLocked && window.isGlobalLocked()) return;
+    if (currentStepRef.current === 3 || isIntroPlayingRef.current) return;
+    if (now - lastTransitionTime.current < COOLDOWN_MS) return;
+
+    if (direction === 'next') goToStep(currentStepRef.current + 1);
+    else goToStep(currentStepRef.current - 1);
+  }, [goToStep]);
 
   useGSAP(() => {
     const obs = Observer.create({
       target: window,
       type: "wheel,touch,pointer",
       onDown: (self) => {
-        if (isLockedRef.current || currentStepRef.current === 3 || isIntroPlayingRef.current) return;
-        if (self.event.type === "wheel") {
-          goToStep(currentStepRef.current + 1);
-        } else {
-          goToStep(currentStepRef.current - 1);
-        }
+        setIsUIMinimized(true);
+        setMusicExpanded(false);
+        if (isMenuOpen) setIsMenuOpen(false);
+        handleScrollIntent(self.event.type === "wheel" ? 'next' : 'prev');
       },
       onUp: (self) => {
-        if (isLockedRef.current || currentStepRef.current === 3 || isIntroPlayingRef.current) return;
-        if (self.event.type === "wheel") {
-          goToStep(currentStepRef.current - 1);
-        } else {
-          goToStep(currentStepRef.current + 1);
-        }
+        setIsUIMinimized(true);
+        setMusicExpanded(false);
+        if (isMenuOpen) setIsMenuOpen(false);
+        handleScrollIntent(self.event.type === "wheel" ? 'prev' : 'next');
       },
       preventDefault: false,
-      tolerance: 30
+      tolerance: 40
     });
 
     const handleKeyDown = (e) => {
-      if (isLockedRef.current || isIntroPlayingRef.current || currentStepRef.current === 3) return;
-      if (e.key === 'ArrowDown' || e.key === 'PageDown') goToStep(currentStepRef.current + 1);
-      else if (e.key === 'ArrowUp' || e.key === 'PageUp') goToStep(currentStepRef.current - 1);
+      if (window.isGlobalLocked && window.isGlobalLocked()) return;
+      if (isIntroPlayingRef.current || currentStepRef.current === 3) return;
+
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+        setIsUIMinimized(true);
+        setMusicExpanded(false);
+        setIsMenuOpen(false);
+        goToStep(currentStepRef.current + 1);
+      }
+      else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+        setIsUIMinimized(true);
+        setMusicExpanded(false);
+        setIsMenuOpen(false);
+        goToStep(currentStepRef.current - 1);
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => { obs.kill(); window.removeEventListener('keydown', handleKeyDown); };
-  }, []);
+  }, [isMenuOpen, handleScrollIntent]);
 
   useEffect(() => {
-    const handleNextStep = () => goToStep(currentStepRef.current + 1);
-    const handlePrevStep = () => goToStep(currentStepRef.current - 1);
+    const handleNextStep = () => {
+      goToStep(currentStepRef.current + 1);
+    };
+    const handlePrevStep = () => {
+      goToStep(currentStepRef.current - 1);
+    };
     window.addEventListener('requestNextStep', handleNextStep);
     window.addEventListener('requestPrevStep', handlePrevStep);
     return () => {
@@ -122,14 +274,88 @@ export default function App() {
     };
   }, [goToStep]);
 
+  const navLinks = [
+    { label: "Welcome", step: 1 },
+    { label: "Our Legacy", step: 3 },
+    { label: "Founder's Note", step: 5 },
+    { label: "Curriculum", step: 6 },
+    { label: "Insights (FAQ)", step: 7 },
+    { label: "Premium Rewards", step: 8 },
+    { label: "Admissions", step: 9 },
+    { label: "Testimonials", step: 11 },
+  ];
+
   return (
     <div className="relative w-full h-dvh overflow-hidden bg-transparent font-sans">
       <StaticPastelBackground step={currentStep} />
       <Header />
 
+      <audio ref={audioRef} src={ambientMusic} loop preload="auto" />
+
+      <div className={`fixed bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 right-4 sm:right-6 md:right-8 z-[100] pointer-events-none flex justify-between items-end transition-opacity duration-1000 ${isIntroPlaying ? 'opacity-0' : 'opacity-100'}`}>
+        <button
+          onClick={handleMusicClick}
+          onMouseEnter={handleDesktopHoverEnter}
+          onMouseLeave={handleDesktopHoverLeave}
+          className={`pointer-events-auto relative flex items-center bg-white/60 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.1)] rounded-full overflow-hidden ease-[cubic-bezier(0.25,1,0.5,1)] origin-bottom-left cursor-pointer focus:outline-none touch-manipulation
+            transition-[width,transform,opacity,background-color] duration-500
+            ${isUIMinimized ? 'scale-75 opacity-50 bg-white/40' : 'scale-100 opacity-100 hover:bg-white/90'} 
+            ${musicExpanded ? 'w-[160px] md:w-[180px]' : 'w-[42px] md:w-[46px]'} 
+            h-[42px] md:h-[46px]
+          `}
+        >
+          <div className="w-[42px] md:w-[46px] h-[42px] md:h-[46px] shrink-0 flex items-center justify-center text-ink-dark transition-transform hover:scale-95 pointer-events-none">
+            {isMusicPlaying ? (
+              <div className="flex gap-[2px] items-end h-3">
+                <div className="w-[3px] bg-accent-teal rounded-full animate-[bounce_1s_infinite_ease-in-out] origin-bottom" style={{ height: '60%' }}></div>
+                <div className="w-[3px] bg-accent-teal rounded-full animate-[bounce_1s_infinite_ease-in-out_0.2s] origin-bottom" style={{ height: '100%' }}></div>
+                <div className="w-[3px] bg-accent-teal rounded-full animate-[bounce_1s_infinite_ease-in-out_0.4s] origin-bottom" style={{ height: '40%' }}></div>
+              </div>
+            ) : (
+              <Play size={14} className="text-ink-dark ml-0.5" />
+            )}
+          </div>
+
+          <div className={`whitespace-nowrap transition-opacity duration-300 pointer-events-none flex flex-col justify-center ${musicExpanded ? 'opacity-100' : 'opacity-0'}`}>
+            <p className="text-[7px] md:text-[8px] font-black uppercase tracking-[0.2em] text-accent-teal leading-none mb-1">
+              {isMusicPlaying ? "Now Playing" : "Paused"}
+            </p>
+            <p className="text-[10px] md:text-xs font-bold text-ink-dark truncate pr-4 leading-none">
+              Yangerila Theme
+            </p>
+          </div>
+        </button>
+
+        <div className="pointer-events-auto relative">
+          <div className={`absolute bottom-full right-0 mb-3 bg-white/30 backdrop-blur-2xl border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.1)] rounded-2xl p-2 w-[140px] md:w-[160px] flex flex-col transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] origin-bottom-right 
+            ${isMenuOpen ? 'scale-100 opacity-100 visible translate-y-0' : 'scale-90 opacity-0 invisible translate-y-4'}
+          `}>
+            {navLinks.map((link, idx) => (
+              <button
+                key={idx}
+                onClick={() => goToStep(link.step)}
+                className={`w-full text-left px-3 py-2 rounded-xl text-[9px] md:text-[10px] font-bold transition-all duration-300 focus:outline-none ${currentStep === link.step ? 'bg-white/70 shadow-sm text-accent-teal' : 'text-ink-dark hover:bg-white/40 hover:text-accent-teal'}`}
+              >
+                {link.label}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={handleMenuClick}
+            className={`flex items-center justify-center bg-white/60 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.1)] rounded-full text-ink-dark hover:bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] origin-bottom-right focus:outline-none touch-manipulation
+              w-[42px] md:w-[46px] h-[42px] md:h-[46px]
+              ${isUIMinimized && !isMenuOpen ? 'scale-75 opacity-50 bg-white/40' : 'scale-100 opacity-100 active:scale-95'}
+            `}
+          >
+            {isMenuOpen ? <X size={18} className="text-accent-teal" /> : <Menu size={18} />}
+          </button>
+        </div>
+      </div>
+
       <main className="relative z-10 w-full h-full">
         <HeroReveal step={currentStep} onComplete={onStepComplete} isReversing={isReversingRef.current} onIntroComplete={handleIntroComplete} />
-        <LegacyPanel step={currentStep} onComplete={onStepComplete} isReversing={isReversingRef.current} />
+        <LegacyPanel step={currentStep} onComplete={onStepComplete} />
 
         <div
           ref={elevatorRef}

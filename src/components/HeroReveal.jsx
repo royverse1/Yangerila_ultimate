@@ -80,8 +80,13 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
+      style={{ transform: 'translateZ(0)', willChange: 'transform' }}
     >
-      <video ref={videoRef} src={src} poster={poster} muted loop playsInline decoding="async" className="w-full h-full object-cover scale-[1.02]" />
+      {isActiveStep ? (
+        <video ref={videoRef} src={src} poster={poster} muted loop playsInline decoding="async" className="w-full h-full object-cover scale-[1.02]" />
+      ) : (
+        <img src={poster} className="w-full h-full object-cover scale-[1.02]" alt="" />
+      )}
       <div className="absolute inset-0 bg-linear-to-br from-white/30 via-transparent to-black/5 pointer-events-none mix-blend-overlay"></div>
     </div>
   );
@@ -90,11 +95,14 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
 const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversing, onIntroComplete }) {
   const containerRef = useRef(null);
   const maskRef = useRef(null);
+  const canvasRef = useRef(null);
   const textRef = useRef(null);
   const letterYRef = useRef(null);
   const paragraphRef = useRef(null);
   const aboutRef = useRef(null);
   const bentoRowsRef = useRef([]);
+
+  const maskProxy = useRef({ scale: 1, opacity: 1 });
 
   const [introDone, setIntroDone] = useState(false);
   const [loadingPhase, setLoadingPhase] = useState(0);
@@ -123,6 +131,53 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     window.addEventListener('resize', checkOrientation);
     return () => window.removeEventListener('resize', checkOrientation);
   }, []);
+
+  const renderCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.globalAlpha = maskProxy.current.opacity;
+    if (ctx.globalAlpha <= 0.01) return;
+
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.globalAlpha = 1;
+    
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    
+    const proxyScale = maskProxy.current.scale;
+    ctx.scale(proxyScale, proxyScale);
+    
+    const vw = window.innerWidth;
+    const baseWidth = vw >= 768 ? vw * 0.08 : vw * 0.25;
+    const baseScale = baseWidth / 157;
+    
+    ctx.scale(baseScale, baseScale);
+    ctx.translate(-157 / 2, -171 / 2);
+    
+    const p = new Path2D(yLogoPath);
+    ctx.fill(p);
+    
+    ctx.resetTransform();
+    ctx.globalCompositeOperation = 'source-over';
+  }, []);
+
+  useEffect(() => {
+    const resize = () => {
+      if (canvasRef.current) {
+        canvasRef.current.width = window.innerWidth;
+        canvasRef.current.height = window.innerHeight;
+        renderCanvas();
+      }
+    };
+    window.addEventListener('resize', resize);
+    resize();
+    return () => window.removeEventListener('resize', resize);
+  }, [renderCanvas]);
 
   const handleVideoEnd = useCallback(() => {
     if (introDone) return;
@@ -179,15 +234,19 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
 
   useGSAP(() => {
     if (step > 2) {
+      gsap.killTweensOf([containerRef.current, textRef.current, paragraphRef.current, maskRef.current, aboutRef.current]);
       gsap.to(containerRef.current, { yPercent: -100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut", force3D: true });
-      gsap.set([textRef.current, paragraphRef.current, maskRef.current, aboutRef.current], { autoAlpha: 0, delay: 0.4 });
+      gsap.set([textRef.current, paragraphRef.current, maskRef.current, aboutRef.current], { autoAlpha: 0 });
       gsap.set(bentoRowsRef.current, { autoAlpha: 0 });
       return;
     }
     if (isReversing && step === 2) {
+      gsap.killTweensOf([containerRef.current, textRef.current, paragraphRef.current, maskRef.current, aboutRef.current, maskProxy.current]);
       gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out", force3D: true, onComplete });
-      gsap.set(maskRef.current, { autoAlpha: 0, scale: 180 });
-      gsap.set(letterYRef.current, { opacity: 0 });
+      gsap.set(maskRef.current, { autoAlpha: 0, scale: 120, force3D: true });
+      maskProxy.current = { scale: 120, opacity: 0 };
+      renderCanvas();
+      gsap.set(letterYRef.current, { autoAlpha: 0 });
       gsap.set([textRef.current, paragraphRef.current], { autoAlpha: 0, y: -50 });
       gsap.set(aboutRef.current, { autoAlpha: 1, y: 0 });
       gsap.set(bentoRowsRef.current, { autoAlpha: 1, y: 0 });
@@ -196,10 +255,13 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     if (step === 0) {
       if (isReversing) {
         gsap.to(maskRef.current, { scale: 1, autoAlpha: 1, duration: 0.8, ease: "power3.inOut", force3D: true });
+        gsap.to(maskProxy.current, { scale: 1, opacity: 1, duration: 0.8, ease: "power3.inOut", onUpdate: renderCanvas });
         gsap.to(letterYRef.current, { opacity: 1, duration: 0.6, force3D: true });
         gsap.to([textRef.current, paragraphRef.current], { autoAlpha: 0, y: 60, duration: 0.6, force3D: true, onComplete });
       } else {
         gsap.set(maskRef.current, { scale: 1, autoAlpha: 1 });
+        maskProxy.current = { scale: 1, opacity: 1 };
+        renderCanvas();
         gsap.set(letterYRef.current, { opacity: 1 });
         gsap.set([textRef.current, paragraphRef.current], { autoAlpha: 0, y: 60 });
         gsap.set(aboutRef.current, { autoAlpha: 0, y: 50 });
@@ -214,7 +276,8 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         gsap.to([textRef.current, paragraphRef.current], { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true, onComplete });
       } else {
         const tl = gsap.timeline({ onComplete });
-        tl.to(maskRef.current, { scale: 180, transformOrigin: '50% 50%', ease: 'power3.inOut', duration: 1.2, force3D: true })
+        tl.to(maskRef.current, { scale: 120, transformOrigin: '50% 50%', ease: 'power3.inOut', duration: 1.2, force3D: true })
+        tl.to(maskProxy.current, { scale: 120, ease: 'power3.inOut', duration: 1.2, onUpdate: renderCanvas }, "<")
           .to(letterYRef.current, { opacity: 0, duration: 0.3, force3D: true }, "<0.4")
           .to(textRef.current, { autoAlpha: 1, scale: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, "-=0.6")
           .to(paragraphRef.current, { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, "-=0.5");
@@ -287,7 +350,6 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       </div>
 
       <div ref={aboutRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center invisible translate-y-10 px-4 sm:px-6 lg:px-24 bg-white/85 backdrop-blur-md border-t border-white/80 shadow-2xl will-change-transform">
-        {/* ADDED P-4 PADDING: Prevents the horizontal shadow/glow from being abruptly clipped by the scroll container walls */}
         <div className="max-w-6xl mx-auto w-full flex flex-col gap-3 md:gap-6 lg:gap-8 relative z-10 max-h-[85dvh] overflow-y-auto overflow-x-hidden pb-4 pt-4 px-4 scrollbar-hide">
 
           <div className="w-full border-t-2 border-pastel-mint pt-2 md:pt-4 mb-1 md:mb-2 shrink-0">
@@ -334,11 +396,14 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         </div>
       </div>
 
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-0" style={{ transform: 'translateZ(0)' }} />
+
       <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-        <svg ref={maskRef} viewBox="0 0 157 171" className="w-[25vw] md:w-[8vw] h-auto overflow-visible will-change-transform">
-          <path d={`M -2000 -2000 L 2100 -2000 L 2100 2100 L -2000 2100 Z ${yLogoPath}`} fill="#000000" fillRule="evenodd" />
-          <path ref={letterYRef} d={yLogoPath} fill="transparent" stroke="#0D9488" strokeWidth="1.5" className="drop-shadow-[0_0_10px_rgba(13,148,136,0.6)]" />
-        </svg>
+        <div ref={maskRef} className="w-[25vw] md:w-[8vw] aspect-[157/171] will-change-transform" style={{ transform: 'translateZ(0)' }}>
+          <svg viewBox="0 0 157 171" className="w-full h-full overflow-visible">
+            <path ref={letterYRef} d={yLogoPath} fill="transparent" stroke="#0D9488" strokeWidth="1.5" className="drop-shadow-[0_0_10px_rgba(13,148,136,0.6)]" />
+          </svg>
+        </div>
       </div>
     </section>
   );
