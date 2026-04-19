@@ -135,6 +135,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete }) {
       let alphaVal = isPast ? 0 : 1 - (offset * 0.15);
 
       if (duration === 0) {
+        gsap.killTweensOf(card);
         gsap.set(card, { xPercent: -50, yPercent: -50, z: zVal, y: yVal, scale: scaleVal, autoAlpha: alphaVal, force3D: true });
       } else {
         gsap.to(card, {
@@ -148,6 +149,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete }) {
     const targetFrame = Math.floor((targetStateIndex / 2) * TOTAL_FRAMES);
 
     if (duration === 0) {
+      gsap.killTweensOf(frameRef.current);
       frameRef.current.current = targetFrame;
       renderFrame(targetFrame);
     } else {
@@ -185,7 +187,9 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete }) {
 
     // Stop execution for internal contents if heavy assets are stripped
     if (mountStatus === 'unmounted') {
-      prevGlobalStep.current = step;
+      if (step !== 3 && step !== 4) {
+        prevGlobalStep.current = step;
+      }
       return;
     }
 
@@ -204,10 +208,15 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete }) {
         if (imgBg) gsap.set(imgBg, { autoAlpha: 0 });
         if (canvasRef.current) gsap.set(canvasRef.current, { autoAlpha: 1 });
 
-        gsap.to(statCards, { 
-          autoAlpha: 0, y: -30, duration: 1.2, ease: "power2.inOut", 
-          onComplete: () => gsap.set(statsBlockRef.current, { display: "none" }) 
-        });
+        if (oldStep > 3) {
+          gsap.to(statCards, { 
+            autoAlpha: 0, y: -30, duration: 1.2, ease: "power2.inOut", 
+            onComplete: () => gsap.set(statsBlockRef.current, { display: "none" }) 
+          });
+        } else {
+          gsap.set(statCards, { autoAlpha: 0, y: -30 });
+          gsap.set(statsBlockRef.current, { display: "none", autoAlpha: 0 });
+        }
       } else {
         if (canvasRef.current) gsap.set(canvasRef.current, { autoAlpha: 1 });
       }

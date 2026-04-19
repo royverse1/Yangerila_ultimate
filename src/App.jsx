@@ -276,13 +276,14 @@ export default function App() {
 
   const navLinks = [
     { label: "Welcome", step: 1 },
-    { label: "Our Legacy", step: 3 },
+    { label: "Our Legacy", step: 2 },
     { label: "Founder's Note", step: 5 },
     { label: "Curriculum", step: 6 },
     { label: "Insights (FAQ)", step: 7 },
     { label: "Premium Rewards", step: 8 },
     { label: "Admissions", step: 9 },
     { label: "Testimonials", step: 11 },
+    { label: "Contact", step: 12 },
   ];
 
   return (

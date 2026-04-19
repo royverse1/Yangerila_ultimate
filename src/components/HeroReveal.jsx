@@ -271,6 +271,13 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     }
     if (step === 1) {
       if (isReversing) {
+        gsap.killTweensOf([containerRef.current, textRef.current, paragraphRef.current, maskRef.current, aboutRef.current, bentoRowsRef.current, maskProxy.current]);
+        gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out", force3D: true });
+        gsap.set(maskRef.current, { autoAlpha: 0, scale: 120, force3D: true });
+        maskProxy.current = { scale: 120, opacity: 0 };
+        renderCanvas();
+        gsap.set(letterYRef.current, { autoAlpha: 0 });
+
         gsap.to(aboutRef.current, { autoAlpha: 0, y: 50, duration: 0.6, force3D: true });
         gsap.to(bentoRowsRef.current, { autoAlpha: 0, y: 30, duration: 0.4, force3D: true });
         gsap.to([textRef.current, paragraphRef.current], { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true, onComplete });
