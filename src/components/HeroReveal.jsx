@@ -319,7 +319,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   return (
     <section ref={containerRef} className={`fixed inset-0 w-full h-dvh z-50 bg-transparent overflow-hidden flex items-center justify-center will-change-transform ${step > 2 ? 'pointer-events-none' : ''}`}>
       {!introDone && (
-        <div ref={videoWrapperRef} className="absolute inset-0 w-full h-full z-100 bg-[radial-gradient(circle_at_center,_#FFFFFF_0%,_#E0F2FE_100%)]">
+        <div ref={videoWrapperRef} className="absolute inset-0 w-full h-full z-100 bg-[radial-gradient(circle_at_center,_#F4F0FF_0%,_#D3C5F1_100%)]">
           <video
             key={videoSrc} ref={videoRef} src={videoSrc} preload="auto" muted playsInline
             onLoadedData={() => setVideoBuffered(true)} onCanPlayThrough={() => setVideoBuffered(true)}
@@ -329,10 +329,14 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
 
           {loadingPhase === 0 && (
             <div ref={loadingScreenRef} className="absolute inset-0 z-120 flex flex-col items-center justify-center bg-transparent">
-              <h2 className="text-xs sm:text-sm md:text-lg font-black font-[family:var(--font-technical-sans)] uppercase tracking-[0.2em] md:tracking-[0.4em] text-ink-dark mb-4 drop-shadow-sm">Welcome to <span className="text-accent-teal">Yangerila</span></h2>
-              <p className="text-[10px] md:text-xs text-ink-medium tracking-widest font-[family:var(--font-elegant-serif)] italic mb-8 md:mb-12">Loading the Experience</p>
-              <div className="w-48 md:w-64 h-[1px] md:h-[2px] bg-ink-dark/10 overflow-hidden relative rounded-full">
-                <div ref={progressBarRef} className="absolute top-0 left-0 h-full bg-accent-teal w-0 shadow-[0_0_10px_rgba(58,90,140,0.5)]" />
+              <h2 className="text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.3em] md:tracking-[0.5em] text-[#1E293B] mb-3 md:mb-5 drop-shadow-sm font-sans">
+                Welcome to <span className="text-[#64748B]">Yangerila</span>
+              </h2>
+              <p className="text-[9px] md:text-[11px] text-[#64748B] tracking-[0.2em] md:tracking-[0.3em] italic mb-8 md:mb-12 font-sans font-medium">
+                Loading the Experience
+              </p>
+              <div className="w-48 md:w-64 h-[1px] md:h-[2px] bg-[#1E293B]/10 overflow-hidden relative rounded-full">
+                <div ref={progressBarRef} className="absolute top-0 left-0 h-full bg-[#1E293B] w-0 shadow-sm" />
               </div>
             </div>
           )}
@@ -349,13 +353,13 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
                         setTimeout(() => handleVideoEnd(), 5200);
                       }
                     }}
-                    className="px-6 py-3 md:px-8 md:py-4 bg-ink-dark/95 hover:bg-ink-dark text-white rounded-[2rem] uppercase tracking-[0.25em] font-black text-[10px] md:text-xs animate-[pulse_2s_ease-in-out_infinite] shadow-[0_10px_40px_rgba(0,0,0,0.3)] transition-all duration-300 border border-white/10 hover:scale-105 active:scale-95 font-[family:var(--font-technical-sans)]">
+                    className="px-6 py-3 md:px-8 md:py-4 bg-[#1E293B]/95 hover:bg-[#1E293B] text-white rounded-[2rem] uppercase tracking-[0.25em] font-black text-[10px] md:text-xs animate-[pulse_2s_ease-in-out_infinite] shadow-[0_10px_40px_rgba(0,0,0,0.3)] transition-all duration-300 border border-white/10 hover:scale-105 active:scale-95 font-sans">
                     Tap to Enter
                   </button>
                 </div>
               )}
               {showSkip && !videoBlocked && (
-                <button onClick={handleVideoEnd} className="absolute bottom-10 right-8 z-101 text-ink-dark bg-paper-bg hover:bg-white border-2 border-ink-dark/20 px-6 py-2 rounded-full text-xs font-bold font-[family:var(--font-technical-sans)] uppercase tracking-widest transition-all duration-300 shadow-md hover:shadow-lg">Skip Intro</button>
+                <button onClick={handleVideoEnd} className="absolute bottom-10 right-8 z-101 text-[#1E293B] bg-white/80 hover:bg-white border-2 border-[#1E293B]/20 px-6 py-2 rounded-full text-xs font-bold font-sans uppercase tracking-widest transition-all duration-300 shadow-md hover:shadow-lg">Skip Intro</button>
               )}
             </>
           )}
