@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+﻿import React, { useRef, useState, useEffect, useCallback } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { TextPlugin } from 'gsap/TextPlugin';
@@ -7,35 +7,20 @@ import heroVideoMobile from '../assets/y_hero_v.mp4';
 
 gsap.registerPlugin(TextPlugin);
 
-// P4.2 — global registry so only the video nearest viewport centre plays on mobile
-const mobileVideoRegistry = new Set();
-const mobileVideoThrottle = () => {
-  const vh = window.innerHeight;
-  let best = null, bestDist = Infinity;
-  mobileVideoRegistry.forEach(entry => {
-    if (!entry.el) return;
-    const rect = entry.el.getBoundingClientRect();
-    const dist = Math.abs(rect.top + rect.height / 2 - vh / 2);
-    if (dist < bestDist) { bestDist = dist; best = entry; }
-  });
-  mobileVideoRegistry.forEach(entry => {
-    if (entry === best) { if (entry.play) entry.play(); }
-    else { if (entry.stop) entry.stop(); }
-  });
-};
-
 const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
-  const videoRef     = useRef(null);
-  const containerRef = useRef(null);
+  const videoRef = useRef(null);
+  const playPromiseRef = useRef(null);
   const pauseTimeoutRef = useRef(null);
-  const registryEntry   = useRef(null);
   const [isInteracting, setIsInteracting] = useState(false);
 
   const handlePlay = useCallback(() => {
     if (videoRef.current && isActiveStep) {
       setIsInteracting(true);
       clearTimeout(pauseTimeoutRef.current);
-      videoRef.current.play().catch(() => setIsInteracting(false));
+      playPromiseRef.current = videoRef.current.play();
+      if (playPromiseRef.current) {
+        playPromiseRef.current.catch(() => { });
+      }
     }
   }, [isActiveStep]);
 
@@ -43,41 +28,45 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
     if (delay > 0) {
       pauseTimeoutRef.current = setTimeout(() => {
         setIsInteracting(false);
-        if (videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; }
+        if (videoRef.current) {
+          if (playPromiseRef.current) {
+            playPromiseRef.current.then(() => {
+              videoRef.current.pause();
+              videoRef.current.currentTime = 0;
+            }).catch(() => {
+              videoRef.current.pause();
+              videoRef.current.currentTime = 0;
+            });
+          } else {
+            videoRef.current.pause();
+            videoRef.current.currentTime = 0;
+          }
+        }
       }, delay);
     } else {
       setIsInteracting(false);
       clearTimeout(pauseTimeoutRef.current);
-      if (videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; }
+      if (videoRef.current) {
+        if (playPromiseRef.current) {
+          playPromiseRef.current.then(() => {
+            videoRef.current.pause();
+            videoRef.current.currentTime = 0;
+          }).catch(() => {
+            videoRef.current.pause();
+            videoRef.current.currentTime = 0;
+          });
+        } else {
+          videoRef.current.pause();
+          videoRef.current.currentTime = 0;
+        }
+      }
     }
   }, []);
 
-  // P4.2 — register with the mobile registry on mount
-  useEffect(() => {
-    const entry = { el: containerRef.current, play: handlePlay, stop: () => handleStop(0) };
-    registryEntry.current = entry;
-    mobileVideoRegistry.add(entry);
-    return () => {
-      mobileVideoRegistry.delete(entry);
-      clearTimeout(pauseTimeoutRef.current);
-    };
-  }, [handlePlay, handleStop]);
-
-  // P4.2 — IntersectionObserver triggers a throttle-pick instead of playing directly
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => {
-      if (!isActiveStep) { handleStop(0); return; }
-      if (window.matchMedia('(max-width: 768px)').matches) {
-        mobileThrottleThrottle(); // re-evaluate who's closest
-      } else if (!e.isIntersecting) {
-        handleStop(0);
-      }
-    }, { threshold: 0.4 });
-    if (containerRef.current) obs.observe(containerRef.current);
-    return () => obs.disconnect();
-  }, [isActiveStep, handlePlay, handleStop]);
-
-  const mobileThrottleThrottle = () => mobileVideoThrottle();
+  const handleMouseEnter = useCallback(() => handlePlay(), [handlePlay]);
+  const handleMouseLeave = useCallback(() => handleStop(0), [handleStop]);
+  const handleTouchStart = useCallback(() => handlePlay(), [handlePlay]);
+  const handleTouchEnd = useCallback(() => handleStop(3000), [handleStop]);
 
   useEffect(() => {
     if (!isActiveStep) handleStop(0);
@@ -85,21 +74,25 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
 
   return (
     <div
-      ref={containerRef}
-      className={`relative w-full aspect-square overflow-hidden rounded-[1.25rem] md:rounded-[2rem] cursor-pointer bg-paper-bg shrink-0 transition-[transform,box-shadow,border-color] duration-500 will-change-[transform,box-shadow,border-color] [transform:translateZ(0)] ${isInteracting ? 'scale-[1.05] shadow-[0_20px_40px_rgba(0,0,0,0.4)] -translate-y-2 border-2 border-accent-teal' : 'scale-100 shadow-[0_10px_20px_rgba(0,0,0,0.2)] border-2 border-ink-dark/20'}`}
-      onMouseEnter={handlePlay}
-      onMouseLeave={() => handleStop(0)}
-      onTouchStart={handlePlay}
-      onTouchEnd={() => handleStop(3000)}
-      onTouchCancel={() => handleStop(0)}
+      className={`relative w-full aspect-square overflow-hidden rounded-[1.25rem] md:rounded-[2rem] cursor-pointer bg-white/50 shrink-0 transition-all duration-500 ${isInteracting ? 'scale-[1.05] shadow-[0_20px_50px_rgba(13,148,136,0.3)] -translate-y-2 border-2 border-accent-teal' : 'scale-100 shadow-[0_8px_30px_rgba(15,23,42,0.06)] border border-white/80'}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+      style={{ transform: 'translateZ(0)', willChange: 'transform' }}
     >
-      <video ref={videoRef} src={src} poster={poster} muted loop playsInline decoding="async" className="w-full h-full object-cover scale-[1.02] will-change-transform" />
-      <div className="absolute inset-0 bg-linear-to-br from-white/30 via-transparent to-black/5 pointer-events-none" />
+      {isActiveStep ? (
+        <video ref={videoRef} src={src} poster={poster} muted loop playsInline decoding="async" className="w-full h-full object-cover scale-[1.02]" />
+      ) : (
+        <img src={poster} className="w-full h-full object-cover scale-[1.02]" alt="" />
+      )}
+      <div className="absolute inset-0 bg-linear-to-br from-white/30 via-transparent to-black/5 pointer-events-none mix-blend-overlay"></div>
     </div>
   );
 });
 
-const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversingRef, onIntroComplete }) {
+const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversing, onIntroComplete }) {
   const containerRef = useRef(null);
   const maskRef = useRef(null);
   const canvasRef = useRef(null);
@@ -108,6 +101,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   const paragraphRef = useRef(null);
   const aboutRef = useRef(null);
   const bentoRowsRef = useRef([]);
+
   const maskProxy = useRef({ scale: 1, opacity: 1 });
 
   const [introDone, setIntroDone] = useState(false);
@@ -185,8 +179,6 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     return () => window.removeEventListener('resize', resize);
   }, [renderCanvas]);
 
-
-
   const handleVideoEnd = useCallback(() => {
     if (introDone) return;
     gsap.to(videoWrapperRef.current, {
@@ -241,59 +233,51 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   }, [loadingPhase, handleVideoEnd]);
 
   useGSAP(() => {
-    // P1.3 — read direction at animation-fire time, not from stale prop
-    const isReversing = isReversingRef.current;
-
     if (step > 2) {
-      gsap.to(maskRef.current, { autoAlpha: 0, duration: 0.1, force3D: true });
+      gsap.killTweensOf([containerRef.current, textRef.current, paragraphRef.current, maskRef.current, aboutRef.current]);
       gsap.to(containerRef.current, { yPercent: -100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut", force3D: true });
-      gsap.to([textRef.current, paragraphRef.current, aboutRef.current], { autoAlpha: 0, duration: 0.4, delay: 0.2, force3D: true });
-      gsap.to(bentoRowsRef.current, { autoAlpha: 0, duration: 0.4, force3D: true });
+      gsap.set([textRef.current, paragraphRef.current, maskRef.current, aboutRef.current], { autoAlpha: 0 });
+      gsap.set(bentoRowsRef.current, { autoAlpha: 0 });
       return;
     }
-
-    if (isReversing && step < 2) {
-      gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out", force3D: true });
-    }
-
     if (isReversing && step === 2) {
       gsap.killTweensOf([containerRef.current, textRef.current, paragraphRef.current, maskRef.current, aboutRef.current, maskProxy.current]);
       gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out", force3D: true, onComplete });
       gsap.set(maskRef.current, { autoAlpha: 0, scale: 120, force3D: true });
       maskProxy.current = { scale: 120, opacity: 0 };
       renderCanvas();
-      gsap.set(letterYRef.current, { autoAlpha: 0, force3D: false });
+      gsap.set(letterYRef.current, { autoAlpha: 0 });
       gsap.set([textRef.current, paragraphRef.current], { autoAlpha: 0, y: -50 });
       gsap.set(aboutRef.current, { autoAlpha: 1, y: 0 });
       gsap.set(bentoRowsRef.current, { autoAlpha: 1, y: 0 });
       return;
     }
-
     if (step === 0) {
       if (isReversing) {
-        gsap.to(maskRef.current, { scale: 1, autoAlpha: 1, duration: 0.8, ease: "power3.inOut", force3D: true, transformOrigin: '50% 50%' });
+        gsap.to(maskRef.current, { scale: 1, autoAlpha: 1, duration: 0.8, ease: "power3.inOut", force3D: true });
         gsap.to(maskProxy.current, { scale: 1, opacity: 1, duration: 0.8, ease: "power3.inOut", onUpdate: renderCanvas });
-        gsap.to(letterYRef.current, { autoAlpha: 1, duration: 0.4, delay: 0.4, force3D: false });
+        gsap.to(letterYRef.current, { opacity: 1, duration: 0.6, force3D: true });
         gsap.to([textRef.current, paragraphRef.current], { autoAlpha: 0, y: 60, duration: 0.6, force3D: true, onComplete });
       } else {
-        gsap.set(maskRef.current, { scale: 1, autoAlpha: 1, force3D: true });
+        gsap.set(maskRef.current, { scale: 1, autoAlpha: 1 });
         maskProxy.current = { scale: 1, opacity: 1 };
         renderCanvas();
-        gsap.set(letterYRef.current, { autoAlpha: 1, force3D: false });
+        gsap.set(letterYRef.current, { opacity: 1 });
         gsap.set([textRef.current, paragraphRef.current], { autoAlpha: 0, y: 60 });
         gsap.set(aboutRef.current, { autoAlpha: 0, y: 50 });
         gsap.set(bentoRowsRef.current, { autoAlpha: 0, y: 50 });
         onComplete();
       }
     }
-
     if (step === 1) {
       if (isReversing) {
-        gsap.killTweensOf([containerRef.current, textRef.current, paragraphRef.current, maskRef.current, aboutRef.current, maskProxy.current, bentoRowsRef.current]);
+        gsap.killTweensOf([containerRef.current, textRef.current, paragraphRef.current, maskRef.current, aboutRef.current, bentoRowsRef.current, maskProxy.current]);
+        gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out", force3D: true });
         gsap.set(maskRef.current, { autoAlpha: 0, scale: 120, force3D: true });
         maskProxy.current = { scale: 120, opacity: 0 };
         renderCanvas();
-        gsap.set(letterYRef.current, { autoAlpha: 0, force3D: false });
+        gsap.set(letterYRef.current, { autoAlpha: 0 });
+
         gsap.to(aboutRef.current, { autoAlpha: 0, y: 50, duration: 0.6, force3D: true });
         gsap.to(bentoRowsRef.current, { autoAlpha: 0, y: 30, duration: 0.4, force3D: true });
         gsap.to([textRef.current, paragraphRef.current], { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true, onComplete });
@@ -301,24 +285,22 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         const tl = gsap.timeline({ onComplete });
         tl.to(maskRef.current, { scale: 120, transformOrigin: '50% 50%', ease: 'power3.inOut', duration: 1.2, force3D: true })
         tl.to(maskProxy.current, { scale: 120, ease: 'power3.inOut', duration: 1.2, onUpdate: renderCanvas }, "<")
-          .to(letterYRef.current, { autoAlpha: 0, duration: 0.15, force3D: false }, "<")
-          .to(textRef.current, { autoAlpha: 1, scale: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, "-=0.8")
-          .to(paragraphRef.current, { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, "-=0.7");
+          .to(letterYRef.current, { opacity: 0, duration: 0.3, force3D: true }, "<0.4")
+          .to(textRef.current, { autoAlpha: 1, scale: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, "-=0.6")
+          .to(paragraphRef.current, { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, "-=0.5");
       }
     }
-
     if (step === 2 && !isReversing) {
       const tl = gsap.timeline({ onComplete });
       tl.to([textRef.current, paragraphRef.current], { autoAlpha: 0, y: -50, duration: 0.6, ease: 'power3.inOut', force3D: true });
       tl.to(aboutRef.current, { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power3.out', force3D: true }, "-=0.2");
       tl.fromTo(bentoRowsRef.current,
         { autoAlpha: 0, y: 30 },
-        { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.15, ease: "power3.out", force3D: true },
+        { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.15, ease: "power3.out", force3D: true, clearProps: "transform" },
         "-=0.2"
       );
     }
-  // isReversingRef is a ref — read inside, not listed as dependency
-  }, { scope: containerRef, dependencies: [step] });
+  }, { scope: containerRef, dependencies: [step, isReversing] });
 
   const addToBentoRefs = useCallback((el, index) => { if (el) bentoRowsRef.current[index] = el; }, []);
 
@@ -330,7 +312,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
             key={videoSrc} ref={videoRef} src={videoSrc} preload="auto" muted playsInline
             onLoadedData={() => setVideoBuffered(true)} onCanPlayThrough={() => setVideoBuffered(true)}
             onEnded={handleVideoEnd} onError={handleVideoEnd}
-            className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 will-change-transform [transform:translateZ(0)] ${videoBlocked ? 'opacity-30 blur-sm scale-105' : 'opacity-100 blur-none scale-100'} ${loadingPhase === 0 ? 'invisible' : 'visible'}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${videoBlocked ? 'opacity-30 blur-sm scale-105' : 'opacity-100 blur-none scale-100'} ${loadingPhase === 0 ? 'invisible' : 'visible'}`}
           />
 
           {loadingPhase === 0 && (
@@ -370,12 +352,12 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
 
       <div ref={textRef} className="z-0 absolute inset-0 flex flex-col items-center justify-center text-center px-4 max-w-5xl mx-auto invisible translate-y-10 will-change-transform">
         <span className="text-ink-medium tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-xs xl:text-sm font-bold uppercase mb-4 md:mb-6 xl:mb-8 block">Yangerila Creative Studio</span>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-ink-dark font-[family:var(--font-technical-sans)] tracking-tighter mb-4 md:mb-6 uppercase leading-tight">Always Performance <br /><span className="text-transparent bg-clip-text bg-linear-to-r from-accent-teal to-[#2563EB] drop-shadow-sm">Ready</span></h1>
-        <p ref={paragraphRef} className="mt-4 md:mt-6 xl:mt-8 text-ink-medium max-w-2xl mx-auto text-sm sm:text-base md:text-lg xl:text-xl font-[family:var(--font-elegant-serif)] shadow-sm invisible translate-y-10 will-change-transform">A guitar-specialty academy bridging clinical precision and artistic mastery. Serving students nationwide and across 12 countries.</p>
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-ink-dark tracking-tighter mb-4 md:mb-6 uppercase leading-tight">Always Performance <br /><span className="text-transparent bg-clip-text bg-linear-to-r from-accent-teal to-[#2563EB] drop-shadow-sm">Ready</span></h1>
+        <p ref={paragraphRef} className="mt-4 md:mt-6 xl:mt-8 text-ink-dark max-w-2xl mx-auto text-sm sm:text-base md:text-lg xl:text-xl font-medium text-serif-italic shadow-sm invisible translate-y-10 will-change-transform">A guitar-specialty academy bridging clinical precision and artistic mastery. Serving students nationwide and across 12 countries.</p>
       </div>
 
-      <div ref={aboutRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center invisible translate-y-10 px-4 sm:px-6 lg:px-24 bg-paper-bg border-t-2 border-ink-dark shadow-[0_-10px_40px_rgba(0,0,0,0.2)] will-change-transform">
-        <div className="about-scroll-container max-w-6xl mx-auto w-full flex flex-col gap-3 md:gap-6 lg:gap-8 relative z-10 max-h-[85dvh] overflow-y-auto overflow-x-hidden pb-4 pt-4 px-4 scrollbar-hide">
+      <div ref={aboutRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center invisible translate-y-10 px-4 sm:px-6 lg:px-24 bg-white/85 backdrop-blur-md border-t border-white/80 shadow-2xl will-change-transform">
+        <div className="max-w-6xl mx-auto w-full flex flex-col gap-3 md:gap-6 lg:gap-8 relative z-10 max-h-[85dvh] overflow-y-auto overflow-x-hidden pb-4 pt-4 px-4 scrollbar-hide">
 
           <div className="w-full border-t-2 border-pastel-mint pt-2 md:pt-4 mb-1 md:mb-2 shrink-0">
             <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-ink-dark uppercase tracking-tighter leading-none mb-1">About</h2>
@@ -397,7 +379,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
           <div ref={el => addToBentoRefs(el, 1)} className="flex flex-row-reverse items-center gap-3 md:gap-6 lg:gap-12 w-full invisible will-change-[transform,opacity] shrink-0">
             <div className="flex-1 text-right md:text-left">
               <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">02 // Approach</span>
-              <p className="text-ink-dark font-[family:var(--font-elegant-serif)] italic text-xs sm:text-base md:text-lg lg:text-2xl xl:text-3xl leading-relaxed">
+              <p className="text-ink-dark font-serif italic text-xs sm:text-base md:text-lg lg:text-2xl xl:text-3xl leading-relaxed">
                 Our online classes are redefining the way guitar is taught, combining live interactive sessions, structured courses, and constant teacher support.
               </p>
             </div>
@@ -410,7 +392,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
             <div className="flex-1">
               <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">03 // Vision</span>
               <p className="text-ink-dark font-sans font-medium text-xs sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-relaxed">
-                At Yangerila, we believe music is more than just a talent — it's a life skill that everyone can and should learn. With this vision, we are proud to serve students across India.
+                At Yangerila, we believe music is more than just a talent ΓÇö it's a life skill that everyone can and should learn. With this vision, we are proud to serve students across India.
               </p>
             </div>
             <div className="w-[10vh] h-[10vh] sm:w-[14vh] sm:h-[14vh] md:w-[18vh] md:h-[18vh] lg:w-48 lg:h-48 shrink-0 aspect-square">

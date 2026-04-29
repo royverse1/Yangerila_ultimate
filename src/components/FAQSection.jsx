@@ -78,29 +78,28 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
 
         <div className="faq-header text-center mb-6 md:mb-10 w-full pt-4 md:pt-10 invisible shrink-0">
           <span className="text-accent-teal tracking-[0.4em] font-bold text-[10px] uppercase mb-2 md:mb-4 block">Support</span>
-          <h2 className="text-3xl sm:text-4xl md:text-7xl font-black text-ink-dark uppercase tracking-tighter leading-tight">
-            Frequently Asked <br className="hidden md:block" /> <span className="text-transparent bg-clip-text bg-linear-to-r from-accent-magenta to-accent-teal font-light text-serif-italic lowercase">insights</span>
+          <h2 className="text-3xl sm:text-4xl md:text-7xl font-[family:var(--font-technical-sans)] font-black text-ink-dark uppercase tracking-tighter leading-tight">
+            Frequently Asked <br className="hidden md:block" /> <span className="text-transparent bg-clip-text bg-linear-to-r from-accent-magenta to-accent-teal font-[family:var(--font-elegant-serif)] italic lowercase">insights</span>
           </h2>
         </div>
 
-        <div className="faq-tabs flex flex-wrap justify-center gap-3 md:gap-12 mb-6 md:mb-12 w-full border-b border-ink-dark/10 pb-4 md:pb-8 invisible shrink-0">
+        <div className="faq-tabs flex flex-wrap justify-center gap-3 md:gap-8 mb-6 md:mb-12 w-full invisible shrink-0">
           {categories.map((cat) => (
-            <button key={cat} onClick={() => handleCategoryChange(cat)} className={`relative py-1 md:py-2 text-[9px] sm:text-[10px] md:text-sm font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all duration-500 hover:text-accent-teal bg-transparent border-none cursor-pointer ${activeCategory === cat ? 'text-accent-teal' : 'text-ink-medium'}`}>
+            <button key={cat} onClick={() => handleCategoryChange(cat)} className={`relative px-4 sm:px-6 py-2 md:py-3 rounded-full text-[9px] sm:text-[10px] md:text-sm font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-colors duration-300 cursor-pointer ${activeCategory === cat ? 'bg-ink-dark text-white shadow-md' : 'bg-transparent text-ink-medium hover:text-ink-dark'}`}>
               {cat}
-              {activeCategory === cat && <div className="absolute -bottom-4 md:-bottom-8 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-accent-teal"></div>}
             </button>
           ))}
         </div>
 
         <div className="faq-content flex flex-col gap-3 w-full max-w-4xl pb-4 invisible flex-1 overflow-y-auto scrollbar-hide px-2">
           {faqCategories[activeCategory].map((faq, idx) => (
-            <div key={`${activeCategory}-${idx}`} className={`bg-white/85 backdrop-blur-md rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border transition-all duration-500 shrink-0 ${openIndex === idx ? 'border-accent-teal premium-glow' : 'border-white/80 shadow-sm'}`}>
+            <div key={`${activeCategory}-${idx}`} className={`bg-paper-bg rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border transition-colors duration-300 shrink-0 ${openIndex === idx ? 'border-2 border-accent-teal shadow-md' : 'border border-ink-medium shadow-sm'}`}>
               <button onClick={() => setOpenIndex(openIndex === idx ? -1 : idx)} className="w-full px-5 md:px-8 py-4 md:py-6 flex items-center justify-between text-left group bg-transparent focus:outline-none cursor-pointer">
-                <span className={`text-sm sm:text-base md:text-xl font-bold uppercase tracking-tight transition-colors duration-300 pr-4 ${openIndex === idx ? 'text-accent-teal' : 'text-ink-dark group-hover:text-accent-teal'}`}>{faq.question}</span>
+                <span className={`text-sm sm:text-base md:text-xl font-black font-[family:var(--font-technical-sans)] uppercase tracking-tight transition-colors duration-300 pr-4 ${openIndex === idx ? 'text-accent-teal' : 'text-ink-dark group-hover:text-accent-teal'}`}>{faq.question}</span>
                 <ChevronDown size={18} className={`transition-transform duration-500 shrink-0 ${openIndex === idx ? 'rotate-180 text-accent-teal' : 'text-ink-medium'}`} />
               </button>
               <div ref={el => contentRefs.current[idx] = el} className="overflow-hidden invisible h-0">
-                <div className="px-5 md:px-8 pb-5 md:pb-8 pt-0 text-ink-medium font-medium leading-relaxed text-xs sm:text-sm md:text-lg">{faq.answer}</div>
+                <div className="px-5 md:px-8 pb-5 md:pb-8 pt-0 text-ink-medium font-[family:var(--font-elegant-serif)] font-medium leading-relaxed text-xs sm:text-sm md:text-lg">{faq.answer}</div>
               </div>
             </div>
           ))}

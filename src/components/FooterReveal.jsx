@@ -186,8 +186,8 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
           <div className="fun-fact-el w-full h-px bg-ink-dark/10 my-8 md:my-12 relative overflow-hidden max-w-5xl invisible">
             <div className="absolute inset-y-0 left-0 bg-accent-teal w-1/3"></div>
           </div>
-          <h3 className="fun-fact-el text-2xl sm:text-4xl md:text-6xl text-ink-dark font-black uppercase tracking-tighter invisible">
-            At Yangerila, more than <br className="md:hidden" /> <span className="text-transparent bg-clip-text bg-linear-to-r from-accent-magenta to-accent-teal">90% don't quit.</span>
+          <h3 className="fun-fact-el text-2xl sm:text-4xl md:text-6xl font-[family:var(--font-technical-sans)] text-ink-dark font-black uppercase tracking-tighter invisible">
+            At Yangerila, more than <br className="md:hidden" /> <span className="text-accent-magenta">90% don't quit.</span>
           </h3>
           <p className="fun-fact-el text-sm sm:text-base md:text-xl text-ink-medium font-medium mt-6 md:mt-8 invisible max-w-2xl px-4">This opposite statistic fills us with both happiness and confidence in our teaching methods.</p>
         </div>
@@ -200,11 +200,11 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
         <div className="carousel-bg-container absolute inset-0 -z-20 overflow-hidden invisible pointer-events-none">
           <div className="absolute inset-0 bg-[#020617]"></div>
 
-          {/* Deep Navy Blue Gradient Wash */}
-          <div ref={el => bokehRefs.current[0] = el} className="absolute top-[-20%] left-[-10%] w-[100vw] h-[100vw] max-w-[1200px] max-h-[1200px] bg-[radial-gradient(circle_at_center,rgba(30,58,138,0.5)_0%,transparent_65%)] rounded-full will-change-transform"></div>
+          {/* Vintage Amber Wash */}
+          <div ref={el => bokehRefs.current[0] = el} className="absolute top-[-20%] left-[-10%] w-[100vw] h-[100vw] max-w-[1200px] max-h-[1200px] bg-[radial-gradient(circle_at_center,rgba(225,155,45,0.4)_0%,transparent_65%)] rounded-full will-change-transform"></div>
 
-          {/* Soft Pink Gradient Wash */}
-          <div ref={el => bokehRefs.current[1] = el} className="absolute bottom-[-20%] right-[-10%] w-[120vw] h-[120vw] max-w-[1400px] max-h-[1400px] bg-[radial-gradient(circle_at_center,rgba(236,72,153,0.3)_0%,transparent_65%)] rounded-full will-change-transform"></div>
+          {/* Seafoam Green Wash */}
+          <div ref={el => bokehRefs.current[1] = el} className="absolute bottom-[-20%] right-[-10%] w-[120vw] h-[120vw] max-w-[1400px] max-h-[1400px] bg-[radial-gradient(circle_at_center,rgba(147,233,190,0.3)_0%,transparent_65%)] rounded-full will-change-transform"></div>
         </div>
 
         {/* Header - White text for dark background */}
@@ -251,26 +251,26 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
                   }}
                   className={`absolute top-0 left-0 w-full h-full rounded-[1.5rem] md:rounded-4xl ease-[cubic-bezier(0.25,1,0.5,1)] transition-[transform,opacity,background-color,backdrop-filter] duration-[800ms] border cursor-pointer will-change-[transform,opacity]
                     ${isActive
-                      // LIQUID GLASS BLUR: Highly blurred, semi-transparent frosted card that reveals the navy/pink gradient behind it.
-                      ? "bg-white/60 backdrop-blur-3xl border-white/60 shadow-[0_0_80px_20px_rgba(13,148,136,0.3)]"
-                      // INACTIVE: Clean simple glass
-                      : "bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/20"
+                      // SOLID PAPER BACKGROUND: Clean, physical hardware look
+                      ? "bg-paper-bg border-2 border-ink-dark/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
+                      // INACTIVE: Still solid, just slightly lower opacity/different styling
+                      : "bg-paper-bg border border-ink-dark/10 hover:bg-white"
                     }`}
                   style={styles}
                 >
                   {/* Clean text formatting that adapts to the card's active state */}
                   <div className="p-8 sm:p-10 md:p-16 relative z-10 h-full flex flex-col justify-between select-none">
-                    <p className={`font-medium text-serif-italic leading-relaxed transition-colors duration-700 ${isActive ? 'text-ink-dark text-lg sm:text-xl md:text-3xl' : 'text-white text-sm sm:text-base md:text-xl'}`}>
+                    <p className={`font-medium font-[family:var(--font-elegant-serif)] italic leading-relaxed transition-colors duration-700 ${isActive ? 'text-ink-dark text-lg sm:text-xl md:text-3xl' : 'text-ink-medium/80 text-sm sm:text-base md:text-xl'}`}>
                       "{t.text}"
                     </p>
 
-                    <div className={`w-full flex items-center gap-4 pt-5 md:pt-8 border-t transition-colors duration-700 ${isActive ? 'border-ink-dark/10' : 'border-white/20'}`}>
-                      <div className={`w-12 h-12 md:w-16 md:h-16 shrink-0 rounded-full flex items-center justify-center font-black border-2 transition-colors duration-700 ${isActive ? 'border-white text-ink-dark bg-pastel-blue shadow-md' : 'border-white/40 text-white bg-white/10'}`}>
+                    <div className={`w-full flex items-center gap-4 pt-5 md:pt-8 border-t transition-colors duration-700 ${isActive ? 'border-ink-dark/20' : 'border-ink-dark/10'}`}>
+                      <div className={`w-12 h-12 md:w-16 md:h-16 shrink-0 rounded-full flex items-center justify-center font-[family:var(--font-technical-sans)] font-black border-2 transition-colors duration-700 ${isActive ? 'border-accent-teal text-white bg-accent-teal shadow-md' : 'border-ink-dark/20 text-ink-dark bg-white'}`}>
                         {t.name.split(' ').map(n => n[0]).join('')}
                       </div>
                       <div className="flex flex-col text-left justify-center overflow-hidden">
-                        <h4 className={`font-bold leading-none truncate w-full transition-colors duration-700 ${isActive ? 'text-ink-dark text-base md:text-xl' : 'text-white text-sm md:text-base'}`}>{t.name}</h4>
-                        <p className={`uppercase tracking-[0.15em] mt-1.5 font-black leading-none truncate w-full transition-colors duration-700 ${isActive ? 'text-accent-teal text-[10px] md:text-xs' : 'text-white/50 text-[8px] md:text-[10px]'}`}>{t.role}</p>
+                        <h4 className={`font-black font-[family:var(--font-technical-sans)] leading-none truncate w-full transition-colors duration-700 ${isActive ? 'text-ink-dark text-base md:text-xl' : 'text-ink-medium text-sm md:text-base'}`}>{t.name}</h4>
+                        <p className={`uppercase font-[family:var(--font-technical-sans)] tracking-[0.15em] mt-1.5 font-black leading-none truncate w-full transition-colors duration-700 ${isActive ? 'text-accent-teal text-[10px] md:text-xs' : 'text-ink-medium/50 text-[8px] md:text-[10px]'}`}>{t.role}</p>
                       </div>
                     </div>
                   </div>
@@ -302,13 +302,13 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
             </div>
 
             <div className="flex-1 w-full flex justify-center lg:justify-end mt-4 lg:mt-0">
-              <div className="p-6 md:p-10 xl:p-12 rounded-[2rem] md:rounded-[3rem] w-full max-w-md bg-white/85 backdrop-blur-xl border border-white relative shadow-[0_15px_50px_rgba(0,0,0,0.05)]">
-                <h3 className="text-xl md:text-2xl font-black uppercase text-ink-dark tracking-widest mb-1">Waitlist</h3>
+              <div className="p-6 md:p-10 xl:p-12 rounded-[2rem] md:rounded-[3rem] w-full max-w-md bg-paper-bg border-2 border-ink-dark/10 relative shadow-[0_20px_50px_rgba(0,0,0,0.15)]">
+                <h3 className="text-xl md:text-2xl font-[family:var(--font-technical-sans)] font-black uppercase text-ink-dark tracking-widest mb-1">Waitlist</h3>
                 <p className="text-[10px] md:text-xs text-accent-teal uppercase tracking-widest font-black mb-6 md:mb-8">Secure your slot</p>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:gap-4">
-                  <input required type="text" placeholder="FULL NAME" className="bg-white/50 border border-ink-dark/10 rounded-xl p-3 md:p-4 text-xs md:text-sm text-ink-dark focus:outline-none focus:border-accent-teal transition-colors" />
-                  <input required type="email" placeholder="EMAIL ADDRESS" className="bg-white/50 border border-ink-dark/10 rounded-xl p-3 md:p-4 text-xs md:text-sm text-ink-dark focus:outline-none focus:border-accent-teal transition-colors" />
-                  <button type="submit" className="bg-linear-to-r from-accent-teal to-[#2563EB] text-white font-black p-4 md:p-5 w-full rounded-xl shadow-md hover:shadow-xl transition-all uppercase tracking-widest text-[10px] md:text-sm">
+                  <input required type="text" placeholder="FULL NAME" className="bg-white border-2 border-ink-dark/20 rounded-xl p-3 md:p-4 text-xs md:text-sm text-ink-dark font-black focus:outline-none focus:border-accent-teal transition-colors shadow-sm placeholder:text-ink-dark/30" />
+                  <input required type="email" placeholder="EMAIL ADDRESS" className="bg-white border-2 border-ink-dark/20 rounded-xl p-3 md:p-4 text-xs md:text-sm text-ink-dark font-black focus:outline-none focus:border-accent-teal transition-colors shadow-sm placeholder:text-ink-dark/30" />
+                  <button type="submit" className="bg-accent-teal text-white font-[family:var(--font-technical-sans)] font-black p-4 md:p-5 w-full rounded-xl shadow-[0_10px_20px_rgba(58,90,140,0.4)] hover:shadow-xl border-2 border-transparent hover:border-white transition-all uppercase tracking-widest text-[10px] md:text-sm">
                     {formStatus === 'success' ? 'Request Sent!' : 'Request Admission'}
                   </button>
                 </form>

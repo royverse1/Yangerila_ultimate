@@ -17,10 +17,10 @@ gsap.registerPlugin(ScrollTrigger, Observer);
 
 const StaticPastelBackground = React.memo(function StaticPastelBackground({ step }) {
   const getBgStyle = (s) => {
-    if (s <= 2) return 'linear-gradient(135deg, var(--color-paper-bg) 0%, var(--color-pastel-blue) 100%)';
-    if (s === 3 || s === 4) return 'var(--color-ink-dark)';
-    if (s <= 9) return 'linear-gradient(135deg, var(--color-pastel-purple) 0%, var(--color-paper-bg) 100%)';
-    return 'linear-gradient(135deg, var(--color-pastel-mint) 0%, var(--color-pastel-blue) 100%)';
+    if (s <= 2) return 'linear-gradient(135deg, var(--color-paper-bg) 0%, var(--color-pastel-mint) 100%)';
+    if (s === 3 || s === 4) return 'linear-gradient(135deg, var(--color-ink-dark) 0%, #2E151B 100%)';
+    if (s <= 9) return 'linear-gradient(135deg, var(--color-pastel-purple) 0%, var(--color-ink-medium) 100%)';
+    return 'linear-gradient(135deg, var(--color-pastel-blue) 0%, var(--color-paper-bg) 100%)';
   };
   return (
     <div
@@ -37,9 +37,9 @@ export default function App() {
   const isLockedRef = useRef(false);
   const isReversingRef = useRef(false);   // ← full ref object passed to children
   const lastTransitionTime = useRef(0);
-  const COOLDOWN_MS = 1200;
+  const COOLDOWN_MS = 600;
 
-  const INERTIA_WINDOW = 200;
+  const INERTIA_WINDOW = 50;
   const inertiaDeadTime = useRef(0);
 
   const [isIntroPlaying, setIsIntroPlaying] = useState(true);
@@ -55,6 +55,18 @@ export default function App() {
   const musicExpandTimeoutRef = useRef(null);
   // P5.1 — guard so autoplay effect never double-fires
   const hasStartedAudioRef = useRef(false);
+
+  const attemptAudioAutoplay = useCallback(() => {
+    if (hasStartedAudioRef.current || !audioRef.current) return;
+    const p = audioRef.current.play();
+    if (p !== undefined) {
+      p.then(() => {
+        hasStartedAudioRef.current = true;
+        setIsMusicPlaying(true);
+        gsap.to(audioRef.current, { volume: 0.4, duration: 2, ease: 'power2.inOut' });
+      }).catch(e => console.log('Autoplay prevented:', e));
+    }
+  }, []);
 
   const onStepComplete = useCallback(() => { isLockedRef.current = false; }, []);
   const handleIntroComplete = useCallback(() => {
@@ -124,15 +136,7 @@ export default function App() {
         gsap.to(audioRef.current, { volume: 0.4, duration: 2, ease: 'power2.inOut' });
       }).catch(() => {
         const handleFirstInteraction = () => {
-          if (hasStartedAudioRef.current || !audioRef.current) return;
-          const p = audioRef.current.play();
-          if (p !== undefined) {
-            p.then(() => {
-              hasStartedAudioRef.current = true;
-              setIsMusicPlaying(true);
-              gsap.to(audioRef.current, { volume: 0.4, duration: 2, ease: 'power2.inOut' });
-            }).catch(e => console.log(e));
-          }
+          attemptAudioAutoplay();
           window.removeEventListener('click', handleFirstInteraction);
           window.removeEventListener('wheel', handleFirstInteraction);
           window.removeEventListener('touchstart', handleFirstInteraction);
@@ -142,7 +146,7 @@ export default function App() {
         window.addEventListener('touchstart', handleFirstInteraction);
       });
     }
-  }, []); // ← runs once, no dependency on isMusicPlaying
+  }, [attemptAudioAutoplay]); // ← runs once, no dependency on isMusicPlaying
 
   const handleMusicClick = () => {
     if (!audioRef.current) return;
@@ -212,6 +216,7 @@ export default function App() {
           if (isNext && targetElement.scrollHeight - targetElement.scrollTop > targetElement.clientHeight + 2) return;
           if (!isNext && targetElement.scrollTop > 2) return;
         }
+        attemptAudioAutoplay();
         setIsUIMinimized(true);
         setMusicExpanded(false);
         if (isMenuOpen) setIsMenuOpen(false);
@@ -227,6 +232,7 @@ export default function App() {
           if (isPrev && targetElement.scrollTop > 2) return;
           if (!isPrev && targetElement.scrollHeight - targetElement.scrollTop > targetElement.clientHeight + 2) return;
         }
+        attemptAudioAutoplay();
         setIsUIMinimized(true);
         setMusicExpanded(false);
         if (isMenuOpen) setIsMenuOpen(false);
@@ -240,9 +246,11 @@ export default function App() {
       if (isLockedRef.current || isIntroPlayingRef.current || currentStepRef.current === 3) return;
       if (Date.now() < inertiaDeadTime.current) return;
       if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+        attemptAudioAutoplay();
         setIsUIMinimized(true); setMusicExpanded(false); setIsMenuOpen(false);
         goToStep(currentStepRef.current + 1);
       } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+        attemptAudioAutoplay();
         setIsUIMinimized(true); setMusicExpanded(false); setIsMenuOpen(false);
         goToStep(currentStepRef.current - 1);
       }

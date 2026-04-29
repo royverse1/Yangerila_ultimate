@@ -11,25 +11,25 @@ gsap.registerPlugin(ScrollTrigger, TextPlugin);
 const courseData = [
   {
     id: 0, title: "Hobby Courses", price: "₹3200/Mo Onwards", stats: "2500+ Alums", icon: Music,
-    colorPastel: '#E0F2FE', colorText: '#075985', colorGlow: 'rgba(56, 189, 248, 0.4)',
+    colorPastel: 'var(--color-paper-bg)', colorText: '#075985', colorGlow: 'rgba(56, 189, 248, 0.4)',
     videoWebm: 'hobby_guitar.webm', videoMp4: 'hobby_guitar.mp4', poster: 'hobby_guitar.jpg',
     desc: 'Perfect for casual learners. Master your favorite songs and basic chords through an easy, stress-free path designed to keep the joy in playing.'
   },
   {
     id: 1, title: "Rhythm Grades", price: "₹3200/Mo Onwards", stats: "2000+ Alums", icon: Activity,
-    colorPastel: '#F3E8FF', colorText: '#6B21A8', colorGlow: 'rgba(192, 132, 252, 0.4)',
+    colorPastel: '#F4EDE4', colorText: '#6B21A8', colorGlow: 'rgba(192, 132, 252, 0.4)',
     videoWebm: 'rhythm_guitar.webm', videoMp4: 'rhythm_guitar.mp4', poster: 'rhythm_guitar.jpg',
     desc: 'The foundation of mastery. Precision grading focusing on complex strumming, timing, dynamic control, and essential music theory.'
   },
   {
     id: 2, title: "Lead Grades", price: "₹3600/Mo Onwards", stats: "1800+ Alums", icon: Star,
-    colorPastel: '#D1FAE5', colorText: '#065F46', colorGlow: 'rgba(52, 211, 153, 0.4)',
+    colorPastel: 'var(--color-paper-bg)', colorText: '#065F46', colorGlow: 'rgba(52, 211, 153, 0.4)',
     videoWebm: 'lead_guitar.webm', videoMp4: 'lead_guitar.mp4', poster: 'lead_guitar.jpg',
     desc: 'Unleash your expression. Master scale proficiency, intricate techniques (bends, slides, taps), improvisation, and blistering solos.'
   },
   {
     id: 3, title: "Finger-picking", price: "₹3600/Mo Onwards", stats: "1250+ Alums", icon: Zap,
-    colorPastel: '#FFE4E6', colorText: '#9F1239', colorGlow: 'rgba(251, 113, 133, 0.4)',
+    colorPastel: '#F4EDE4', colorText: '#9F1239', colorGlow: 'rgba(251, 113, 133, 0.4)',
     videoWebm: 'fingerpicking_guitar.webm', videoMp4: 'fingerpicking_guitar.mp4', poster: 'fingerpicking_guitar.jpg',
     desc: 'Clinical precision. Develop independent control of thumb and fingers, explore Travis picking, and master complex melodies.'
   }
@@ -233,7 +233,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
           <div className="w-full flex flex-col md:grid md:grid-cols-2 gap-6 md:gap-16 lg:gap-20 items-center justify-center max-w-7xl mx-auto flex-1 md:flex-none">
 
             <div className="flex flex-col items-start gap-3 md:gap-5 text-left relative w-full flex-1 md:flex-none justify-center">
-              <h2 ref={founderQuoteRef} className="relative z-10 text-base sm:text-xl lg:text-3xl font-extrabold text-ink-dark leading-snug tracking-tight w-full">
+              <h2 ref={founderQuoteRef} className="relative z-10 text-base sm:text-xl lg:text-3xl font-extrabold text-ink-dark leading-snug tracking-tight w-full font-[family:var(--font-elegant-serif)]">
                 <p ref={el => quoteParagraphsRef.current[0] = el} className="quote-p1 invisible font-medium text-ink-dark opacity-90 mb-2 md:mb-4 pr-1">
                   In my 20+ years as a guitarist, I’ve learned, played, performed, and composed—but teaching has always had my heart. Helping students became my true passion.
                 </p>
@@ -247,12 +247,12 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
               <div ref={founderAuthorRef} className="mt-4 md:mt-14 invisible flex flex-col items-center md:items-start relative z-10 border-t border-ink-dark/10 pt-4 md:pt-5 w-full max-w-sm shrink-0">
                 <p className="text-[9px] md:text-[11px] font-bold uppercase tracking-[0.3em] text-ink-medium mb-1 opacity-70">Lead Guitar Coach</p>
-                <h3 className="text-xl md:text-3xl lg:text-4xl font-black uppercase text-ink-dark tracking-tighter tabular-nums leading-none">Micky Dixit</h3>
+                <h3 className="text-xl md:text-3xl lg:text-4xl font-black uppercase text-ink-dark font-[family:var(--font-technical-sans)] tracking-tighter tabular-nums leading-none">Micky Dixit</h3>
               </div>
             </div>
 
             <div ref={tiltCardRef} className="relative shrink-0 transform-style-3d cursor-crosshair invisible flex justify-center md:justify-end mt-4 md:mt-0 w-full h-[25vh] md:h-auto md:w-auto">
-              <div className="founder_image_box w-auto h-full aspect-[3/4] md:w-[320px] lg:w-[400px] md:h-auto rounded-2xl md:rounded-[2.5rem] lg:rounded-[3rem] bg-ink-dark/5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden pointer-events-none">
+              <div className="founder_image_box w-auto h-full aspect-[3/4] md:w-[320px] lg:w-[400px] md:h-auto bg-ink-dark/5 border-[10px] md:border-[16px] border-paper-bg shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden pointer-events-none">
                 <img src={`${import.meta.env.BASE_URL}founder-guitar.jpg`} alt="Micky Dixit - Y Studio Founder" className="w-full h-full object-cover scale-[1.03]" />
               </div>
               <div className="absolute inset-0 rounded-2xl md:rounded-[2.5rem] shadow-[inset_0_0_80px_rgba(255,255,255,0.05)] pointer-events-none overflow-hidden"></div>
@@ -279,7 +279,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                 key={course.id}
                 ref={el => panelsRef.current[idx] = el}
                 onClick={() => handlePanelClick(idx)}
-                className="panel-accordion flex flex-row md:flex-col relative overflow-hidden group cursor-pointer rounded-[1.5rem] md:rounded-[2.5rem] lg:rounded-4xl shrink border border-white/40 will-change-[flex]"
+                className="panel-accordion flex flex-row md:flex-col relative overflow-hidden group cursor-pointer rounded-[1.5rem] md:rounded-[2.5rem] lg:rounded-4xl shrink border-2 border-ink-dark/20 will-change-[flex]"
                 style={{
                   backgroundColor: course.colorPastel,
                   flex: '1 1 25%',
@@ -303,7 +303,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                   </div>
                   <div className="flex flex-col items-end md:items-start text-right md:text-left gap-1 md:gap-3 w-full shrink">
                     <div className="hidden md:block text-[8px] md:text-xs tracking-widest uppercase mb-1 font-bold tabular-nums opacity-60" style={{ color: course.colorText }}>{course.stats}</div>
-                    <div className="border border-white/60 bg-white/80 py-1.5 md:py-2 px-2 sm:px-3 md:px-5 rounded-md sm:rounded-lg md:rounded-xl text-[7px] sm:text-[8px] md:text-[9px] font-black uppercase tracking-widest tabular-nums shadow-sm flex gap-1 justify-center items-center text-ink-dark transition-colors cursor-pointer hover:bg-white hover:text-accent-teal">Explore</div>
+                    <div className="bg-accent-teal py-1.5 md:py-2 px-2 sm:px-3 md:px-5 rounded-md sm:rounded-lg md:rounded-xl text-[7px] sm:text-[8px] md:text-[9px] font-black uppercase tracking-widest tabular-nums shadow-[0_5px_15px_rgba(0,0,0,0.2)] flex gap-1 justify-center items-center text-white transition-colors cursor-pointer hover:bg-ink-dark">Explore</div>
                   </div>
                 </div>
 
@@ -314,9 +314,9 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                 </div>
 
                 <div className="expanded-content absolute inset-0 z-20 autoAlpha-0 pointer-events-none p-4 sm:p-6 md:p-10 flex flex-col md:flex-row items-center justify-center md:justify-start gap-3 sm:gap-4 md:gap-10 w-full h-full overflow-y-auto scrollbar-hide shrink">
-                  <div className="absolute inset-0 bg-white/20 md:bg-white/15 backdrop-blur-3xl border border-white/40 pointer-events-none z-0"></div>
+                  <div className="absolute inset-0 bg-ink-dark border-[6px] border-accent-teal pointer-events-none z-0"></div>
 
-                  <div className="stagger-item relative z-10 hidden md:block w-full md:w-1/2 aspect-video md:aspect-auto h-[30%] md:h-[80%] lg:h-[90%] rounded-xl md:rounded-3xl border-2 md:border-4 border-white shadow-xl overflow-hidden shrink-0">
+                  <div className="stagger-item relative z-10 hidden md:block w-full md:w-1/2 aspect-video md:aspect-auto h-[30%] md:h-[80%] lg:h-[90%] rounded-xl md:rounded-3xl border-2 md:border-4 border-ink-dark/50 shadow-2xl overflow-hidden shrink-0">
                     <SmartVideo
                       srcWebm={`${import.meta.env.BASE_URL}courses/${course.videoWebm}`}
                       srcMp4={`${import.meta.env.BASE_URL}courses/${course.videoMp4}`}
@@ -324,21 +324,21 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                     />
                   </div>
 
-                  <div className="relative z-10 flex-1 text-center md:text-left flex flex-col items-center md:items-start shrink justify-center h-full w-full" style={{ color: course.colorText }}>
+                  <div className="relative z-10 flex-1 text-center md:text-left flex flex-col items-center md:items-start shrink justify-center h-full w-full text-paper-bg">
                     <div className="stagger-item flex items-center gap-2 md:gap-3 mb-2 sm:mb-3 md:mb-6 shrink">
-                      <div className="p-2 sm:p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-white/80 bg-white/80 shadow-md shrink-0">
-                        <PanelIcon className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" style={{ color: course.colorText }} />
+                      <div className="p-2 sm:p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-white/10 bg-white/5 shadow-md shrink-0">
+                        <PanelIcon className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-paper-bg" />
                       </div>
-                      <h2 className="text-lg sm:text-xl md:text-3xl lg:text-5xl font-black uppercase tracking-tighter leading-none tabular-nums shrink">{course.title}</h2>
+                      <h2 className="text-lg sm:text-xl md:text-3xl lg:text-5xl font-black uppercase font-[family:var(--font-technical-sans)] tracking-tighter leading-none tabular-nums shrink text-paper-bg">{course.title}</h2>
                     </div>
-                    <p className="stagger-item text-[11px] sm:text-xs md:text-base lg:text-lg leading-snug md:leading-relaxed font-serif italic mb-4 sm:mb-5 md:mb-10 max-w-lg shrink">{course.desc}</p>
+                    <p className="stagger-item text-[11px] sm:text-xs md:text-base lg:text-lg leading-snug md:leading-relaxed font-[family:var(--font-elegant-serif)] italic mb-4 sm:mb-5 md:mb-10 max-w-lg shrink text-paper-bg/80">{course.desc}</p>
 
                     <div className="stagger-item w-full flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 items-center justify-center md:justify-start shrink">
-                      <div className="flex flex-col gap-0.5 sm:gap-1 items-center md:items-start border border-white/40 bg-white/40 p-1.5 sm:p-2 px-4 sm:px-5 rounded-lg sm:rounded-xl md:rounded-2xl shrink-0 tabular-nums">
+                      <div className="flex flex-col gap-0.5 sm:gap-1 items-center md:items-start border border-white/10 bg-white/5 p-1.5 sm:p-2 px-4 sm:px-5 rounded-lg sm:rounded-xl md:rounded-2xl shrink-0 tabular-nums text-paper-bg">
                         <span className="text-[8px] sm:text-[9px] md:text-[10px] uppercase font-black tracking-widest opacity-60 tabular-nums">Price</span>
                         <span className="text-sm sm:text-lg md:text-xl font-black tabular-nums">{course.price}</span>
                       </div>
-                      <a href="#" className="py-2.5 px-6 sm:py-3 sm:px-8 md:py-4 md:px-8 rounded-full border-2 border-white bg-white/95 text-ink-dark font-black text-[9px] sm:text-[10px] md:text-xs uppercase tracking-widest shadow-lg pointer-events-auto transition-transform hover:scale-105 active:scale-95 tabular-nums">Enroll Now</a>
+                      <a href="#" className="py-2.5 px-6 sm:py-3 sm:px-8 md:py-4 md:px-8 rounded-md bg-accent-magenta text-white font-black text-[9px] sm:text-[10px] md:text-xs uppercase tracking-widest shadow-[0_10px_30px_rgba(227,66,52,0.4)] pointer-events-auto transition-transform hover:scale-105 active:scale-95 tabular-nums">Enroll Now</a>
                     </div>
                   </div>
 
@@ -376,17 +376,17 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                 key={idx}
                 ref={el => bonusesRef.current[idx] = el}
                 onClick={() => setActiveBonus(activeBonus === idx ? null : idx)}
-                className="relative h-[16vh] md:h-[25vh] min-h-[140px] w-full cursor-pointer preserve-3d transition-transform duration-1000 invisible premium-glow rounded-2xl md:rounded-[2.5rem]"
+                className="relative h-[16vh] md:h-[25vh] min-h-[140px] w-full cursor-pointer preserve-3d transition-transform duration-1000 invisible premium-glow rounded-xl md:rounded-[2rem]"
                 style={{ transform: activeBonus === idx ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
               >
-                <div className="absolute inset-0 backface-hidden bg-white/85 backdrop-blur-md p-3 sm:p-5 md:p-8 rounded-2xl md:rounded-[2.5rem] flex flex-col items-center justify-center border border-white/80 text-center">
-                  <h4 className={`text-lg sm:text-2xl md:text-4xl font-black mb-1 md:mb-3 uppercase tracking-tighter tabular-nums ${idx === 1 || idx === 2 ? 'text-accent-teal' : 'text-ink-dark'}`}>{bonus.title}</h4>
+                <div className="absolute inset-0 backface-hidden bg-paper-bg p-3 sm:p-5 md:p-8 rounded-xl md:rounded-[2rem] flex flex-col items-center justify-center border-2 border-ink-dark/20 text-center shadow-md">
+                  <h4 className={`text-lg sm:text-2xl md:text-4xl font-[family:var(--font-technical-sans)] font-black mb-1 md:mb-3 uppercase tracking-tighter tabular-nums ${idx === 1 || idx === 2 ? 'text-accent-magenta' : 'text-ink-dark'}`}>{bonus.title}</h4>
                   <p className="text-ink-medium text-[7px] sm:text-[8px] md:text-xs font-bold uppercase tracking-[0.1em] md:tracking-widest tabular-nums">{bonus.desc}</p>
                   <p className="text-[6px] sm:text-[7px] md:text-[10px] text-ink-dark/40 mt-2 md:mt-4 uppercase tracking-widest">Tap to reveal</p>
                 </div>
-                <div className="absolute inset-0 backface-hidden bg-white p-3 sm:p-5 md:p-8 rounded-2xl md:rounded-[2.5rem] flex flex-col items-center justify-center border-2 border-pastel-mint shadow-lg text-center" style={{ transform: 'rotateY(180deg)' }}>
-                  <h4 className="text-[9px] sm:text-sm md:text-xl font-bold text-accent-teal mb-1 md:mb-3 uppercase tracking-[0.1em] md:tracking-widest tabular-nums">{bonus.desc}</h4>
-                  <p className="text-ink-dark text-[8px] sm:text-xs md:text-sm font-medium leading-snug md:leading-relaxed">{bonus.offer}</p>
+                <div className="absolute inset-0 backface-hidden bg-accent-magenta p-3 sm:p-5 md:p-8 rounded-xl md:rounded-[2rem] flex flex-col items-center justify-center border-[4px] border-accent-magenta shadow-[0_15px_40px_rgba(227,66,52,0.4)] text-center" style={{ transform: 'rotateY(180deg)' }}>
+                  <h4 className="text-[9px] sm:text-sm md:text-xl font-bold font-[family:var(--font-technical-sans)] text-white mb-1 md:mb-3 uppercase tracking-[0.1em] md:tracking-widest tabular-nums">{bonus.desc}</h4>
+                  <p className="text-white/90 font-[family:var(--font-elegant-serif)] text-[8px] sm:text-xs md:text-sm font-medium leading-snug md:leading-relaxed">{bonus.offer}</p>
                 </div>
               </div>
             ))}
