@@ -52,7 +52,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
     }
   }, [step, mountStatus]);
 
-  // Restored pure math for canvas rendering - NO layout thrashing
   const renderFrame = useCallback((index) => {
     const canvas = canvasRef.current;
     const img = imagesRef.current[Math.round(index)];
@@ -76,7 +75,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
 
     const targetFrame = (TOTAL_FRAMES / 2) * targetIndex;
 
-    // Removed roundProps bottleneck. Using power3.inOut for cinematic feel.
     gsap.to(frameRef.current, {
       current: targetFrame,
       duration: dur,
@@ -95,7 +93,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         zVal = offset * -depth.zPass;
         yVal = offset * -depth.yPass;
         scaleVal = 1 + Math.abs(offset * depth.passScale);
-        alphaVal = 1 + (offset * 2.8); // Fades out rapidly before covering screen
+        alphaVal = 1 + (offset * 2.8);
       } else {
         zVal = offset * depth.zBack;
         yVal = offset * depth.yBack;
@@ -124,7 +122,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
       const img = new Image();
       img.onload = () => {
         imagesRef.current[i] = img;
-        // Fix 2: Dynamic check against the currently active frame
         if (i === Math.round(frameRef.current.current)) renderFrame(i);
       };
       img.src = getFrameUrl(i);
@@ -141,7 +138,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
         if (!canvas) return;
-        // Fix 1: High-DPI canvas resizing
         const dpr = window.devicePixelRatio || 1;
         canvas.width = window.innerWidth * dpr;
         canvas.height = window.innerHeight * dpr;
@@ -153,7 +149,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
       enginePausedRef.current = true;
       setTimeout(() => {
         if (!canvas) { enginePausedRef.current = false; return; }
-        // Fix 1: High-DPI canvas orientation change
         const dpr = window.devicePixelRatio || 1;
         canvas.width = window.innerWidth * dpr;
         canvas.height = window.innerHeight * dpr;
@@ -166,7 +161,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleOrientation);
 
-    // Force initial setup with DPR
     if (canvas) {
       const dpr = window.devicePixelRatio || 1;
       canvas.width = window.innerWidth * dpr;
@@ -191,7 +185,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
           cardIndexRef.current++;
           flyToCard(cardIndexRef.current);
           isActiveRef.current = false;
-          // Fix: Matched cooldown to duration
           setTimeout(() => { isActiveRef.current = true; }, 1200);
         } else if (self.event.type !== 'wheel' || self.deltaY > 20) {
           window.dispatchEvent(new CustomEvent('requestNextStep'));
@@ -203,7 +196,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
           cardIndexRef.current--;
           flyToCard(cardIndexRef.current);
           isActiveRef.current = false;
-          // Fix: Matched cooldown to duration
           setTimeout(() => { isActiveRef.current = true; }, 1200);
         } else if (self.event.type !== 'wheel' || self.deltaY < -20) {
           window.dispatchEvent(new CustomEvent('requestPrevStep'));
@@ -328,12 +320,12 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
               key={idx}
               ref={el => cardsRef.current[idx] = el}
               style={{ zIndex: 100 - idx }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] md:w-[65vw] lg:w-[50vw] will-change-[transform,opacity] backface-hidden shadow-[0_25px_50px_rgba(0,0,0,0.4)]"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] md:w-[65vw] lg:w-[50vw] will-change-[transform,opacity] backface-hidden shadow-[0_25px_50px_rgba(0,0,0,0.5)]"
             >
-              <div className={`p-8 md:p-12 xl:p-16 rounded-[2rem] md:rounded-[2.5rem] w-full border-[2px] md:border-[3px] border-pastel-purple ${item.bg} text-left flex flex-col gap-2 md:gap-4 relative overflow-hidden`}>
-                <div className="absolute inset-0 bg-linear-to-br from-white/10 via-transparent to-black/30 pointer-events-none mix-blend-overlay" />
+              <div className={`p-8 md:p-12 xl:p-16 rounded-[2rem] md:rounded-[2.5rem] w-full border-[3px] md:border-[4px] border-pastel-purple ${item.bg} text-left flex flex-col gap-2 md:gap-4 relative overflow-hidden`}>
+                <div className="absolute inset-0 bg-linear-to-br from-white/5 via-transparent to-black/40 pointer-events-none mix-blend-overlay" />
                 <div className="relative z-10">
-                  <span className={`text-[10px] md:text-sm xl:text-base tracking-[0.4em] font-black uppercase ${item.dateColor} opacity-70 mb-1 md:mb-2 block`}>{item.date}</span>
+                  <span className={`text-[10px] md:text-sm xl:text-base tracking-[0.4em] font-black uppercase ${item.dateColor} opacity-90 mb-1 md:mb-2 block font-[family:var(--font-technical-sans)]`}>{item.date}</span>
                   <h4 className={`text-5xl sm:text-6xl md:text-6xl lg:text-7xl xl:text-8xl font-black ${item.textColor} font-[family:var(--font-technical-sans)] mb-3 md:mb-6 uppercase tracking-tighter leading-none`}>{item.title}</h4>
                   <p className={`${item.textColor} font-[family:var(--font-elegant-serif)] leading-relaxed text-sm sm:text-base md:text-xl xl:text-2xl opacity-90`}>{item.desc}</p>
                 </div>
@@ -344,19 +336,20 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
       </div>
 
       <div ref={statsBlockRef} className="absolute inset-0 z-20 flex items-center justify-center invisible w-full h-full will-change-transform pointer-events-none">
-        <img src={getFrameUrl(164)} alt="" className="absolute inset-0 w-full h-full object-cover z-0" />
+        <img src={getFrameUrl(164)} alt="" className="absolute inset-0 w-full h-full object-cover z-0 opacity-30" />
+        <div className="absolute inset-0 bg-ink-dark/90 z-0" />
         <div className="w-full max-w-7xl grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-8 relative z-10 px-4 sm:px-6 md:px-24">
-          <div className="stat-card col-span-2 md:col-span-1 bg-ink-dark p-6 md:p-12 rounded-[1.5rem] md:rounded-3xl flex flex-col justify-center items-start border-2 border-pastel-blue shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden">
+          <div className="stat-card col-span-2 md:col-span-1 bg-ink-dark p-6 md:p-12 rounded-[1.5rem] md:rounded-3xl flex flex-col justify-center items-start border-2 border-pastel-blue shadow-[0_15px_40px_rgba(58,90,140,0.5)] relative overflow-hidden">
             <span className="text-4xl md:text-5xl xl:text-7xl font-black text-pastel-blue relative z-10 font-[family:var(--font-technical-sans)]"><span className="counter-val" data-target="20">0</span>+</span>
-            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-[family:var(--font-technical-sans)] relative z-10">Years Exp</span>
+            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-[family:var(--font-technical-sans)] font-bold relative z-10">Years Exp</span>
           </div>
-          <div className="stat-card bg-ink-dark p-6 md:p-12 rounded-[1.5rem] md:rounded-3xl flex flex-col justify-center items-start border-2 border-pastel-pink shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden">
+          <div className="stat-card bg-ink-dark p-6 md:p-12 rounded-[1.5rem] md:rounded-3xl flex flex-col justify-center items-start border-2 border-pastel-pink shadow-[0_15px_40px_rgba(227,66,52,0.5)] relative overflow-hidden">
             <span className="text-4xl md:text-5xl xl:text-7xl font-black text-pastel-pink relative z-10 font-[family:var(--font-technical-sans)]"><span className="counter-val" data-target="4000">0</span>+</span>
-            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-[family:var(--font-technical-sans)] relative z-10">Students</span>
+            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-[family:var(--font-technical-sans)] font-bold relative z-10">Students</span>
           </div>
-          <div className="stat-card bg-ink-dark p-6 md:p-12 rounded-[1.5rem] md:rounded-3xl flex flex-col justify-center items-start border-2 border-pastel-mint shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden">
+          <div className="stat-card bg-ink-dark p-6 md:p-12 rounded-[1.5rem] md:rounded-3xl flex flex-col justify-center items-start border-2 border-pastel-mint shadow-[0_15px_40px_rgba(147,233,190,0.3)] relative overflow-hidden">
             <span className="text-4xl md:text-5xl xl:text-7xl font-black text-pastel-mint relative z-10 font-[family:var(--font-technical-sans)]"><span className="counter-val" data-target="12">0</span>+</span>
-            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-[family:var(--font-technical-sans)] relative z-10">Countries</span>
+            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-[family:var(--font-technical-sans)] font-bold relative z-10">Countries</span>
           </div>
         </div>
       </div>

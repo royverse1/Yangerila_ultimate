@@ -7,7 +7,7 @@ import heroVideoMobile from '../assets/y_hero_v.mp4';
 
 gsap.registerPlugin(TextPlugin);
 
-// P4.2 — global registry so only the video nearest viewport centre plays on mobile
+// Global registry so only the video nearest viewport centre plays on mobile
 const mobileVideoRegistry = new Set();
 const mobileVideoThrottle = () => {
   const vh = window.innerHeight;
@@ -25,10 +25,10 @@ const mobileVideoThrottle = () => {
 };
 
 const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
-  const videoRef     = useRef(null);
+  const videoRef = useRef(null);
   const containerRef = useRef(null);
   const pauseTimeoutRef = useRef(null);
-  const registryEntry   = useRef(null);
+  const registryEntry = useRef(null);
   const [isInteracting, setIsInteracting] = useState(false);
 
   const handlePlay = useCallback(() => {
@@ -52,7 +52,6 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
     }
   }, []);
 
-  // P4.2 — register with the mobile registry on mount
   useEffect(() => {
     const entry = { el: containerRef.current, play: handlePlay, stop: () => handleStop(0) };
     registryEntry.current = entry;
@@ -63,12 +62,11 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
     };
   }, [handlePlay, handleStop]);
 
-  // P4.2 — IntersectionObserver triggers a throttle-pick instead of playing directly
   useEffect(() => {
     const obs = new IntersectionObserver(([e]) => {
       if (!isActiveStep) { handleStop(0); return; }
       if (window.matchMedia('(max-width: 768px)').matches) {
-        mobileThrottleThrottle(); // re-evaluate who's closest
+        mobileThrottleThrottle();
       } else if (!e.isIntersecting) {
         handleStop(0);
       }
@@ -86,7 +84,7 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
   return (
     <div
       ref={containerRef}
-      className={`relative w-full aspect-square overflow-hidden rounded-[1.25rem] md:rounded-[2rem] cursor-pointer bg-paper-bg shrink-0 transition-[transform,box-shadow,border-color] duration-500 will-change-[transform,box-shadow,border-color] [transform:translateZ(0)] ${isInteracting ? 'scale-[1.05] shadow-[0_20px_40px_rgba(0,0,0,0.4)] -translate-y-2 border-2 border-accent-teal' : 'scale-100 shadow-[0_10px_20px_rgba(0,0,0,0.2)] border-2 border-ink-dark/20'}`}
+      className={`relative w-full aspect-square overflow-hidden rounded-[1.25rem] md:rounded-[2rem] cursor-pointer bg-paper-bg shrink-0 transition-[transform,box-shadow,border-color] duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-[transform,box-shadow,border-color] [transform:translateZ(0)] ${isInteracting ? 'scale-[1.04] shadow-[0_15px_35px_rgba(58,90,140,0.2)] -translate-y-1.5 border-2 border-accent-teal' : 'scale-100 shadow-[0_8px_20px_rgba(26,26,26,0.1)] border-2 border-ink-dark/10'}`}
       onMouseEnter={handlePlay}
       onMouseLeave={() => handleStop(0)}
       onTouchStart={handlePlay}
@@ -94,7 +92,7 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
       onTouchCancel={() => handleStop(0)}
     >
       <video ref={videoRef} src={src} poster={poster} muted loop playsInline decoding="async" className="w-full h-full object-cover scale-[1.02] will-change-transform" />
-      <div className="absolute inset-0 bg-linear-to-br from-white/30 via-transparent to-black/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-br from-white/20 via-transparent to-black/10 pointer-events-none mix-blend-overlay" />
     </div>
   );
 });
@@ -143,31 +141,31 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     ctx.globalAlpha = maskProxy.current.opacity;
     if (ctx.globalAlpha <= 0.01) return;
 
-    ctx.fillStyle = '#000000';
+    ctx.fillStyle = '#1A1A1A'; // Ebony background for the mask
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
+
     ctx.globalCompositeOperation = 'destination-out';
     ctx.globalAlpha = 1;
-    
+
     ctx.translate(canvas.width / 2, canvas.height / 2);
-    
+
     const proxyScale = maskProxy.current.scale;
     ctx.scale(proxyScale, proxyScale);
-    
+
     const vw = window.innerWidth;
     const baseWidth = vw >= 768 ? vw * 0.08 : vw * 0.25;
     const baseScale = baseWidth / 157;
-    
+
     ctx.scale(baseScale, baseScale);
     ctx.translate(-157 / 2, -171 / 2);
-    
+
     const p = new Path2D(yLogoPath);
     ctx.fill(p);
-    
+
     ctx.resetTransform();
     ctx.globalCompositeOperation = 'source-over';
   }, []);
@@ -184,8 +182,6 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     resize();
     return () => window.removeEventListener('resize', resize);
   }, [renderCanvas]);
-
-
 
   const handleVideoEnd = useCallback(() => {
     if (introDone) return;
@@ -241,7 +237,6 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   }, [loadingPhase, handleVideoEnd]);
 
   useGSAP(() => {
-    // P1.3 — read direction at animation-fire time, not from stale prop
     const isReversing = isReversingRef.current;
 
     if (step > 2) {
@@ -317,7 +312,6 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         "-=0.2"
       );
     }
-  // isReversingRef is a ref — read inside, not listed as dependency
   }, { scope: containerRef, dependencies: [step] });
 
   const addToBentoRefs = useCallback((el, index) => { if (el) bentoRowsRef.current[index] = el; }, []);
@@ -325,7 +319,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   return (
     <section ref={containerRef} className={`fixed inset-0 w-full h-dvh z-50 bg-transparent overflow-hidden flex items-center justify-center will-change-transform ${step > 2 ? 'pointer-events-none' : ''}`}>
       {!introDone && (
-        <div ref={videoWrapperRef} className="absolute inset-0 w-full h-full z-100 bg-[radial-gradient(circle_at_center,_#FFFFFF_0%,_#C6BCFF_100%)]">
+        <div ref={videoWrapperRef} className="absolute inset-0 w-full h-full z-100 bg-[radial-gradient(circle_at_center,_#FFFFFF_0%,_#E0F2FE_100%)]">
           <video
             key={videoSrc} ref={videoRef} src={videoSrc} preload="auto" muted playsInline
             onLoadedData={() => setVideoBuffered(true)} onCanPlayThrough={() => setVideoBuffered(true)}
@@ -335,10 +329,10 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
 
           {loadingPhase === 0 && (
             <div ref={loadingScreenRef} className="absolute inset-0 z-120 flex flex-col items-center justify-center bg-transparent">
-              <h2 className="text-xs sm:text-sm md:text-lg font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-ink-dark mb-4 drop-shadow-sm">Welcome to <span className="text-transparent bg-clip-text bg-linear-to-r from-accent-teal to-[#2563EB]">Yangerila</span></h2>
-              <p className="text-[10px] md:text-xs text-ink-medium tracking-widest font-serif italic mb-8 md:mb-12">Loading the Experience</p>
+              <h2 className="text-xs sm:text-sm md:text-lg font-black font-[family:var(--font-technical-sans)] uppercase tracking-[0.2em] md:tracking-[0.4em] text-ink-dark mb-4 drop-shadow-sm">Welcome to <span className="text-accent-teal">Yangerila</span></h2>
+              <p className="text-[10px] md:text-xs text-ink-medium tracking-widest font-[family:var(--font-elegant-serif)] italic mb-8 md:mb-12">Loading the Experience</p>
               <div className="w-48 md:w-64 h-[1px] md:h-[2px] bg-ink-dark/10 overflow-hidden relative rounded-full">
-                <div ref={progressBarRef} className="absolute top-0 left-0 h-full bg-accent-teal w-0 shadow-[0_0_10px_rgba(13,148,136,0.5)]" />
+                <div ref={progressBarRef} className="absolute top-0 left-0 h-full bg-accent-teal w-0 shadow-[0_0_10px_rgba(58,90,140,0.5)]" />
               </div>
             </div>
           )}
@@ -355,13 +349,13 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
                         setTimeout(() => handleVideoEnd(), 5200);
                       }
                     }}
-                    className="px-6 py-3 md:px-8 md:py-4 bg-ink-dark/95 hover:bg-ink-dark text-white rounded-[2rem] uppercase tracking-[0.25em] font-black text-[10px] md:text-xs animate-[pulse_2s_ease-in-out_infinite] shadow-[0_10px_40px_rgba(0,0,0,0.3)] transition-all duration-300 border border-white/10 hover:scale-105 active:scale-95">
+                    className="px-6 py-3 md:px-8 md:py-4 bg-ink-dark/95 hover:bg-ink-dark text-white rounded-[2rem] uppercase tracking-[0.25em] font-black text-[10px] md:text-xs animate-[pulse_2s_ease-in-out_infinite] shadow-[0_10px_40px_rgba(0,0,0,0.3)] transition-all duration-300 border border-white/10 hover:scale-105 active:scale-95 font-[family:var(--font-technical-sans)]">
                     Tap to Enter
                   </button>
                 </div>
               )}
               {showSkip && !videoBlocked && (
-                <button onClick={handleVideoEnd} className="absolute bottom-10 right-8 z-101 text-ink-dark bg-white/60 hover:bg-white border border-ink-dark/20 px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest backdrop-blur-md transition-all duration-300 shadow-lg">Skip Intro</button>
+                <button onClick={handleVideoEnd} className="absolute bottom-10 right-8 z-101 text-ink-dark bg-paper-bg hover:bg-white border-2 border-ink-dark/20 px-6 py-2 rounded-full text-xs font-bold font-[family:var(--font-technical-sans)] uppercase tracking-widest transition-all duration-300 shadow-md hover:shadow-lg">Skip Intro</button>
               )}
             </>
           )}
@@ -369,24 +363,24 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       )}
 
       <div ref={textRef} className="z-0 absolute inset-0 flex flex-col items-center justify-center text-center px-4 max-w-5xl mx-auto invisible translate-y-10 will-change-transform">
-        <span className="text-ink-medium tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-xs xl:text-sm font-bold uppercase mb-4 md:mb-6 xl:mb-8 block">Yangerila Creative Studio</span>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-ink-dark font-[family:var(--font-technical-sans)] tracking-tighter mb-4 md:mb-6 uppercase leading-tight">Always Performance <br /><span className="text-transparent bg-clip-text bg-linear-to-r from-accent-teal to-[#2563EB] drop-shadow-sm">Ready</span></h1>
+        <span className="text-ink-medium font-[family:var(--font-technical-sans)] tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-xs xl:text-sm font-bold uppercase mb-4 md:mb-6 xl:mb-8 block">Yangerila Creative Studio</span>
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-ink-dark font-[family:var(--font-technical-sans)] tracking-tighter mb-4 md:mb-6 uppercase leading-tight">Always Performance <br /><span className="text-accent-teal drop-shadow-sm">Ready</span></h1>
         <p ref={paragraphRef} className="mt-4 md:mt-6 xl:mt-8 text-ink-medium max-w-2xl mx-auto text-sm sm:text-base md:text-lg xl:text-xl font-[family:var(--font-elegant-serif)] shadow-sm invisible translate-y-10 will-change-transform">A guitar-specialty academy bridging clinical precision and artistic mastery. Serving students nationwide and across 12 countries.</p>
       </div>
 
-      <div ref={aboutRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center invisible translate-y-10 px-4 sm:px-6 lg:px-24 bg-paper-bg border-t-2 border-ink-dark shadow-[0_-10px_40px_rgba(0,0,0,0.2)] will-change-transform">
+      <div ref={aboutRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center invisible translate-y-10 px-4 sm:px-6 lg:px-24 bg-paper-bg border-t-2 border-ink-dark shadow-[0_-10px_40px_rgba(0,0,0,0.15)] will-change-transform">
         <div className="about-scroll-container max-w-6xl mx-auto w-full flex flex-col gap-3 md:gap-6 lg:gap-8 relative z-10 max-h-[85dvh] overflow-y-auto overflow-x-hidden pb-4 pt-4 px-4 scrollbar-hide">
 
-          <div className="w-full border-t-2 border-pastel-mint pt-2 md:pt-4 mb-1 md:mb-2 shrink-0">
-            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-ink-dark uppercase tracking-tighter leading-none mb-1">About</h2>
-            <h3 className="text-sm md:text-xl lg:text-2xl text-ink-medium font-light text-serif-italic">Yangerila.</h3>
+          <div className="w-full border-t-[3px] border-accent-teal pt-2 md:pt-4 mb-1 md:mb-2 shrink-0">
+            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-black font-[family:var(--font-technical-sans)] text-ink-dark uppercase tracking-tighter leading-none mb-1">About</h2>
+            <h3 className="text-sm md:text-xl lg:text-2xl text-ink-medium font-light font-[family:var(--font-elegant-serif)] italic">Yangerila.</h3>
           </div>
 
           <div ref={el => addToBentoRefs(el, 0)} className="flex flex-row items-center gap-3 md:gap-6 lg:gap-12 w-full invisible will-change-[transform,opacity] shrink-0">
             <div className="flex-1">
-              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">01 // Origin</span>
-              <p className="text-ink-dark font-sans font-medium md:font-light text-xs sm:text-base md:text-xl lg:text-3xl xl:text-4xl leading-snug md:leading-tight tracking-tight">
-                <span className="font-bold">Yangerila Creative Studio</span> is a guitar-specialty academy based in Indirapuram. We offer carefully designed courses that cover multiple aspects of guitar playing.
+              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-[family:var(--font-technical-sans)] tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">01 // Origin</span>
+              <p className="text-ink-dark font-[family:var(--font-elegant-serif)] font-medium text-xs sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-relaxed">
+                <span className="text-accent-teal">Yangerila Creative Studio</span> is a guitar-specialty academy based in Indirapuram. We offer carefully designed courses that cover multiple aspects of guitar playing.
               </p>
             </div>
             <div className="w-[10vh] h-[10vh] sm:w-[14vh] sm:h-[14vh] md:w-[18vh] md:h-[18vh] lg:w-48 lg:h-48 shrink-0 aspect-square">
@@ -396,7 +390,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
 
           <div ref={el => addToBentoRefs(el, 1)} className="flex flex-row-reverse items-center gap-3 md:gap-6 lg:gap-12 w-full invisible will-change-[transform,opacity] shrink-0">
             <div className="flex-1 text-right md:text-left">
-              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">02 // Approach</span>
+              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-[family:var(--font-technical-sans)] tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">02 // Approach</span>
               <p className="text-ink-dark font-[family:var(--font-elegant-serif)] italic text-xs sm:text-base md:text-lg lg:text-2xl xl:text-3xl leading-relaxed">
                 Our online classes are redefining the way guitar is taught, combining live interactive sessions, structured courses, and constant teacher support.
               </p>
@@ -408,8 +402,8 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
 
           <div ref={el => addToBentoRefs(el, 2)} className="flex flex-row items-center gap-3 md:gap-6 lg:gap-12 w-full invisible will-change-[transform,opacity] shrink-0">
             <div className="flex-1">
-              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">03 // Vision</span>
-              <p className="text-ink-dark font-sans font-medium text-xs sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-relaxed">
+              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-[family:var(--font-technical-sans)] tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">03 // Vision</span>
+              <p className="text-ink-dark font-[family:var(--font-elegant-serif)] font-medium text-xs sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-relaxed">
                 At Yangerila, we believe music is more than just a talent — it's a life skill that everyone can and should learn. With this vision, we are proud to serve students across India.
               </p>
             </div>
@@ -426,7 +420,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
         <div ref={maskRef} className="w-[25vw] md:w-[8vw] aspect-[157/171] will-change-transform" style={{ transform: 'translateZ(0)' }}>
           <svg viewBox="0 0 157 171" className="w-full h-full overflow-visible">
-            <path ref={letterYRef} d={yLogoPath} fill="transparent" stroke="#0D9488" strokeWidth="1.5" className="drop-shadow-[0_0_10px_rgba(13,148,136,0.6)]" />
+            <path ref={letterYRef} d={yLogoPath} fill="transparent" stroke="var(--color-accent-teal)" strokeWidth="1.5" className="drop-shadow-[0_0_10px_rgba(58,90,140,0.6)]" />
           </svg>
         </div>
       </div>

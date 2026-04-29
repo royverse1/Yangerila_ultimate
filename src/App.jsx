@@ -210,33 +210,29 @@ export default function App() {
         // P1.2 — Complete yield during step 3: no UI state updates, no nav
         if (currentStepRef.current === 3) return;
 
-        const isNext = self.event.type === 'wheel';
         const targetElement = self.event?.target?.closest?.('.scrollbar-hide, .about-scroll-container, .expanded-content, .faq-content') ?? null;
         if (targetElement) {
-          if (isNext && targetElement.scrollHeight - targetElement.scrollTop > targetElement.clientHeight + 2) return;
-          if (!isNext && targetElement.scrollTop > 2) return;
+          if (targetElement.scrollHeight - targetElement.scrollTop > targetElement.clientHeight + 2) return;
         }
         attemptAudioAutoplay();
         setIsUIMinimized(true);
         setMusicExpanded(false);
         if (isMenuOpen) setIsMenuOpen(false);
-        handleScrollIntent(isNext ? 'next' : 'prev');
+        handleScrollIntent('next');
       },
       onUp: (self) => {
         // P1.2 — Complete yield during step 3
         if (currentStepRef.current === 3) return;
 
-        const isPrev = self.event.type === 'wheel';
         const targetElement = self.event?.target?.closest?.('.scrollbar-hide, .about-scroll-container, .expanded-content, .faq-content') ?? null;
         if (targetElement) {
-          if (isPrev && targetElement.scrollTop > 2) return;
-          if (!isPrev && targetElement.scrollHeight - targetElement.scrollTop > targetElement.clientHeight + 2) return;
+          if (targetElement.scrollTop > 2) return;
         }
         attemptAudioAutoplay();
         setIsUIMinimized(true);
         setMusicExpanded(false);
         if (isMenuOpen) setIsMenuOpen(false);
-        handleScrollIntent(isPrev ? 'prev' : 'next');
+        handleScrollIntent('prev');
       },
       preventDefault: false,
       tolerance: 40
