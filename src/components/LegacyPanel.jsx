@@ -1,7 +1,8 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import gsap from 'gsap';
 import { Observer } from 'gsap/observer';
 import { useGSAP } from '@gsap/react';
+import statsBg from '../assets/stats.jpg';
 
 const TOTAL_FRAMES = 164;
 // P3.1 — Dual sensitivity profiles
@@ -51,7 +52,12 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
   // P4.1 — track which images are actually loaded
   const imagesRef         = useRef(new Array(TOTAL_FRAMES + 1).fill(null));
 
-  const isActive = step === 3 || step === 4;
+  // Wake up heavy assets early if needed
+  useEffect(() => {
+    if ((step === 3 || step === 4) && mountStatus === 'unmounted') {
+      setMountStatus('mounted');
+    }
+  }, [step, mountStatus]);
 
   // ─── Canvas render ──────────────────────────────────────────────────────────
   const renderFrame = (index) => {
@@ -312,9 +318,11 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
       className={`fixed inset-0 w-full h-dvh z-20 bg-transparent overflow-hidden will-change-transform ${!isActive ? 'pointer-events-none' : ''}`}
       style={{ touchAction: isActive ? 'none' : 'auto' }}
     >
+      {/* Canvas Layer */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-0 object-cover" />
 
-      <div className="absolute inset-0 z-10 flex items-center justify-center will-change-transform">
+      {/* Timeline 3D Cards Layer */}
+      <div className="absolute inset-0 z-30 flex items-center justify-center will-change-transform pointer-events-none">
         <div
           ref={cameraRef}
           className="w-full relative flex flex-col justify-center items-center h-full will-change-transform"
@@ -340,8 +348,10 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         </div>
       </div>
 
-      <div ref={statsBlockRef} className="absolute inset-0 z-20 flex items-center justify-center px-4 sm:px-6 md:px-24 invisible will-change-transform">
-        <div className="w-full max-w-7xl grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-8">
+      {/* Stats Layer: Clean, original glowing UI */}
+      <div ref={statsBlockRef} className="absolute inset-0 z-20 flex items-center justify-center invisible will-change-transform pointer-events-none">
+        <img src={statsBg} alt="" className="absolute inset-0 w-full h-full object-cover z-0" />
+        <div className="w-full max-w-7xl grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-8 relative z-10 px-4 sm:px-6 md:px-24">
 
           <div className="stat-card col-span-2 md:col-span-1 bg-white/60 p-6 md:p-12 rounded-[1.5rem] md:rounded-3xl flex flex-col justify-center items-start border-[3px] md:border-4 border-pastel-blue shadow-[0_0_50px_rgba(224,242,254,0.7)] relative overflow-hidden">
             <span className="text-4xl md:text-5xl xl:text-7xl font-black text-ink-dark relative z-10"><span className="counter-val" data-target="20">0</span>+</span>

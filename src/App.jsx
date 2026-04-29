@@ -263,6 +263,18 @@ export default function App() {
     { label: 'Testimonials', step: 11 },
   ];
 
+  const navLinks = [
+    { label: "Welcome", step: 1 },
+    { label: "Our Legacy", step: 2 },
+    { label: "Founder's Note", step: 5 },
+    { label: "Curriculum", step: 6 },
+    { label: "Insights (FAQ)", step: 7 },
+    { label: "Premium Rewards", step: 8 },
+    { label: "Admissions", step: 9 },
+    { label: "Testimonials", step: 11 },
+    { label: "Contact", step: 12 },
+  ];
+
   return (
     <div className="relative w-full h-dvh overflow-hidden bg-transparent font-sans">
       <StaticPastelBackground step={currentStep} />
@@ -308,6 +320,69 @@ export default function App() {
               <button
                 key={idx}
                 onClick={() => goToStep(link.step, true)}
+                className={`w-full text-left px-3 py-2 rounded-xl text-[9px] md:text-[10px] font-bold transition-all duration-300 focus:outline-none ${currentStep === link.step ? 'bg-white/70 shadow-sm text-accent-teal' : 'text-ink-dark hover:bg-white/40 hover:text-accent-teal'}`}
+              >
+                {link.label}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={handleMenuClick}
+            className={`flex items-center justify-center bg-white/60 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.1)] rounded-full text-ink-dark hover:bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] origin-bottom-right focus:outline-none touch-manipulation
+              w-[42px] md:w-[46px] h-[42px] md:h-[46px]
+              ${isUIMinimized && !isMenuOpen ? 'scale-75 opacity-50 bg-white/40' : 'scale-100 opacity-100 active:scale-95'}
+            `}
+          >
+            {isMenuOpen ? <X size={18} className="text-accent-teal" /> : <Menu size={18} />}
+          </button>
+        </div>
+      </div>
+
+      <audio ref={audioRef} src={ambientMusic} loop preload="auto" />
+
+      <div className={`fixed bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 right-4 sm:right-6 md:right-8 z-[100] pointer-events-none flex justify-between items-end transition-opacity duration-1000 ${isIntroPlaying ? 'opacity-0' : 'opacity-100'}`}>
+        <button
+          onClick={handleMusicClick}
+          onMouseEnter={handleDesktopHoverEnter}
+          onMouseLeave={handleDesktopHoverLeave}
+          className={`pointer-events-auto relative flex items-center bg-white/60 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.1)] rounded-full overflow-hidden ease-[cubic-bezier(0.25,1,0.5,1)] origin-bottom-left cursor-pointer focus:outline-none touch-manipulation
+            transition-[width,transform,opacity,background-color] duration-500
+            ${isUIMinimized ? 'scale-75 opacity-50 bg-white/40' : 'scale-100 opacity-100 hover:bg-white/90'} 
+            ${musicExpanded ? 'w-[160px] md:w-[180px]' : 'w-[42px] md:w-[46px]'} 
+            h-[42px] md:h-[46px]
+          `}
+        >
+          <div className="w-[42px] md:w-[46px] h-[42px] md:h-[46px] shrink-0 flex items-center justify-center text-ink-dark transition-transform hover:scale-95 pointer-events-none">
+            {isMusicPlaying ? (
+              <div className="flex gap-[2px] items-end h-3">
+                <div className="w-[3px] bg-accent-teal rounded-full animate-[bounce_1s_infinite_ease-in-out] origin-bottom" style={{ height: '60%' }}></div>
+                <div className="w-[3px] bg-accent-teal rounded-full animate-[bounce_1s_infinite_ease-in-out_0.2s] origin-bottom" style={{ height: '100%' }}></div>
+                <div className="w-[3px] bg-accent-teal rounded-full animate-[bounce_1s_infinite_ease-in-out_0.4s] origin-bottom" style={{ height: '40%' }}></div>
+              </div>
+            ) : (
+              <Play size={14} className="text-ink-dark ml-0.5" />
+            )}
+          </div>
+
+          <div className={`whitespace-nowrap transition-opacity duration-300 pointer-events-none flex flex-col justify-center ${musicExpanded ? 'opacity-100' : 'opacity-0'}`}>
+            <p className="text-[7px] md:text-[8px] font-black uppercase tracking-[0.2em] text-accent-teal leading-none mb-1">
+              {isMusicPlaying ? "Now Playing" : "Paused"}
+            </p>
+            <p className="text-[10px] md:text-xs font-bold text-ink-dark truncate pr-4 leading-none">
+              Yangerila Theme
+            </p>
+          </div>
+        </button>
+
+        <div className="pointer-events-auto relative">
+          <div className={`absolute bottom-full right-0 mb-3 bg-white/30 backdrop-blur-2xl border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.1)] rounded-2xl p-2 w-[140px] md:w-[160px] flex flex-col transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] origin-bottom-right 
+            ${isMenuOpen ? 'scale-100 opacity-100 visible translate-y-0' : 'scale-90 opacity-0 invisible translate-y-4'}
+          `}>
+            {navLinks.map((link, idx) => (
+              <button
+                key={idx}
+                onClick={() => goToStep(link.step)}
                 className={`w-full text-left px-3 py-2 rounded-xl text-[9px] md:text-[10px] font-bold transition-all duration-300 focus:outline-none ${currentStep === link.step ? 'bg-white/70 shadow-sm text-accent-teal' : 'text-ink-dark hover:bg-white/40 hover:text-accent-teal'}`}
               >
                 {link.label}

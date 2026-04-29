@@ -4,28 +4,33 @@ import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { TextPlugin } from 'gsap/TextPlugin';
 import { Zap, Music, Star, Activity, X } from 'lucide-react';
+import SmartVideo from './SmartVideo';
 
 gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
 const courseData = [
   {
     id: 0, title: "Hobby Courses", price: "₹3200/Mo Onwards", stats: "2500+ Alums", icon: Music,
-    colorPastel: '#E0F2FE', colorText: '#075985', colorGlow: 'rgba(56, 189, 248, 0.4)', img: 'hobby_guitar.jpg',
+    colorPastel: '#E0F2FE', colorText: '#075985', colorGlow: 'rgba(56, 189, 248, 0.4)',
+    videoWebm: 'hobby_guitar.webm', videoMp4: 'hobby_guitar.mp4', poster: 'hobby_guitar.jpg',
     desc: 'Perfect for casual learners. Master your favorite songs and basic chords through an easy, stress-free path designed to keep the joy in playing.'
   },
   {
     id: 1, title: "Rhythm Grades", price: "₹3200/Mo Onwards", stats: "2000+ Alums", icon: Activity,
-    colorPastel: '#F3E8FF', colorText: '#6B21A8', colorGlow: 'rgba(192, 132, 252, 0.4)', img: 'rhythm_guitar.jpg',
+    colorPastel: '#F3E8FF', colorText: '#6B21A8', colorGlow: 'rgba(192, 132, 252, 0.4)',
+    videoWebm: 'rhythm_guitar.webm', videoMp4: 'rhythm_guitar.mp4', poster: 'rhythm_guitar.jpg',
     desc: 'The foundation of mastery. Precision grading focusing on complex strumming, timing, dynamic control, and essential music theory.'
   },
   {
     id: 2, title: "Lead Grades", price: "₹3600/Mo Onwards", stats: "1800+ Alums", icon: Star,
-    colorPastel: '#D1FAE5', colorText: '#065F46', colorGlow: 'rgba(52, 211, 153, 0.4)', img: 'lead_guitar.jpg',
+    colorPastel: '#D1FAE5', colorText: '#065F46', colorGlow: 'rgba(52, 211, 153, 0.4)',
+    videoWebm: 'lead_guitar.webm', videoMp4: 'lead_guitar.mp4', poster: 'lead_guitar.jpg',
     desc: 'Unleash your expression. Master scale proficiency, intricate techniques (bends, slides, taps), improvisation, and blistering solos.'
   },
   {
     id: 3, title: "Finger-picking", price: "₹3600/Mo Onwards", stats: "1250+ Alums", icon: Zap,
-    colorPastel: '#FFE4E6', colorText: '#9F1239', colorGlow: 'rgba(251, 113, 133, 0.4)', img: 'fingerpicking_guitar.jpg',
+    colorPastel: '#FFE4E6', colorText: '#9F1239', colorGlow: 'rgba(251, 113, 133, 0.4)',
+    videoWebm: 'fingerpicking_guitar.webm', videoMp4: 'fingerpicking_guitar.mp4', poster: 'fingerpicking_guitar.jpg',
     desc: 'Clinical precision. Develop independent control of thumb and fingers, explore Travis picking, and master complex melodies.'
   }
 ];
@@ -33,7 +38,6 @@ const courseData = [
 const MethodPanel = React.memo(function MethodPanel({ step, children, isReversingRef }) {
   const containerRef = useRef(null);
 
-  // Typography Refs
   const founderContainerRef = useRef(null);
   const founderTitleRef = useRef(null);
   const founderQuoteRef = useRef(null);
@@ -41,13 +45,11 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
   const tiltCardRef = useRef(null);
   const quoteParagraphsRef = useRef([]);
 
-  // Courses Accordion Refs
   const accordionRef = useRef(null);
   const panelsRef = useRef([]);
   const [expandedIndex, setExpandedIndex] = useState(null);
   const accordionTimelineRef = useRef(null);
 
-  // Bonus / Admission Refs
   const [activeBonus, setActiveBonus] = useState(null);
   const bonusesRef = useRef([]);
   const admissionSectionRef = useRef(null);
@@ -63,8 +65,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
     if (accordionTimelineRef.current) accordionTimelineRef.current.kill();
 
     const panels = panelsRef.current;
-    // Mobile: equal 25% height distribution. Desktop: equal 25% width distribution.
-    const isMobile = window.innerWidth < 768;
     const initialFlex = '1 1 25%';
 
     gsap.to(panels, {
@@ -107,20 +107,14 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
       const expandedStaggers = expandedContent.querySelectorAll('.stagger-item');
 
       if (i === index) {
-        // Expand the panel - Give it 70% of the screen space on mobile for breathing room
         tl.to(panel, { flex: isMobile ? '1 1 70%' : '1 1 80%', duration: 0.6, ease: "power3.inOut", force3D: true }, 0);
         tl.to(normalContent, { autoAlpha: 0, duration: 0.2, force3D: true }, 0);
         tl.to(normalIcon, { autoAlpha: 0, duration: 0.2, force3D: true }, 0);
-
-        // Delay setting expandedContent to visible until expansion finishes
         tl.set(expandedContent, { autoAlpha: 1 }, 0.6);
         tl.set(expandedStaggers, { autoAlpha: 0, y: 20 }, 0);
-
-        // Fade in text and buttons AFTER flex expansion is done
         tl.to(expandedStaggers, { y: 0, autoAlpha: 1, duration: 0.4, stagger: 0.1, ease: "power2.out", force3D: true }, 0.6);
         tl.to(expandedGlow, { autoAlpha: 1, duration: 0.3, force3D: true }, 0.6);
       } else {
-        // Compress other panels to 10% each (leaving 70% for the active one)
         tl.to(panel, { flex: isMobile ? '1 1 10%' : '1 1 6.66%', duration: 0.6, ease: "power3.inOut", force3D: true }, 0);
         tl.set(normalContent, { autoAlpha: 0 }, 0);
         tl.set(expandedContent, { autoAlpha: 0 }, 0);
@@ -145,7 +139,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
       yTo.current = gsap.quickTo(tiltCardRef.current, "rotationX", { ease: "power4.out", duration: 0.5 });
     }
 
-    // STEP 5: FOUNDER TYPOGRAPHY
     if (step === 5) {
       const paragraphs = quoteParagraphsRef.current.filter(Boolean);
       if (isReversing) {
@@ -160,7 +153,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
       }
     }
 
-    // STEP 6: COURSES
     if (step === 6) {
       const panels = panelsRef.current.filter(Boolean);
       resetAccordion(true);
@@ -175,7 +167,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
       }
     }
 
-    // STEP 8: BONUSES
     if (step === 8) {
       if (isReversing) {
         gsap.set(bonusesRef.current, { scale: 1, autoAlpha: 1, y: 0 });
@@ -187,7 +178,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
       }
     }
 
-    // STEP 9: ADMISSION
     if (step === 9) {
       const admissionContent = admissionSectionRef.current?.querySelector('.admission-headline');
       const admissionText = admissionSectionRef.current?.querySelector('.admission-text');
@@ -227,7 +217,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
   return (
     <div ref={containerRef} className="w-full flex flex-col shrink-0 relative pointer-events-auto border-t border-white/20 bg-transparent">
 
-      {/* SECTION 5: The Founder Note - Mobile Optimized */}
       <div
         ref={founderContainerRef}
         id="founder_section"
@@ -244,18 +233,13 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
           <div className="w-full flex flex-col md:grid md:grid-cols-2 gap-6 md:gap-16 lg:gap-20 items-center justify-center max-w-7xl mx-auto flex-1 md:flex-none">
 
             <div className="flex flex-col items-start gap-3 md:gap-5 text-left relative w-full flex-1 md:flex-none justify-center">
-
-              {/* Scaled down text sizes for mobile to prevent overflow (text-base instead of text-xl) */}
               <h2 ref={founderQuoteRef} className="relative z-10 text-base sm:text-xl lg:text-3xl font-extrabold text-ink-dark leading-snug tracking-tight w-full">
-
                 <p ref={el => quoteParagraphsRef.current[0] = el} className="quote-p1 invisible font-medium text-ink-dark opacity-90 mb-2 md:mb-4 pr-1">
                   In my 20+ years as a guitarist, I’ve learned, played, performed, and composed—but teaching has always had my heart. Helping students became my true passion.
                 </p>
-
                 <p ref={el => quoteParagraphsRef.current[1] = el} className="quote-p2 invisible font-bold text-ink-dark mb-3 md:mb-5 pr-1">
                   I am confident in what we’ve created and in what we deliver.
                 </p>
-
                 <span ref={el => quoteParagraphsRef.current[2] = el} className="quote-p3 invisible font-semibold italic text-lg sm:text-2xl lg:text-3xl tracking-tight leading-relaxed max-w-2xl text-ink-dark opacity-80 block mt-4 md:mt-6 pr-1">
                   Give us the opportunity to serve you, and I promise it will be one of the best decisions in your musical journey.
                 </span>
@@ -267,7 +251,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
               </div>
             </div>
 
-            {/* Constrained image height on mobile to prevent crushing the text block */}
             <div ref={tiltCardRef} className="relative shrink-0 transform-style-3d cursor-crosshair invisible flex justify-center md:justify-end mt-4 md:mt-0 w-full h-[25vh] md:h-auto md:w-auto">
               <div className="founder_image_box w-auto h-full aspect-[3/4] md:w-[320px] lg:w-[400px] md:h-auto rounded-2xl md:rounded-[2.5rem] lg:rounded-[3rem] bg-ink-dark/5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden pointer-events-none">
                 <img src={`${import.meta.env.BASE_URL}founder-guitar.jpg`} alt="Micky Dixit - Y Studio Founder" className="w-full h-full object-cover scale-[1.03]" />
@@ -279,7 +262,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
         </div>
       </div>
 
-      {/* SECTION 6: Courses Accordion - Sky Blue Theme & Mobile Fixed */}
       <div className="w-full h-dvh flex flex-col justify-center relative px-2 sm:px-6 md:px-12 lg:px-24 pt-6 md:pt-16 shrink-0 bg-[#bae6fd] overflow-hidden">
 
         <div className="max-w-7xl mx-auto w-full text-center px-4 shrink-0 mb-4 md:mb-6">
@@ -297,7 +279,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                 key={course.id}
                 ref={el => panelsRef.current[idx] = el}
                 onClick={() => handlePanelClick(idx)}
-                className="panel-accordion flex flex-row md:flex-col relative overflow-hidden transition-all duration-300 group cursor-pointer rounded-[1.5rem] md:rounded-[2.5rem] lg:rounded-4xl shrink border border-white/40"
+                className="panel-accordion flex flex-row md:flex-col relative overflow-hidden group cursor-pointer rounded-[1.5rem] md:rounded-[2.5rem] lg:rounded-4xl shrink border border-white/40 will-change-[flex]"
                 style={{
                   backgroundColor: course.colorPastel,
                   flex: '1 1 25%',
@@ -334,10 +316,12 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                 <div className="expanded-content absolute inset-0 z-20 autoAlpha-0 pointer-events-none p-4 sm:p-6 md:p-10 flex flex-col md:flex-row items-center justify-center md:justify-start gap-3 sm:gap-4 md:gap-10 w-full h-full overflow-y-auto scrollbar-hide shrink">
                   <div className="absolute inset-0 bg-white/20 md:bg-white/15 backdrop-blur-3xl border border-white/40 pointer-events-none z-0"></div>
 
-                  {/* MOBILE FIX: Image is completely hidden on phones (`hidden md:block`) to give text 100% of the room */}
                   <div className="stagger-item relative z-10 hidden md:block w-full md:w-1/2 aspect-video md:aspect-auto h-[30%] md:h-[80%] lg:h-[90%] rounded-xl md:rounded-3xl border-2 md:border-4 border-white shadow-xl overflow-hidden shrink-0">
-                    <img src={`${import.meta.env.BASE_URL}courses/${course.img}`} alt={course.title} className="w-full h-full object-cover scale-[1.03] transition-transform duration-700" />
-                    <div className="absolute inset-0 bg-black/5"></div>
+                    <SmartVideo
+                      srcWebm={`${import.meta.env.BASE_URL}courses/${course.videoWebm}`}
+                      srcMp4={`${import.meta.env.BASE_URL}courses/${course.videoMp4}`}
+                      poster={`${import.meta.env.BASE_URL}courses/${course.poster}`}
+                    />
                   </div>
 
                   <div className="relative z-10 flex-1 text-center md:text-left flex flex-col items-center md:items-start shrink justify-center h-full w-full" style={{ color: course.colorText }}>
@@ -347,7 +331,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                       </div>
                       <h2 className="text-lg sm:text-xl md:text-3xl lg:text-5xl font-black uppercase tracking-tighter leading-none tabular-nums shrink">{course.title}</h2>
                     </div>
-                    {/* Adjusted text size for mobile readability inside the accordion */}
                     <p className="stagger-item text-[11px] sm:text-xs md:text-base lg:text-lg leading-snug md:leading-relaxed font-serif italic mb-4 sm:mb-5 md:mb-10 max-w-lg shrink">{course.desc}</p>
 
                     <div className="stagger-item w-full flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 items-center justify-center md:justify-start shrink">
@@ -355,7 +338,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                         <span className="text-[8px] sm:text-[9px] md:text-[10px] uppercase font-black tracking-widest opacity-60 tabular-nums">Price</span>
                         <span className="text-sm sm:text-lg md:text-xl font-black tabular-nums">{course.price}</span>
                       </div>
-                      {/* Responsive Button Padding */}
                       <a href="#" className="py-2.5 px-6 sm:py-3 sm:px-8 md:py-4 md:px-8 rounded-full border-2 border-white bg-white/95 text-ink-dark font-black text-[9px] sm:text-[10px] md:text-xs uppercase tracking-widest shadow-lg pointer-events-auto transition-transform hover:scale-105 active:scale-95 tabular-nums">Enroll Now</a>
                     </div>
                   </div>
@@ -379,7 +361,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
       {children}
 
-      {/* SECTION 8: Bonuses */}
       <div className="w-full h-dvh flex flex-col justify-center relative px-2 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0 bg-transparent border-t border-white/10 overflow-hidden">
         <div className="max-w-6xl mx-auto w-full text-center">
           <h2 className="text-accent-teal tracking-[0.3em] font-bold text-xs uppercase mb-3 md:mb-4">Exclusive Perks</h2>
@@ -413,7 +394,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
         </div>
       </div>
 
-      {/* SECTION 9: Admission */}
       <div ref={admissionSectionRef} className="w-full h-dvh flex flex-col items-center justify-center text-center relative px-4 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0 bg-transparent overflow-hidden">
         <h2 className="admission-headline text-3xl sm:text-5xl md:text-8xl font-black text-ink-dark mb-4 md:mb-8 uppercase tracking-tight tabular-nums invisible">
           Admissions <br />
@@ -423,7 +403,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
           Whether you want to simply play your favourite songs, or pursue mastery of the instrument, our teaching style and courses adapt to your precise needs.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 lg:gap-8 justify-center items-center w-full max-w-2xl mx-auto relative z-10 px-4">
-          {/* Responsive Button Padding */}
           <a href="#" className="adm-btn bg-white/90 backdrop-blur-md w-full sm:w-auto text-center px-6 py-3.5 sm:px-8 sm:py-5 md:px-12 md:py-6 rounded-full text-ink-dark font-black tracking-widest uppercase border border-ink-dark/10 premium-glow invisible text-[10px] md:text-sm tabular-nums">Free Demo Session</a>
           <a href="#" className="adm-btn bg-linear-to-r from-pastel-mint to-pastel-blue w-full sm:w-auto text-center text-ink-dark px-6 py-3.5 sm:px-8 sm:py-5 md:px-12 md:py-6 rounded-full font-black tracking-widest uppercase border border-white premium-glow invisible text-[10px] md:text-sm tabular-nums">Begin Admissions</a>
         </div>

@@ -102,11 +102,14 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
 const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversingRef, onIntroComplete }) {
   const containerRef = useRef(null);
   const maskRef = useRef(null);
+  const canvasRef = useRef(null);
   const textRef = useRef(null);
   const letterYRef = useRef(null);
   const paragraphRef = useRef(null);
   const aboutRef = useRef(null);
   const bentoRowsRef = useRef([]);
+
+  const maskProxy = useRef({ scale: 1, opacity: 1 });
 
   const [introDone, setIntroDone] = useState(false);
   const [loadingPhase, setLoadingPhase] = useState(0);
@@ -135,6 +138,53 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     window.addEventListener('resize', checkOrientation);
     return () => window.removeEventListener('resize', checkOrientation);
   }, []);
+
+  const renderCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.globalAlpha = maskProxy.current.opacity;
+    if (ctx.globalAlpha <= 0.01) return;
+
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.globalAlpha = 1;
+    
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    
+    const proxyScale = maskProxy.current.scale;
+    ctx.scale(proxyScale, proxyScale);
+    
+    const vw = window.innerWidth;
+    const baseWidth = vw >= 768 ? vw * 0.08 : vw * 0.25;
+    const baseScale = baseWidth / 157;
+    
+    ctx.scale(baseScale, baseScale);
+    ctx.translate(-157 / 2, -171 / 2);
+    
+    const p = new Path2D(yLogoPath);
+    ctx.fill(p);
+    
+    ctx.resetTransform();
+    ctx.globalCompositeOperation = 'source-over';
+  }, []);
+
+  useEffect(() => {
+    const resize = () => {
+      if (canvasRef.current) {
+        canvasRef.current.width = window.innerWidth;
+        canvasRef.current.height = window.innerHeight;
+        renderCanvas();
+      }
+    };
+    window.addEventListener('resize', resize);
+    resize();
+    return () => window.removeEventListener('resize', resize);
+  }, [renderCanvas]);
 
   const handleVideoEnd = useCallback(() => {
     if (introDone) return;
@@ -206,6 +256,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     }
 
     if (isReversing && step === 2) {
+      gsap.killTweensOf([containerRef.current, textRef.current, paragraphRef.current, maskRef.current, aboutRef.current, maskProxy.current]);
       gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out", force3D: true, onComplete });
       gsap.set(maskRef.current, { autoAlpha: 0, scale: 80, force3D: true });
       gsap.set(letterYRef.current, { autoAlpha: 0, force3D: false });
@@ -359,6 +410,8 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
 
         </div>
       </div>
+
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-0" style={{ transform: 'translateZ(0)' }} />
 
       <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
         <svg ref={maskRef} viewBox="0 0 157 171" className="w-[25vw] md:w-[8vw] h-auto overflow-visible">
