@@ -7,20 +7,35 @@ import heroVideoMobile from '../assets/y_hero_v.mp4';
 
 gsap.registerPlugin(TextPlugin);
 
+// P4.2 — global registry so only the video nearest viewport centre plays on mobile
+const mobileVideoRegistry = new Set();
+const mobileVideoThrottle = () => {
+  const vh = window.innerHeight;
+  let best = null, bestDist = Infinity;
+  mobileVideoRegistry.forEach(entry => {
+    if (!entry.el) return;
+    const rect = entry.el.getBoundingClientRect();
+    const dist = Math.abs(rect.top + rect.height / 2 - vh / 2);
+    if (dist < bestDist) { bestDist = dist; best = entry; }
+  });
+  mobileVideoRegistry.forEach(entry => {
+    if (entry === best) { if (entry.play) entry.play(); }
+    else { if (entry.stop) entry.stop(); }
+  });
+};
+
 const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
-  const videoRef = useRef(null);
-  const playPromiseRef = useRef(null);
+  const videoRef     = useRef(null);
+  const containerRef = useRef(null);
   const pauseTimeoutRef = useRef(null);
+  const registryEntry   = useRef(null);
   const [isInteracting, setIsInteracting] = useState(false);
 
   const handlePlay = useCallback(() => {
     if (videoRef.current && isActiveStep) {
       setIsInteracting(true);
       clearTimeout(pauseTimeoutRef.current);
-      playPromiseRef.current = videoRef.current.play();
-      if (playPromiseRef.current) {
-        playPromiseRef.current.catch(() => { });
-      }
+      videoRef.current.play().catch(() => setIsInteracting(false));
     }
   }, [isActiveStep]);
 
@@ -28,45 +43,41 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
     if (delay > 0) {
       pauseTimeoutRef.current = setTimeout(() => {
         setIsInteracting(false);
-        if (videoRef.current) {
-          if (playPromiseRef.current) {
-            playPromiseRef.current.then(() => {
-              videoRef.current.pause();
-              videoRef.current.currentTime = 0;
-            }).catch(() => {
-              videoRef.current.pause();
-              videoRef.current.currentTime = 0;
-            });
-          } else {
-            videoRef.current.pause();
-            videoRef.current.currentTime = 0;
-          }
-        }
+        if (videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; }
       }, delay);
     } else {
       setIsInteracting(false);
       clearTimeout(pauseTimeoutRef.current);
-      if (videoRef.current) {
-        if (playPromiseRef.current) {
-          playPromiseRef.current.then(() => {
-            videoRef.current.pause();
-            videoRef.current.currentTime = 0;
-          }).catch(() => {
-            videoRef.current.pause();
-            videoRef.current.currentTime = 0;
-          });
-        } else {
-          videoRef.current.pause();
-          videoRef.current.currentTime = 0;
-        }
-      }
+      if (videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; }
     }
   }, []);
 
-  const handleMouseEnter = useCallback(() => handlePlay(), [handlePlay]);
-  const handleMouseLeave = useCallback(() => handleStop(0), [handleStop]);
-  const handleTouchStart = useCallback(() => handlePlay(), [handlePlay]);
-  const handleTouchEnd = useCallback(() => handleStop(3000), [handleStop]);
+  // P4.2 — register with the mobile registry on mount
+  useEffect(() => {
+    const entry = { el: containerRef.current, play: handlePlay, stop: () => handleStop(0) };
+    registryEntry.current = entry;
+    mobileVideoRegistry.add(entry);
+    return () => {
+      mobileVideoRegistry.delete(entry);
+      clearTimeout(pauseTimeoutRef.current);
+    };
+  }, [handlePlay, handleStop]);
+
+  // P4.2 — IntersectionObserver triggers a throttle-pick instead of playing directly
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => {
+      if (!isActiveStep) { handleStop(0); return; }
+      if (window.matchMedia('(max-width: 768px)').matches) {
+        mobileThrottleThrottle(); // re-evaluate who's closest
+      } else if (!e.isIntersecting) {
+        handleStop(0);
+      }
+    }, { threshold: 0.4 });
+    if (containerRef.current) obs.observe(containerRef.current);
+    return () => obs.disconnect();
+  }, [isActiveStep, handlePlay, handleStop]);
+
+  const mobileThrottleThrottle = () => mobileVideoThrottle();
 
   useEffect(() => {
     if (!isActiveStep) handleStop(0);
@@ -74,20 +85,21 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
 
   return (
     <div
-      className={`relative w-full aspect-square overflow-hidden rounded-[1.25rem] md:rounded-[2rem] cursor-pointer bg-white/50 shrink-0 transition-all duration-500 ${isInteracting ? 'scale-[1.05] shadow-[0_20px_50px_rgba(13,148,136,0.3)] -translate-y-2 border-2 border-accent-teal' : 'scale-100 shadow-[0_8px_30px_rgba(15,23,42,0.06)] border border-white/80'}`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchEnd}
+      ref={containerRef}
+      className={`relative w-full aspect-square overflow-hidden rounded-[1.25rem] md:rounded-[2rem] cursor-pointer bg-white/50 shrink-0 transition-all duration-500 will-change-transform [transform:translateZ(0)] ${isInteracting ? 'scale-[1.05] shadow-[0_20px_50px_rgba(13,148,136,0.3)] -translate-y-2 border-2 border-accent-teal' : 'scale-100 shadow-[0_8px_30px_rgba(15,23,42,0.06)] border border-white/80'}`}
+      onMouseEnter={handlePlay}
+      onMouseLeave={() => handleStop(0)}
+      onTouchStart={handlePlay}
+      onTouchEnd={() => handleStop(3000)}
+      onTouchCancel={() => handleStop(0)}
     >
-      <video ref={videoRef} src={src} poster={poster} muted loop playsInline decoding="async" className="w-full h-full object-cover scale-[1.02]" />
-      <div className="absolute inset-0 bg-linear-to-br from-white/30 via-transparent to-black/5 pointer-events-none mix-blend-overlay"></div>
+      <video ref={videoRef} src={src} poster={poster} muted loop playsInline decoding="async" className="w-full h-full object-cover scale-[1.02] will-change-transform" />
+      <div className="absolute inset-0 bg-linear-to-br from-white/30 via-transparent to-black/5 pointer-events-none" />
     </div>
   );
 });
 
-const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversing, onIntroComplete }) {
+const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversingRef, onIntroComplete }) {
   const containerRef = useRef(null);
   const maskRef = useRef(null);
   const textRef = useRef(null);
@@ -178,48 +190,62 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   }, [loadingPhase, handleVideoEnd]);
 
   useGSAP(() => {
+    // P1.3 — read direction at animation-fire time, not from stale prop
+    const isReversing = isReversingRef.current;
+
     if (step > 2) {
+      gsap.to(maskRef.current, { autoAlpha: 0, duration: 0.1, force3D: true });
       gsap.to(containerRef.current, { yPercent: -100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut", force3D: true });
-      gsap.set([textRef.current, paragraphRef.current, maskRef.current, aboutRef.current], { autoAlpha: 0, delay: 0.4 });
-      gsap.set(bentoRowsRef.current, { autoAlpha: 0 });
+      gsap.to([textRef.current, paragraphRef.current, aboutRef.current], { autoAlpha: 0, duration: 0.4, delay: 0.2, force3D: true });
+      gsap.to(bentoRowsRef.current, { autoAlpha: 0, duration: 0.4, force3D: true });
       return;
     }
+
+    if (isReversing && step < 2) {
+      gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out", force3D: true });
+    }
+
     if (isReversing && step === 2) {
       gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out", force3D: true, onComplete });
-      gsap.set(maskRef.current, { autoAlpha: 0, scale: 180 });
-      gsap.set(letterYRef.current, { opacity: 0 });
+      gsap.set(maskRef.current, { autoAlpha: 0, scale: 80, force3D: true });
+      gsap.set(letterYRef.current, { autoAlpha: 0, force3D: false });
       gsap.set([textRef.current, paragraphRef.current], { autoAlpha: 0, y: -50 });
       gsap.set(aboutRef.current, { autoAlpha: 1, y: 0 });
       gsap.set(bentoRowsRef.current, { autoAlpha: 1, y: 0 });
       return;
     }
+
     if (step === 0) {
       if (isReversing) {
-        gsap.to(maskRef.current, { scale: 1, autoAlpha: 1, duration: 0.8, ease: "power3.inOut", force3D: true });
-        gsap.to(letterYRef.current, { opacity: 1, duration: 0.6, force3D: true });
+        gsap.to(maskRef.current, { scale: 1, autoAlpha: 1, duration: 0.8, ease: "power3.inOut", force3D: true, transformOrigin: '50% 50%' });
+        gsap.to(letterYRef.current, { autoAlpha: 1, duration: 0.4, delay: 0.4, force3D: false });
         gsap.to([textRef.current, paragraphRef.current], { autoAlpha: 0, y: 60, duration: 0.6, force3D: true, onComplete });
       } else {
-        gsap.set(maskRef.current, { scale: 1, autoAlpha: 1 });
-        gsap.set(letterYRef.current, { opacity: 1 });
+        gsap.set(maskRef.current, { scale: 1, autoAlpha: 1, force3D: true });
+        gsap.set(letterYRef.current, { autoAlpha: 1, force3D: false });
         gsap.set([textRef.current, paragraphRef.current], { autoAlpha: 0, y: 60 });
         gsap.set(aboutRef.current, { autoAlpha: 0, y: 50 });
         gsap.set(bentoRowsRef.current, { autoAlpha: 0, y: 50 });
         onComplete();
       }
     }
+
     if (step === 1) {
       if (isReversing) {
+        gsap.set(maskRef.current, { autoAlpha: 1, scale: 80, force3D: true });
+        gsap.set(letterYRef.current, { autoAlpha: 0, force3D: false });
         gsap.to(aboutRef.current, { autoAlpha: 0, y: 50, duration: 0.6, force3D: true });
         gsap.to(bentoRowsRef.current, { autoAlpha: 0, y: 30, duration: 0.4, force3D: true });
         gsap.to([textRef.current, paragraphRef.current], { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true, onComplete });
       } else {
         const tl = gsap.timeline({ onComplete });
-        tl.to(maskRef.current, { scale: 180, transformOrigin: '50% 50%', ease: 'power3.inOut', duration: 1.2, force3D: true })
-          .to(letterYRef.current, { opacity: 0, duration: 0.3, force3D: true }, "<0.4")
-          .to(textRef.current, { autoAlpha: 1, scale: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, "-=0.6")
-          .to(paragraphRef.current, { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, "-=0.5");
+        tl.to(letterYRef.current, { autoAlpha: 0, duration: 0.15, force3D: false })
+          .to(maskRef.current, { scale: 80, transformOrigin: '50% 50%', ease: 'power3.inOut', duration: 1.2, force3D: true }, "<")
+          .to(textRef.current, { autoAlpha: 1, scale: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, "-=0.8")
+          .to(paragraphRef.current, { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, "-=0.7");
       }
     }
+
     if (step === 2 && !isReversing) {
       const tl = gsap.timeline({ onComplete });
       tl.to([textRef.current, paragraphRef.current], { autoAlpha: 0, y: -50, duration: 0.6, ease: 'power3.inOut', force3D: true });
@@ -230,7 +256,8 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         "-=0.2"
       );
     }
-  }, { scope: containerRef, dependencies: [step, isReversing] });
+  // isReversingRef is a ref — read inside, not listed as dependency
+  }, { scope: containerRef, dependencies: [step] });
 
   const addToBentoRefs = useCallback((el, index) => { if (el) bentoRowsRef.current[index] = el; }, []);
 
@@ -242,7 +269,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
             key={videoSrc} ref={videoRef} src={videoSrc} preload="auto" muted playsInline
             onLoadedData={() => setVideoBuffered(true)} onCanPlayThrough={() => setVideoBuffered(true)}
             onEnded={handleVideoEnd} onError={handleVideoEnd}
-            className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${videoBlocked ? 'opacity-30 blur-sm scale-105' : 'opacity-100 blur-none scale-100'} ${loadingPhase === 0 ? 'invisible' : 'visible'}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 will-change-transform [transform:translateZ(0)] ${videoBlocked ? 'opacity-30 blur-sm scale-105' : 'opacity-100 blur-none scale-100'} ${loadingPhase === 0 ? 'invisible' : 'visible'}`}
           />
 
           {loadingPhase === 0 && (
@@ -287,8 +314,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       </div>
 
       <div ref={aboutRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center invisible translate-y-10 px-4 sm:px-6 lg:px-24 bg-white/85 backdrop-blur-md border-t border-white/80 shadow-2xl will-change-transform">
-        {/* ADDED P-4 PADDING: Prevents the horizontal shadow/glow from being abruptly clipped by the scroll container walls */}
-        <div className="max-w-6xl mx-auto w-full flex flex-col gap-3 md:gap-6 lg:gap-8 relative z-10 max-h-[85dvh] overflow-y-auto overflow-x-hidden pb-4 pt-4 px-4 scrollbar-hide">
+        <div className="about-scroll-container max-w-6xl mx-auto w-full flex flex-col gap-3 md:gap-6 lg:gap-8 relative z-10 max-h-[85dvh] overflow-y-auto overflow-x-hidden pb-4 pt-4 px-4 scrollbar-hide">
 
           <div className="w-full border-t-2 border-pastel-mint pt-2 md:pt-4 mb-1 md:mb-2 shrink-0">
             <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-ink-dark uppercase tracking-tighter leading-none mb-1">About</h2>
@@ -335,7 +361,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       </div>
 
       <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-        <svg ref={maskRef} viewBox="0 0 157 171" className="w-[25vw] md:w-[8vw] h-auto overflow-visible will-change-transform">
+        <svg ref={maskRef} viewBox="0 0 157 171" className="w-[25vw] md:w-[8vw] h-auto overflow-visible">
           <path d={`M -2000 -2000 L 2100 -2000 L 2100 2100 L -2000 2100 Z ${yLogoPath}`} fill="#000000" fillRule="evenodd" />
           <path ref={letterYRef} d={yLogoPath} fill="transparent" stroke="#0D9488" strokeWidth="1.5" className="drop-shadow-[0_0_10px_rgba(13,148,136,0.6)]" />
         </svg>

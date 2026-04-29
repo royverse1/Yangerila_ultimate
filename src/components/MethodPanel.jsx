@@ -30,7 +30,7 @@ const courseData = [
   }
 ];
 
-const MethodPanel = React.memo(function MethodPanel({ step, children, isReversing }) {
+const MethodPanel = React.memo(function MethodPanel({ step, children, isReversingRef }) {
   const containerRef = useRef(null);
 
   // Typography Refs
@@ -54,6 +54,8 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
   const xTo = useRef(null);
   const yTo = useRef(null);
+  // P5.2 — RAF ref to throttle mousemove layout calculations
+  const tiltRafRef = useRef(null);
 
   const resetAccordion = useCallback((instant = false) => {
     if (!panelsRef.current || panelsRef.current.length !== 4) return;
@@ -129,6 +131,9 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
   }, [expandedIndex, resetAccordion]);
 
   useGSAP(() => {
+    // P1.3 — read at animation-fire time
+    const isReversing = isReversingRef.current;
+
     if (step < 5) {
       gsap.set(founderContainerRef.current, { autoAlpha: 0, pointerEvents: "none" });
     } else {
@@ -197,19 +202,21 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
         if (admissionBtns) tl.fromTo(admissionBtns, { scale: 0.9, autoAlpha: 0, y: 30 }, { scale: 1, autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.6 }, "-=0.4");
       }
     }
-  }, { scope: containerRef, dependencies: [step, isReversing, resetAccordion] });
+  }, { scope: containerRef, dependencies: [step, resetAccordion] });
 
+  // P5.2 — RAF-throttled tilt card handler
   const handleMouseMove = (e) => {
     if (!tiltCardRef.current || !xTo.current || !yTo.current || !founderContainerRef.current) return;
-    const rect = founderContainerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -10;
-    const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 10;
-
-    xTo.current(rotateY);
-    yTo.current(rotateX);
+    cancelAnimationFrame(tiltRafRef.current);
+    tiltRafRef.current = requestAnimationFrame(() => {
+      const rect    = founderContainerRef.current.getBoundingClientRect();
+      const x       = e.clientX - rect.left;
+      const y       = e.clientY - rect.top;
+      const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -10;
+      const rotateY = ((x - rect.width  / 2) / (rect.width  / 2)) *  10;
+      xTo.current(rotateY);
+      yTo.current(rotateX);
+    });
   };
 
   const handleMouseLeave = () => {

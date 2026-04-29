@@ -11,7 +11,7 @@ const testimonials = [
   { name: 'Saloni Khanna', role: 'Homemaker', text: '“Learning guitar was a dream. Online classes fit perfectly into my routine. Now, I can confidently play and sing songs.”' }
 ];
 
-const FooterReveal = React.memo(function FooterReveal({ step, isReversing }) {
+const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) {
   const containerRef = useRef(null);
   const revealSectionRef = useRef(null);
 
@@ -25,6 +25,13 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversing }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [userPaused, setUserPaused] = useState(false);
+  const [formStatus, setFormStatus] = useState('idle');
+
+  const handleSubmit = useCallback((e) => {
+    e.preventDefault();
+    setFormStatus('success');
+    setTimeout(() => setFormStatus('idle'), 3000);
+  }, []);
 
   const handleNav = useCallback((direction) => {
     setActiveIndex((prev) => (prev + direction + testimonials.length) % testimonials.length);
@@ -56,16 +63,15 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversing }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [step, handleNav]);
 
-  // Light Pink & Navy Blue Moving Background Engine
+  // High-Efficiency Navy to Pink Moving Gradients (Zero CSS Filters)
   const initBokeh = useCallback(() => {
     bokehRefs.current.forEach((orb) => {
       if (!orb) return;
       const tween = gsap.to(orb, {
-        x: "random(-10vw, 10vw)",
+        x: "random(-15vw, 15vw)",
         y: "random(-10vh, 10vh)",
-        opacity: "random(0.2, 0.5)",
         scale: "random(0.9, 1.2)",
-        duration: "random(12, 24)",
+        duration: "random(12, 20)",
         ease: "sine.inOut",
         repeat: -1,
         yoyo: true,
@@ -83,7 +89,7 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversing }) {
     };
   }, [initBokeh]);
 
-  // Strict Hardware Pausing
+  // Strict Hardware Pausing - Zero drain on device battery when offscreen
   useEffect(() => {
     if (step === 11) {
       bokehTweens.current.forEach(t => t.play());
@@ -94,6 +100,9 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversing }) {
 
   // GSAP Step Animations
   useGSAP(() => {
+    // P1.3 — read at hook-fire time
+    const isReversing = isReversingRef.current;
+
     if (step === 10) {
       const elements = funFactRef.current?.querySelectorAll('.fun-fact-el');
       if (isReversing) {
@@ -106,7 +115,7 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversing }) {
     if (step === 11) {
       const header = voicesRef.current?.querySelector('.voices-header');
       const carousel = voicesRef.current?.querySelector('.voices-carousel');
-      const background = voicesRef.current?.querySelector('.dark-overlay');
+      const background = voicesRef.current?.querySelector('.carousel-bg-container');
 
       if (isReversing) {
         gsap.set([header, carousel, background], { autoAlpha: 1, y: 0 });
@@ -139,7 +148,7 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversing }) {
         );
       }
     }
-  }, { scope: containerRef, dependencies: [step, isReversing] });
+  }, { scope: containerRef, dependencies: [step] });
 
   const getCardStyle = (idx) => {
     const total = testimonials.length;
@@ -187,29 +196,28 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversing }) {
       {/* SECTION 11: Cinematic Carousel */}
       <div ref={voicesRef} className="w-full h-dvh overflow-hidden flex flex-col justify-center bg-transparent relative py-10 lg:py-16 px-0 shrink-0 border-t border-ink-dark/10">
 
-        {/* Isolated Dark Background */}
-        <div className="dark-overlay absolute inset-0 -z-20 bg-ink-dark invisible"></div>
+        {/* HIGH PERFORMANCE BOKEH: Deep Navy Base with Moving Pure CSS Radial Gradients */}
+        <div className="carousel-bg-container absolute inset-0 -z-20 overflow-hidden invisible pointer-events-none">
+          <div className="absolute inset-0 bg-[#020617]"></div>
 
-        {/* LIGHT PINK & NAVY BLUE BOKEH: Pure Radial Gradients */}
-        <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-          {/* Very Light Pink Orb */}
-          <div ref={el => bokehRefs.current[0] = el} className="absolute top-[-10%] left-[5%] w-[70vw] h-[70vw] max-w-[800px] max-h-[800px] bg-[radial-gradient(circle_at_center,rgba(244,114,182,0.15)_0%,transparent_65%)] rounded-full mix-blend-screen opacity-40 will-change-[transform,opacity]"></div>
-          {/* Navy Blue Orb */}
-          <div ref={el => bokehRefs.current[1] = el} className="absolute top-[10%] right-[-5%] w-[80vw] h-[80vw] max-w-[1000px] max-h-[1000px] bg-[radial-gradient(circle_at_center,rgba(30,58,138,0.25)_0%,transparent_65%)] rounded-full mix-blend-screen opacity-40 will-change-[transform,opacity]"></div>
-          {/* Secondary Navy Blue / Deep Purple Orb */}
-          <div ref={el => bokehRefs.current[2] = el} className="absolute bottom-[-10%] left-[25%] w-[60vw] h-[60vw] max-w-[700px] max-h-[700px] bg-[radial-gradient(circle_at_center,rgba(30,58,138,0.2)_0%,transparent_65%)] rounded-full mix-blend-screen opacity-40 will-change-[transform,opacity]"></div>
+          {/* Deep Navy Blue Gradient Wash */}
+          <div ref={el => bokehRefs.current[0] = el} className="absolute top-[-20%] left-[-10%] w-[100vw] h-[100vw] max-w-[1200px] max-h-[1200px] bg-[radial-gradient(circle_at_center,rgba(30,58,138,0.5)_0%,transparent_65%)] rounded-full will-change-transform"></div>
+
+          {/* Soft Pink Gradient Wash */}
+          <div ref={el => bokehRefs.current[1] = el} className="absolute bottom-[-20%] right-[-10%] w-[120vw] h-[120vw] max-w-[1400px] max-h-[1400px] bg-[radial-gradient(circle_at_center,rgba(236,72,153,0.3)_0%,transparent_65%)] rounded-full will-change-transform"></div>
         </div>
 
-        {/* Header */}
+        {/* Header - White text for dark background */}
         <div className="voices-header shrink-0 flex flex-col px-4 sm:px-6 md:px-12 xl:px-24 mb-8 md:mb-12 items-center text-center invisible">
           <h2 className="text-3xl sm:text-4xl md:text-7xl font-black text-white uppercase tracking-tight leading-none mb-3 md:mb-5">
             Voices of <span className="text-serif-italic font-light text-accent-teal lowercase">excellence</span>
           </h2>
           <div className="flex items-center gap-4 text-white/60 text-xs md:text-sm font-medium">
             <p>Use arrows or click to navigate.</p>
+            {/* Play/Pause Button - Removed Unnecessary Blur */}
             <button
               onClick={() => setUserPaused(!userPaused)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 hover:bg-white hover:text-ink-dark transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 border border-white/30 hover:bg-white hover:text-ink-dark transition-colors text-white"
             >
               {userPaused ? <Play size={12} /> : <Pause size={12} />}
               <span className="uppercase tracking-widest text-[9px] font-bold">{userPaused ? "Paused" : "Auto"}</span>
@@ -223,8 +231,8 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversing }) {
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          {/* Left Arrow */}
-          <button onClick={() => { setUserPaused(true); handleNav(-1); }} className="absolute left-2 sm:left-6 md:left-12 z-40 p-3 md:p-4 rounded-full border border-white/20 bg-white/10 backdrop-blur-md shadow-lg text-white transition-transform duration-300 hover:scale-110 active:scale-95 hover:bg-white hover:text-ink-dark hover:border-white">
+          {/* Left Arrow - Removed Unnecessary Blur, made lighter */}
+          <button onClick={() => { setUserPaused(true); handleNav(-1); }} className="absolute left-2 sm:left-6 md:left-12 z-40 p-3 md:p-4 rounded-full border border-white/30 bg-white/20 shadow-sm text-white transition-transform duration-300 hover:scale-110 active:scale-95 hover:bg-white hover:text-ink-dark">
             <ChevronLeft size={24} />
           </button>
 
@@ -241,19 +249,16 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversing }) {
                     setUserPaused(true);
                     if (activeIndex !== idx) setActiveIndex(idx);
                   }}
-                  className={`absolute top-0 left-0 w-full h-full rounded-[1.5rem] md:rounded-4xl ease-[cubic-bezier(0.25,1,0.5,1)] transition-all duration-[800ms] border cursor-pointer will-change-[transform,opacity]
+                  className={`absolute top-0 left-0 w-full h-full rounded-[1.5rem] md:rounded-4xl ease-[cubic-bezier(0.25,1,0.5,1)] transition-[transform,opacity,background-color,backdrop-filter] duration-[800ms] border cursor-pointer will-change-[transform,opacity]
                     ${isActive
-                      // Restored: Clean frosted glass + pure heavy outer glow
-                      ? "bg-white/75 backdrop-blur-2xl shadow-[0_0_80px_20px_rgba(13,148,136,0.25)] border-white/60"
+                      // LIQUID GLASS BLUR: Highly blurred, semi-transparent frosted card that reveals the navy/pink gradient behind it.
+                      ? "bg-white/60 backdrop-blur-3xl border-white/60 shadow-[0_0_80px_20px_rgba(13,148,136,0.3)]"
+                      // INACTIVE: Clean simple glass
                       : "bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/20"
                     }`}
                   style={styles}
                 >
-                  {/* Subtle internal ring pulse for active card */}
-                  <div className={`absolute inset-0 pointer-events-none transition-opacity duration-700 rounded-[1.5rem] md:rounded-4xl overflow-hidden ${isActive ? 'opacity-100' : 'opacity-0'}`}>
-                    <div className="absolute inset-[-60px] animate-[pulse_3s_ease-in-out_infinite] shadow-[0_0_60px_15px_rgba(255,255,255,0.1)]"></div>
-                  </div>
-
+                  {/* Clean text formatting that adapts to the card's active state */}
                   <div className="p-8 sm:p-10 md:p-16 relative z-10 h-full flex flex-col justify-between select-none">
                     <p className={`font-medium text-serif-italic leading-relaxed transition-colors duration-700 ${isActive ? 'text-ink-dark text-lg sm:text-xl md:text-3xl' : 'text-white text-sm sm:text-base md:text-xl'}`}>
                       "{t.text}"
@@ -275,8 +280,8 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversing }) {
             })}
           </div>
 
-          {/* Right Arrow */}
-          <button onClick={() => { setUserPaused(true); handleNav(1); }} className="absolute right-2 sm:right-6 md:right-12 z-40 p-3 md:p-4 rounded-full border border-white/20 bg-white/10 backdrop-blur-md shadow-lg text-white transition-transform duration-300 hover:scale-110 active:scale-95 hover:bg-white hover:text-ink-dark hover:border-white">
+          {/* Right Arrow - Removed Unnecessary Blur */}
+          <button onClick={() => { setUserPaused(true); handleNav(1); }} className="absolute right-2 sm:right-6 md:right-12 z-40 p-3 md:p-4 rounded-full border border-white/30 bg-white/20 shadow-sm text-white transition-transform duration-300 hover:scale-110 active:scale-95 hover:bg-white hover:text-ink-dark">
             <ChevronRight size={24} />
           </button>
         </div>
@@ -300,10 +305,12 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversing }) {
               <div className="p-6 md:p-10 xl:p-12 rounded-[2rem] md:rounded-[3rem] w-full max-w-md bg-white/85 backdrop-blur-xl border border-white relative shadow-[0_15px_50px_rgba(0,0,0,0.05)]">
                 <h3 className="text-xl md:text-2xl font-black uppercase text-ink-dark tracking-widest mb-1">Waitlist</h3>
                 <p className="text-[10px] md:text-xs text-accent-teal uppercase tracking-widest font-black mb-6 md:mb-8">Secure your slot</p>
-                <form className="flex flex-col gap-3 md:gap-4">
-                  <input type="text" placeholder="FULL NAME" className="bg-white/50 border border-ink-dark/10 rounded-xl p-3 md:p-4 text-xs md:text-sm text-ink-dark focus:outline-none focus:border-accent-teal transition-colors" />
-                  <input type="email" placeholder="EMAIL ADDRESS" className="bg-white/50 border border-ink-dark/10 rounded-xl p-3 md:p-4 text-xs md:text-sm text-ink-dark focus:outline-none focus:border-accent-teal transition-colors" />
-                  <button type="button" className="bg-linear-to-r from-accent-teal to-[#2563EB] text-white font-black p-4 md:p-5 w-full rounded-xl shadow-md hover:shadow-xl transition-all uppercase tracking-widest text-[10px] md:text-sm">Request Admission</button>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:gap-4">
+                  <input required type="text" placeholder="FULL NAME" className="bg-white/50 border border-ink-dark/10 rounded-xl p-3 md:p-4 text-xs md:text-sm text-ink-dark focus:outline-none focus:border-accent-teal transition-colors" />
+                  <input required type="email" placeholder="EMAIL ADDRESS" className="bg-white/50 border border-ink-dark/10 rounded-xl p-3 md:p-4 text-xs md:text-sm text-ink-dark focus:outline-none focus:border-accent-teal transition-colors" />
+                  <button type="submit" className="bg-linear-to-r from-accent-teal to-[#2563EB] text-white font-black p-4 md:p-5 w-full rounded-xl shadow-md hover:shadow-xl transition-all uppercase tracking-widest text-[10px] md:text-sm">
+                    {formStatus === 'success' ? 'Request Sent!' : 'Request Admission'}
+                  </button>
                 </form>
               </div>
             </div>

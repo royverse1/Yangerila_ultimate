@@ -26,15 +26,17 @@ const faqCategories = {
   ]
 };
 
-const FAQSection = React.memo(function FAQSection({ step, isReversing }) {
+const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
   const [activeCategory, setActiveCategory] = useState("About The Academy");
   const [openIndex, setOpenIndex] = useState(0);
   const containerRef = useRef(null);
   const contentRefs = useRef([]);
 
   useGSAP(() => {
-    const faqHeader = containerRef.current.querySelector('.faq-header');
-    const faqTabs = containerRef.current.querySelector('.faq-tabs');
+    // P1.3 — read at hook-fire time
+    const isReversing = isReversingRef.current;
+    const faqHeader  = containerRef.current.querySelector('.faq-header');
+    const faqTabs    = containerRef.current.querySelector('.faq-tabs');
     const faqContent = containerRef.current.querySelector('.faq-content');
 
     if (step === 7) {
@@ -42,23 +44,33 @@ const FAQSection = React.memo(function FAQSection({ step, isReversing }) {
         gsap.set([faqHeader, faqTabs, faqContent], { autoAlpha: 1, y: 0 });
       } else {
         const tl = gsap.timeline({ delay: 0.2 });
-        tl.fromTo(faqHeader, { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" })
-          .fromTo(faqTabs, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.6 }, "-=0.4")
+        tl.fromTo(faqHeader,  { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" })
+          .fromTo(faqTabs,    { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.6 }, "-=0.4")
           .fromTo(faqContent, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.6 }, "-=0.4");
       }
     }
-  }, { scope: containerRef, dependencies: [step, isReversing] });
+  }, { scope: containerRef, dependencies: [step] });
 
   useGSAP(() => {
     contentRefs.current.forEach((el, i) => {
       if (el) {
-        if (i === openIndex) gsap.to(el, { height: "auto", autoAlpha: 1, duration: 0.4 });
+        if (i === openIndex) gsap.to(el, { height: 'auto', autoAlpha: 1, duration: 0.4 });
         else gsap.to(el, { height: 0, autoAlpha: 0, duration: 0.4 });
       }
     });
   }, { scope: containerRef, dependencies: [activeCategory, openIndex] });
 
   const categories = Object.keys(faqCategories);
+
+  // P5.3 — clean up stale GSAP heights before switching category
+  const handleCategoryChange = (cat) => {
+    contentRefs.current.forEach(el => {
+      if (el) gsap.set(el, { height: 0, autoAlpha: 0 });
+    });
+    contentRefs.current = [];
+    setOpenIndex(0);
+    setActiveCategory(cat);
+  };
 
   return (
     <section ref={containerRef} className="w-full h-dvh shrink-0 relative flex flex-col items-center justify-start bg-transparent pt-12 md:pt-16 pb-8">
@@ -73,7 +85,7 @@ const FAQSection = React.memo(function FAQSection({ step, isReversing }) {
 
         <div className="faq-tabs flex flex-wrap justify-center gap-3 md:gap-12 mb-6 md:mb-12 w-full border-b border-ink-dark/10 pb-4 md:pb-8 invisible shrink-0">
           {categories.map((cat) => (
-            <button key={cat} onClick={() => { setOpenIndex(0); setActiveCategory(cat); }} className={`relative py-1 md:py-2 text-[9px] sm:text-[10px] md:text-sm font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all duration-500 hover:text-accent-teal bg-transparent border-none cursor-pointer ${activeCategory === cat ? 'text-accent-teal' : 'text-ink-medium'}`}>
+            <button key={cat} onClick={() => handleCategoryChange(cat)} className={`relative py-1 md:py-2 text-[9px] sm:text-[10px] md:text-sm font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all duration-500 hover:text-accent-teal bg-transparent border-none cursor-pointer ${activeCategory === cat ? 'text-accent-teal' : 'text-ink-medium'}`}>
               {cat}
               {activeCategory === cat && <div className="absolute -bottom-4 md:-bottom-8 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-accent-teal"></div>}
             </button>

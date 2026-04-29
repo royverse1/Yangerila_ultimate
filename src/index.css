@@ -1,21 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  /* The New Watercolour Paper & Ink Palette */
-  --color-paper-bg: #F8FAFC;
-  --color-ink-dark: #020617;
-  /* Deepened for stronger contrast */
-  --color-ink-medium: #334155;
+  /* Acoustic Warmth Palette */
+  --color-paper-bg: #F5F5F0;
+  --color-ink-dark: #2C1E16;
+  --color-ink-medium: #4A3B32;
 
-  /* The Pastel Watercolour Palette */
-  --color-pastel-blue: #E0F2FE;
-  --color-pastel-pink: #FCE7F3;
-  --color-pastel-purple: #F3E8FF;
-  --color-pastel-mint: #D1FAE5;
+  /* Organic / Vintage Tones */
+  --color-pastel-blue: #EAE6D9;
+  --color-pastel-pink: #E6D5C3;
+  --color-pastel-purple: #DCD3C6;
+  --color-pastel-mint: #D4DACD;
 
-  /* Deep vibrant accents for text glow & highlights */
-  --color-accent-teal: #0D9488;
-  --color-accent-magenta: #BE185D;
+  /* Accents */
+  --color-accent-teal: #D97706; /* Vintage Amber */
+  --color-accent-magenta: #4F46E5; /* Muted Sage Green */
 
   /* Typography variables */
   --font-technical-sans: "Inter", "Helvetica Neue", sans-serif;
