@@ -263,17 +263,7 @@ export default function App() {
     { label: 'Testimonials', step: 11 },
   ];
 
-  const navLinks = [
-    { label: "Welcome", step: 1 },
-    { label: "Our Legacy", step: 2 },
-    { label: "Founder's Note", step: 5 },
-    { label: "Curriculum", step: 6 },
-    { label: "Insights (FAQ)", step: 7 },
-    { label: "Premium Rewards", step: 8 },
-    { label: "Admissions", step: 9 },
-    { label: "Testimonials", step: 11 },
-    { label: "Contact", step: 12 },
-  ];
+
 
   return (
     <div className="relative w-full h-dvh overflow-hidden bg-transparent font-sans">

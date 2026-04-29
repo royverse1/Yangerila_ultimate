@@ -42,6 +42,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
   const cardsRef      = useRef([]);
   const statsBlockRef = useRef(null);
   const canvasRef     = useRef(null);
+  const [mountStatus, setMountStatus] = useState('unmounted');
 
   // Physics engine refs — no state, never trigger re-renders
   const frameRef          = useRef({ current: 0 });   // decimal frame (tweened)

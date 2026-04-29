@@ -6,7 +6,7 @@ import App from './App.jsx'
 // Register the Service Worker for local image caching
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then(
+    navigator.serviceWorker.register(import.meta.env.BASE_URL + 'sw.js').then(
       (registration) => {
         console.log('ServiceWorker registration successful with scope: ', registration.scope);
       },
