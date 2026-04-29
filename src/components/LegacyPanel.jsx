@@ -48,6 +48,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
   const frameRef          = useRef({ current: 0 });   // decimal frame (tweened)
   const cardIndexRef      = useRef(0);                 // Tracks 0 (Past), 1 (Present), 2 (Future)
   const isActiveRef       = useRef(false);
+  const isActive          = step === 3 || step === 4;  // Boolean for rendering classes
   const enginePausedRef   = useRef(false);             // P3.5 orientation lock
 
   // P4.1 — track which images are actually loaded
