@@ -3,22 +3,18 @@
 
 @theme {
   /* Acoustic & Hardware Theme */
-  /* Base Woods */
-  --color-paper-bg: #FDFBF7;       /* Crisp Maple */
-  --color-ink-medium: #4A2E1B;     /* Rich Mahogany */
-  --color-ink-dark: #1A1A1A;       /* Deep Ebony */
-  
-  /* Electric Accents */
-  --color-pastel-blue: #3A5A8C;    /* Lake Placid Blue */
-  --color-pastel-pink: #E34234;    /* Fiesta Red */
-  --color-pastel-purple: #E19B2D;  /* Vintage Amber / Goldtop */
-  --color-pastel-mint: #93E9BE;    /* Pale Seafoam Green */
+  --color-paper-bg: #FDFBF7;
+  --color-ink-medium: #4A2E1B;
+  --color-ink-dark: #1A1A1A;
 
-  /* Specific Interactive Accents */
-  --color-accent-teal: #3A5A8C;    /* Lake Placid (Buttons/Borders) */
-  --color-accent-magenta: #E34234; /* Cherry Sunburst / Fiesta Red */
+  --color-pastel-blue: #3A5A8C;
+  --color-pastel-pink: #E34234;
+  --color-pastel-purple: #E19B2D;
+  --color-pastel-mint: #93E9BE;
 
-  /* Typography variables */
+  --color-accent-teal: #3A5A8C;
+  --color-accent-magenta: #E34234;
+
   --font-technical-sans: "Outfit", "Inter", sans-serif;
   --font-elegant-serif: "Lora", "Playfair Display", serif;
 }
@@ -41,11 +37,13 @@
   body::before {
     content: "";
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
     z-index: 9999;
     opacity: 0.03;
-    /* Swapped to a lightweight, pre-rendered noise PNG to save GPU */
     background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/c7zMAAAABnRSTlMAERIjM0N0XfUAAAAdSURBVDjLxYyxEQAhDAM7x3B0N+A4/0qigQdI8hL92bVv+bT3uX7n+p3rd67fuX7n+p3rd67fuX7n+v3p3wE8/gA/q/h73gAAAABJRU5ErkJggg==");
     background-repeat: repeat;
     transform: translateZ(0);
@@ -59,7 +57,56 @@
     font-style: italic;
   }
 
-  /* Hardware Accelerated Glow for Boxes */
+  /* Accordion Layout Transitions */
+  .panel-accordion {
+    transition: flex 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .panel-accordion.is-expanded {
+    flex: 1 1 80% !important;
+  }
+
+  .panel-accordion.is-collapsed {
+    flex: 1 1 6.66% !important;
+  }
+
+  @media (max-width: 768px) {
+    .panel-accordion.is-expanded {
+      flex: 1 1 70% !important;
+    }
+
+    .panel-accordion.is-collapsed {
+      flex: 1 1 10% !important;
+    }
+  }
+
+  /* Internal Content CSS Transitions (Replaces GSAP) */
+  .panel-accordion .normal-content,
+  .panel-accordion .normal-icon {
+    transition: opacity 0.3s ease;
+    opacity: 1;
+  }
+
+  .panel-accordion .expanded-content,
+  .panel-accordion .expanded-glow {
+    transition: opacity 0.4s ease 0.3s;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .panel-accordion.is-expanded .normal-content,
+  .panel-accordion.is-expanded .normal-icon {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .panel-accordion.is-expanded .expanded-content,
+  .panel-accordion.is-expanded .expanded-glow {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Premium Box Glows */
   .premium-glow {
     box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
     transition: box-shadow 0.4s ease, transform 0.4s ease;
@@ -79,7 +126,6 @@
     -webkit-backface-visibility: hidden;
   }
 
-  /* Hide scrollbar for clean mobile bento scrolling */
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }

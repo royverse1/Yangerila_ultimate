@@ -84,21 +84,21 @@ const SmartVideo = React.memo(function SmartVideo({
             className={`relative overflow-hidden w-full h-full bg-black/5 ${className}`}
             style={{ transform: 'translateZ(0)', willChange: 'transform, opacity' }}
         >
-            {spatialState !== 'unmounted' ? (
-                <video
-                    ref={videoRef}
-                    poster={poster}
-                    muted={muted}
-                    loop={loop}
-                    playsInline={playsInline}
-                    decoding="async"
-                    className="absolute inset-0 w-full h-full object-cover scale-[1.03]"
-                >
-                    {srcWebm && <source src={srcWebm} type="video/webm" />}
-                    {srcMp4 && <source src={srcMp4} type="video/mp4" />}
-                </video>
-            ) : (
-                <div className="absolute inset-0 w-full h-full bg-white/10 animate-pulse backdrop-blur-sm"></div>
+            <video
+                ref={videoRef}
+                poster={poster}
+                muted={muted}
+                loop={loop}
+                playsInline={playsInline}
+                decoding="async"
+                className={`absolute inset-0 w-full h-full object-cover scale-[1.03] transition-opacity duration-500 ${spatialState === 'unmounted' ? 'opacity-0' : 'opacity-100'}`}
+            >
+                {spatialState !== 'unmounted' && srcWebm && <source src={srcWebm} type="video/webm" />}
+                {spatialState !== 'unmounted' && srcMp4 && <source src={srcMp4} type="video/mp4" />}
+            </video>
+            
+            {spatialState === 'unmounted' && (
+                <div className="absolute inset-0 w-full h-full bg-white/10 animate-pulse backdrop-blur-sm z-10"></div>
             )}
         </div>
     );
