@@ -41,6 +41,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
   const frameRef = useRef({ current: 0 });
   const cardIndexRef = useRef(0);
   const isActiveRef = useRef(false);
+  const interactionTimeoutRef = useRef(null);
   const isActive = step === 3 || step === 4;
   const enginePausedRef = useRef(false);
 
@@ -183,7 +184,8 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         cardIndexRef.current++;
         flyToCard(cardIndexRef.current);
         isActiveRef.current = false;
-        setTimeout(() => { isActiveRef.current = true; }, 1200);
+        clearTimeout(interactionTimeoutRef.current);
+        interactionTimeoutRef.current = setTimeout(() => { isActiveRef.current = true; }, 1200);
       } else if (self.event.type !== 'wheel' || Math.abs(self.deltaY) > 20) {
         isActiveRef.current = false;
         window.dispatchEvent(new CustomEvent('requestNextStep'));
@@ -193,7 +195,8 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         cardIndexRef.current--;
         flyToCard(cardIndexRef.current);
         isActiveRef.current = false;
-        setTimeout(() => { isActiveRef.current = true; }, 1200);
+        clearTimeout(interactionTimeoutRef.current);
+        interactionTimeoutRef.current = setTimeout(() => { isActiveRef.current = true; }, 1200);
       } else if (self.event.type !== 'wheel' || Math.abs(self.deltaY) > 20) {
         isActiveRef.current = false;
         window.dispatchEvent(new CustomEvent('requestPrevStep'));
@@ -238,6 +241,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
 
     if (step < 3) {
       isActiveRef.current = false;
+      clearTimeout(interactionTimeoutRef.current);
       gsap.killTweensOf(frameRef.current);
       gsap.to(containerRef.current, { yPercent: 100, autoAlpha: 0, duration: 0.8, ease: 'power3.inOut', force3D: true });
       gsap.to(canvasRef.current, { opacity: 1, duration: 0.8 });
@@ -245,11 +249,11 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
 
     if (step > 4) {
       isActiveRef.current = false;
+      clearTimeout(interactionTimeoutRef.current);
       gsap.killTweensOf(frameRef.current);
       gsap.to(containerRef.current, { yPercent: -100, autoAlpha: 0, duration: 0.8, ease: 'power3.inOut', force3D: true });
       gsap.set([cameraRef.current, statsBlockRef.current], { autoAlpha: 0, display: 'none', delay: 0.4 });
       gsap.to(canvasRef.current, { opacity: 1, duration: 0.8 });
-      imagesRef.current = [];
     }
 
     if (step === 3) {
@@ -277,11 +281,13 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         gsap.set(statCards, { scale: 0.9, autoAlpha: 0, y: 20 });
       }
 
-      setTimeout(() => { isActiveRef.current = true; }, 900);
+      clearTimeout(interactionTimeoutRef.current);
+      interactionTimeoutRef.current = setTimeout(() => { isActiveRef.current = true; }, 900);
     }
 
     if (step === 4) {
       isActiveRef.current = false;
+      clearTimeout(interactionTimeoutRef.current);
       gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: 'power3.out' });
       gsap.to(canvasRef.current, { opacity: 1, duration: 0.8, ease: 'power3.inOut' });
 

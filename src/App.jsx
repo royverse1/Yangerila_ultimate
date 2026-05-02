@@ -233,7 +233,7 @@ export default function App() {
         attemptAudioAutoplay();
         setIsUIMinimized(true);
         setMusicExpanded(false);
-        if (isMenuOpen) setIsMenuOpen(false);
+        setIsMenuOpen(false);
 
         handleScrollIntent(intent);
       },
@@ -254,7 +254,7 @@ export default function App() {
         attemptAudioAutoplay();
         setIsUIMinimized(true);
         setMusicExpanded(false);
-        if (isMenuOpen) setIsMenuOpen(false);
+        setIsMenuOpen(false);
 
         handleScrollIntent(intent);
       },
@@ -278,7 +278,7 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => { obs.kill(); window.removeEventListener('keydown', handleKeyDown); };
-  }, [isMenuOpen, handleScrollIntent]);
+  }, [handleScrollIntent]);
 
   const navLinks = [
     { label: 'Welcome', step: 1 },

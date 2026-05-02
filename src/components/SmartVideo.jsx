@@ -72,8 +72,6 @@ const SmartVideo = React.memo(function SmartVideo({
         } else if (spatialState === 'unmounted') {
             if (videoRef.current) {
                 videoRef.current.pause();
-                videoRef.current.removeAttribute('src');
-                videoRef.current.load();
             }
         }
     }, [spatialState, handlePlay, handlePause]);
@@ -96,7 +94,7 @@ const SmartVideo = React.memo(function SmartVideo({
                 {spatialState !== 'unmounted' && srcWebm && <source src={srcWebm} type="video/webm" />}
                 {spatialState !== 'unmounted' && srcMp4 && <source src={srcMp4} type="video/mp4" />}
             </video>
-            
+
             {spatialState === 'unmounted' && (
                 <div className="absolute inset-0 w-full h-full bg-white/10 animate-pulse backdrop-blur-sm z-10"></div>
             )}
