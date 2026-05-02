@@ -174,13 +174,13 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
         <div className="w-full max-w-screen-2xl mx-auto h-full flex flex-col items-center justify-center relative py-12 md:py-24">
 
           <div ref={founderTitleRef} className="invisible mb-6 md:mb-16 flex flex-col items-center md:items-start w-full max-w-7xl">
-            <span className="block text-[10px] md:text-xs font-black font-(--font-technical-sans) tracking-[0.4em] text-accent-teal uppercase mb-2">Founder's Note</span>
+            <span className="block text-[10px] md:text-xs font-black font-technical-sans tracking-[0.4em] text-accent-teal uppercase mb-2">Founder's Note</span>
           </div>
 
           <div className="w-full flex flex-col md:grid md:grid-cols-2 gap-6 md:gap-16 lg:gap-20 items-center justify-center max-w-7xl mx-auto flex-1 md:flex-none">
 
             <div className="flex flex-col items-start gap-3 md:gap-5 text-left relative w-full flex-1 md:flex-none justify-center">
-              <h2 ref={founderQuoteRef} className="relative z-10 text-base sm:text-xl lg:text-3xl font-bold text-ink-dark leading-snug tracking-tight w-full font-(--font-elegant-serif)">
+              <h2 ref={founderQuoteRef} className="relative z-10 text-base sm:text-xl lg:text-3xl font-bold text-ink-dark leading-snug tracking-tight w-full font-elegant-serif">
                 <p ref={el => quoteParagraphsRef.current[0] = el} className="quote-p1 invisible opacity-90 mb-2 md:mb-4 pr-1">
                   In my 20+ years as a guitarist, I’ve learned, played, performed, and composed—but teaching has always had my heart. Helping students became my true passion.
                 </p>
@@ -193,8 +193,8 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
               </h2>
 
               <div ref={founderAuthorRef} className="mt-4 md:mt-14 invisible flex flex-col items-center md:items-start relative z-10 border-t-2 border-ink-dark/20 pt-4 md:pt-5 w-full max-w-sm shrink-0">
-                <p className="text-[9px] md:text-[11px] font-black font-(--font-technical-sans) uppercase tracking-[0.3em] text-ink-medium mb-1 opacity-80">Lead Guitar Coach</p>
-                <h3 className="text-xl md:text-3xl lg:text-4xl font-black uppercase text-ink-dark font-(--font-technical-sans) tracking-tighter tabular-nums leading-none">Micky Dixit</h3>
+                <p className="text-[9px] md:text-[11px] font-black font-technical-sans uppercase tracking-[0.3em] text-ink-medium mb-1 opacity-80">Lead Guitar Coach</p>
+                <h3 className="text-xl md:text-3xl lg:text-4xl font-black uppercase text-ink-dark font-technical-sans tracking-tighter tabular-nums leading-none">Micky Dixit</h3>
               </div>
             </div>
 
@@ -211,8 +211,8 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
       <div className="w-full h-dvh flex flex-col justify-center relative px-2 sm:px-6 md:px-12 lg:px-24 pt-6 md:pt-16 shrink-0 bg-transparent overflow-hidden">
 
         <div className="max-w-7xl mx-auto w-full text-center px-4 shrink-0 mb-4 md:mb-6">
-          <h2 className="text-accent-teal tracking-[0.3em] font-black font-(--font-technical-sans) text-[9px] md:text-xs uppercase mb-1.5">Our Curriculum</h2>
-          <h3 className="text-3xl md:text-5xl lg:text-6xl font-black text-ink-dark font-(--font-technical-sans) uppercase tracking-tight mb-2">Featured <span className="text-accent-teal">Courses</span></h3>
+          <h2 className="text-accent-teal tracking-[0.3em] font-black font-technical-sans text-[9px] md:text-xs uppercase mb-1.5">Our Curriculum</h2>
+          <h3 className="text-3xl md:text-5xl lg:text-6xl font-black text-ink-dark font-technical-sans uppercase tracking-tight mb-2">Featured <span className="text-accent-teal">Courses</span></h3>
         </div>
 
         <div ref={accordionRef} className="w-full h-[65dvh] md:h-[60dvh] flex flex-col md:flex-row gap-2 md:gap-4 md:items-stretch group overflow-hidden pointer-events-auto shrink px-2 sm:px-0">
@@ -243,13 +243,13 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                       <PanelIcon className="w-4 h-4 sm:w-5 sm:h-5 md:w-8 md:h-8 transition-transform group-hover:scale-110" style={{ color: course.colorText }} />
                     </div>
                     <div className="w-full text-left flex flex-col items-start gap-0.5 sm:gap-1">
-                      <h3 className="text-xs sm:text-sm md:text-lg lg:text-xl font-black font-(--font-technical-sans) leading-tight uppercase tracking-tight tabular-nums truncate w-full" style={{ color: course.colorText }}>{course.title}</h3>
-                      <p className="text-[7px] sm:text-[8px] md:text-[9px] tracking-widest font-black font-(--font-technical-sans) uppercase tabular-nums" style={{ color: course.colorText, opacity: 0.8 }}>{course.price}</p>
+                      <h3 className="text-xs sm:text-sm md:text-lg lg:text-xl font-black font-technical-sans leading-tight uppercase tracking-tight tabular-nums truncate w-full" style={{ color: course.colorText }}>{course.title}</h3>
+                      <p className="text-[7px] sm:text-[8px] md:text-[9px] tracking-widest font-black font-technical-sans uppercase tabular-nums" style={{ color: course.colorText, opacity: 0.8 }}>{course.price}</p>
                     </div>
                   </div>
                   <div className="flex flex-col items-end md:items-start text-right md:text-left gap-1 md:gap-3 w-full shrink">
-                    <div className="hidden md:block text-[8px] md:text-xs tracking-widest uppercase mb-1 font-black font-(--font-technical-sans) tabular-nums opacity-80" style={{ color: course.colorText }}>{course.stats}</div>
-                    <div className="bg-accent-teal border-2 border-transparent py-1.5 md:py-2 px-2 sm:px-3 md:px-5 rounded-md sm:rounded-lg md:rounded-xl text-[7px] sm:text-[8px] md:text-[9px] font-black font-(--font-technical-sans) uppercase tracking-widest tabular-nums shadow-md flex gap-1 justify-center items-center text-white transition-colors cursor-pointer group-hover:bg-white group-hover:text-accent-teal group-hover:border-accent-teal">Explore</div>
+                    <div className="hidden md:block text-[8px] md:text-xs tracking-widest uppercase mb-1 font-black font-technical-sans tabular-nums opacity-80" style={{ color: course.colorText }}>{course.stats}</div>
+                    <div className="bg-accent-teal border-2 border-transparent py-1.5 md:py-2 px-2 sm:px-3 md:px-5 rounded-md sm:rounded-lg md:rounded-xl text-[7px] sm:text-[8px] md:text-[9px] font-black font-technical-sans uppercase tracking-widest tabular-nums shadow-md flex gap-1 justify-center items-center text-white transition-colors cursor-pointer group-hover:bg-white group-hover:text-accent-teal group-hover:border-accent-teal">Explore</div>
                   </div>
                 </div>
 
@@ -274,16 +274,16 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                       <div className="p-2 sm:p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-accent-teal bg-ink-dark shadow-md shrink-0">
                         <PanelIcon className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-paper-bg" />
                       </div>
-                      <h2 className="text-lg sm:text-xl md:text-3xl lg:text-5xl font-black uppercase font-(--font-technical-sans) tracking-tighter leading-none tabular-nums shrink text-paper-bg">{course.title}</h2>
+                      <h2 className="text-lg sm:text-xl md:text-3xl lg:text-5xl font-black uppercase font-technical-sans tracking-tighter leading-none tabular-nums shrink text-paper-bg">{course.title}</h2>
                     </div>
-                    <p className="stagger-item text-[11px] sm:text-xs md:text-base lg:text-lg leading-snug md:leading-relaxed font-(--font-elegant-serif) font-medium mb-4 sm:mb-5 md:mb-10 max-w-lg shrink text-paper-bg/90">{course.desc}</p>
+                    <p className="stagger-item text-[11px] sm:text-xs md:text-base lg:text-lg leading-snug md:leading-relaxed font-elegant-serif font-medium mb-4 sm:mb-5 md:mb-10 max-w-lg shrink text-paper-bg/90">{course.desc}</p>
 
                     <div className="stagger-item w-full flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 items-center justify-center md:justify-start shrink">
                       <div className="flex flex-col gap-0.5 sm:gap-1 items-center md:items-start border border-ink-dark/40 bg-ink-dark/50 p-1.5 sm:p-2 px-4 sm:px-5 rounded-lg sm:rounded-xl md:rounded-2xl shrink-0 tabular-nums text-paper-bg">
-                        <span className="text-[8px] sm:text-[9px] md:text-[10px] uppercase font-black font-(--font-technical-sans) tracking-widest opacity-70 tabular-nums">Price</span>
-                        <span className="text-sm sm:text-lg md:text-xl font-black font-(--font-technical-sans) tabular-nums">{course.price}</span>
+                        <span className="text-[8px] sm:text-[9px] md:text-[10px] uppercase font-black font-technical-sans tracking-widest opacity-70 tabular-nums">Price</span>
+                        <span className="text-sm sm:text-lg md:text-xl font-black font-technical-sans tabular-nums">{course.price}</span>
                       </div>
-                      <a href="#" className="py-2.5 px-6 sm:py-3 sm:px-8 md:py-4 md:px-8 rounded-md border-2 border-transparent hover:border-white hover:bg-transparent bg-accent-magenta text-white font-black font-(--font-technical-sans) text-[9px] sm:text-[10px] md:text-xs uppercase tracking-widest shadow-[0_10px_30px_rgba(227,66,52,0.4)] pointer-events-auto transition-all tabular-nums">Enroll Now</a>
+                      <a href="#" className="py-2.5 px-6 sm:py-3 sm:px-8 md:py-4 md:px-8 rounded-md border-2 border-transparent hover:border-white hover:bg-transparent bg-accent-magenta text-white font-black font-technical-sans text-[9px] sm:text-[10px] md:text-xs uppercase tracking-widest shadow-[0_10px_30px_rgba(227,66,52,0.4)] pointer-events-auto transition-all tabular-nums">Enroll Now</a>
                     </div>
                   </div>
 
@@ -297,7 +297,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
         </div>
 
         <div className="w-full text-center mt-3 sm:mt-4 md:mt-6 z-10 relative px-4 shrink-0">
-          <p className="text-[9px] sm:text-[10px] md:text-xs xl:text-sm font-medium font-(--font-technical-sans) text-ink-dark/90 tracking-wide">
+          <p className="text-[9px] sm:text-[10px] md:text-xs xl:text-sm font-medium font-technical-sans text-ink-dark/90 tracking-wide">
             Are you interested to know about Yangerila Creative Studio? <a href="#" className="text-accent-teal hover:text-ink-dark underline transition-colors underline-offset-4 font-black">Download our brochure here.</a>
           </p>
         </div>
@@ -308,8 +308,8 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
       <div className="w-full h-dvh flex flex-col justify-center relative px-2 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0 bg-transparent border-t-[3px] border-ink-dark/10 overflow-hidden">
         <div className="max-w-6xl mx-auto w-full text-center">
-          <h2 className="text-accent-teal tracking-[0.3em] font-black text-xs uppercase mb-3 md:mb-4 font-(--font-technical-sans)">Exclusive Perks</h2>
-          <h3 className="text-3xl sm:text-4xl md:text-6xl font-black text-ink-dark uppercase tracking-tight mb-6 md:mb-16 tabular-nums font-(--font-technical-sans)">Premium <span className="text-accent-teal">Rewards</span></h3>
+          <h2 className="text-accent-teal tracking-[0.3em] font-black text-xs uppercase mb-3 md:mb-4 font-technical-sans">Exclusive Perks</h2>
+          <h3 className="text-3xl sm:text-4xl md:text-6xl font-black text-ink-dark uppercase tracking-tight mb-6 md:mb-16 tabular-nums font-technical-sans">Premium <span className="text-accent-teal">Rewards</span></h3>
           <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:gap-8 perspective-[1500px] w-full px-2 max-w-4xl mx-auto">
             {[
               { title: "INR 1,000", desc: "Referral Reward", offer: "Amazon Gift Card for every joining reference." },
@@ -325,13 +325,13 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                 style={{ transform: activeBonus === idx ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
               >
                 <div className="absolute inset-0 backface-hidden bg-paper-bg p-3 sm:p-5 md:p-8 rounded-xl md:rounded-4xl flex flex-col items-center justify-center border-2 border-ink-dark/20 text-center shadow-md">
-                  <h4 className={`text-lg sm:text-2xl md:text-4xl font-(--font-technical-sans) font-black mb-1 md:mb-3 uppercase tracking-tighter tabular-nums ${idx === 1 || idx === 2 ? 'text-accent-magenta' : 'text-ink-dark'}`}>{bonus.title}</h4>
-                  <p className="text-ink-medium text-[7px] sm:text-[8px] md:text-xs font-black font-(--font-technical-sans) uppercase tracking-widest md:tracking-widest tabular-nums">{bonus.desc}</p>
-                  <p className="text-[6px] sm:text-[7px] md:text-[10px] text-ink-dark/60 font-black font-(--font-technical-sans) mt-2 md:mt-4 uppercase tracking-widest">Tap to reveal</p>
+                  <h4 className={`text-lg sm:text-2xl md:text-4xl font-technical-sans font-black mb-1 md:mb-3 uppercase tracking-tighter tabular-nums ${idx === 1 || idx === 2 ? 'text-accent-magenta' : 'text-ink-dark'}`}>{bonus.title}</h4>
+                  <p className="text-ink-medium text-[7px] sm:text-[8px] md:text-xs font-black font-technical-sans uppercase tracking-widest md:tracking-widest tabular-nums">{bonus.desc}</p>
+                  <p className="text-[6px] sm:text-[7px] md:text-[10px] text-ink-dark/60 font-black font-technical-sans mt-2 md:mt-4 uppercase tracking-widest">Tap to reveal</p>
                 </div>
                 <div className="absolute inset-0 backface-hidden bg-accent-magenta p-3 sm:p-5 md:p-8 rounded-xl md:rounded-4xl flex flex-col items-center justify-center border-4 border-accent-magenta shadow-[0_15px_40px_rgba(227,66,52,0.4)] text-center" style={{ transform: 'rotateY(180deg)' }}>
-                  <h4 className="text-[9px] sm:text-sm md:text-xl font-black font-(--font-technical-sans) text-white mb-1 md:mb-3 uppercase tracking-widest md:tracking-widest tabular-nums">{bonus.desc}</h4>
-                  <p className="text-white/90 font-(--font-elegant-serif) text-[8px] sm:text-xs md:text-sm font-medium leading-snug md:leading-relaxed">{bonus.offer}</p>
+                  <h4 className="text-[9px] sm:text-sm md:text-xl font-black font-technical-sans text-white mb-1 md:mb-3 uppercase tracking-widest md:tracking-widest tabular-nums">{bonus.desc}</h4>
+                  <p className="text-white/90 font-elegant-serif text-[8px] sm:text-xs md:text-sm font-medium leading-snug md:leading-relaxed">{bonus.offer}</p>
                 </div>
               </div>
             ))}
@@ -340,7 +340,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
       </div>
 
       <div ref={admissionSectionRef} className="w-full h-dvh flex flex-col items-center justify-center text-center relative px-4 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0 bg-transparent overflow-hidden">
-        <h2 className="admission-headline text-3xl sm:text-5xl md:text-8xl font-black text-ink-dark font-(--font-technical-sans) mb-4 md:mb-8 uppercase tracking-tight tabular-nums invisible">
+        <h2 className="admission-headline text-3xl sm:text-5xl md:text-8xl font-black text-ink-dark font-technical-sans mb-4 md:mb-8 uppercase tracking-tight tabular-nums invisible">
           Admissions <br />
           <span className="text-accent-teal">Are Open</span>
         </h2>
@@ -348,8 +348,8 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
           Whether you want to simply play your favourite songs, or pursue mastery of the instrument, our teaching style and courses adapt to your precise needs.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 lg:gap-8 justify-center items-center w-full max-w-2xl mx-auto relative z-10 px-4">
-          <a href="#" className="adm-btn bg-paper-bg hover:bg-white w-full sm:w-auto text-center px-6 py-3.5 sm:px-8 sm:py-5 md:px-12 md:py-6 rounded-full text-ink-dark font-black font-(--font-technical-sans) tracking-widest uppercase border-2 border-ink-dark/20 premium-glow invisible text-[10px] md:text-sm tabular-nums transition-colors">Free Demo Session</a>
-          <a href="#" className="adm-btn bg-accent-teal hover:bg-ink-dark w-full sm:w-auto text-center text-white px-6 py-3.5 sm:px-8 sm:py-5 md:px-12 md:py-6 rounded-full font-black font-(--font-technical-sans) tracking-widest uppercase border-2 border-transparent premium-glow invisible text-[10px] md:text-sm tabular-nums transition-colors">Begin Admissions</a>
+          <a href="#" className="adm-btn bg-paper-bg hover:bg-white w-full sm:w-auto text-center px-6 py-3.5 sm:px-8 sm:py-5 md:px-12 md:py-6 rounded-full text-ink-dark font-black font-technical-sans tracking-widest uppercase border-2 border-ink-dark/20 premium-glow invisible text-[10px] md:text-sm tabular-nums transition-colors">Free Demo Session</a>
+          <a href="#" className="adm-btn bg-accent-teal hover:bg-ink-dark w-full sm:w-auto text-center text-white px-6 py-3.5 sm:px-8 sm:py-5 md:px-12 md:py-6 rounded-full font-black font-technical-sans tracking-widest uppercase border-2 border-transparent premium-glow invisible text-[10px] md:text-sm tabular-nums transition-colors">Begin Admissions</a>
         </div>
       </div>
 

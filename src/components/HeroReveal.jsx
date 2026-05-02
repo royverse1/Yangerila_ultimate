@@ -375,23 +375,23 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       )}
 
       <div ref={textRef} className="z-0 absolute inset-0 flex flex-col items-center justify-center text-center px-4 max-w-5xl mx-auto invisible translate-y-10 will-change-transform">
-        <span className="text-ink-medium font-(--font-technical-sans) tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-xs xl:text-sm font-bold uppercase mb-4 md:mb-6 xl:mb-8 block">Yangerila Creative Studio</span>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-ink-dark font-(--font-technical-sans) tracking-tighter mb-4 md:mb-6 uppercase leading-tight">Always Performance <br /><span className="text-accent-teal drop-shadow-sm">Ready</span></h1>
-        <p ref={paragraphRef} className="mt-4 md:mt-6 xl:mt-8 text-ink-medium max-w-2xl mx-auto text-sm sm:text-base md:text-lg xl:text-xl font-(--font-elegant-serif) shadow-sm invisible translate-y-10 will-change-transform">A guitar-specialty academy bridging clinical precision and artistic mastery. Serving students nationwide and across 12 countries.</p>
+        <span className="text-ink-medium font-technical-sans tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-xs xl:text-sm font-bold uppercase mb-4 md:mb-6 xl:mb-8 block">Yangerila Creative Studio</span>
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-ink-dark font-technical-sans tracking-tighter mb-4 md:mb-6 uppercase leading-tight">Always Performance <br /><span className="text-accent-teal drop-shadow-sm">Ready</span></h1>
+        <p ref={paragraphRef} className="mt-4 md:mt-6 xl:mt-8 text-ink-medium max-w-2xl mx-auto text-sm sm:text-base md:text-lg xl:text-xl font-elegant-serif shadow-sm invisible translate-y-10 will-change-transform">A guitar-specialty academy bridging clinical precision and artistic mastery. Serving students nationwide and across 12 countries.</p>
       </div>
 
       <div ref={aboutRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center invisible translate-y-10 px-4 sm:px-6 lg:px-24 bg-paper-bg border-t-2 border-ink-dark shadow-[0_-10px_40px_rgba(0,0,0,0.15)] will-change-transform">
         <div className="about-scroll-container max-w-6xl mx-auto w-full flex flex-col gap-3 md:gap-6 lg:gap-8 relative z-10 max-h-[85dvh] overflow-y-auto overflow-x-hidden pb-4 pt-4 px-4 scrollbar-hide">
 
           <div className="w-full border-t-[3px] border-accent-teal pt-2 md:pt-4 mb-1 md:mb-2 shrink-0">
-            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-black font-(--font-technical-sans) text-ink-dark uppercase tracking-tighter leading-none mb-1">About</h2>
-            <h3 className="text-sm md:text-xl lg:text-2xl text-ink-medium font-light font-(--font-elegant-serif) italic">Yangerila.</h3>
+            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-black font-technical-sans text-ink-dark uppercase tracking-tighter leading-none mb-1">About</h2>
+            <h3 className="text-sm md:text-xl lg:text-2xl text-ink-medium font-light font-elegant-serif italic">Yangerila.</h3>
           </div>
 
           <div ref={el => addToBentoRefs(el, 0)} className="flex flex-row items-center gap-3 md:gap-6 lg:gap-12 w-full invisible will-change-[transform,opacity] shrink-0">
             <div className="flex-1">
-              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-(--font-technical-sans) tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">01 // Origin</span>
-              <p className="text-ink-dark font-(--font-elegant-serif) font-medium text-xs sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-relaxed">
+              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-technical-sans tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">01 // Origin</span>
+              <p className="text-ink-dark font-elegant-serif font-medium text-xs sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-relaxed">
                 <span className="text-accent-teal">Yangerila Creative Studio</span> is a guitar-specialty academy based in Indirapuram. We offer carefully designed courses that cover multiple aspects of guitar playing.
               </p>
             </div>
@@ -402,8 +402,8 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
 
           <div ref={el => addToBentoRefs(el, 1)} className="flex flex-row-reverse items-center gap-3 md:gap-6 lg:gap-12 w-full invisible will-change-[transform,opacity] shrink-0">
             <div className="flex-1 text-right md:text-left">
-              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-(--font-technical-sans) tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">02 // Approach</span>
-              <p className="text-ink-dark font-(--font-elegant-serif) italic text-xs sm:text-base md:text-lg lg:text-2xl xl:text-3xl leading-relaxed">
+              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-technical-sans tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">02 // Approach</span>
+              <p className="text-ink-dark font-elegant-serif italic text-xs sm:text-base md:text-lg lg:text-2xl xl:text-3xl leading-relaxed">
                 Our online classes are redefining the way guitar is taught, combining live interactive sessions, structured courses, and constant teacher support.
               </p>
             </div>
@@ -414,8 +414,8 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
 
           <div ref={el => addToBentoRefs(el, 2)} className="flex flex-row items-center gap-3 md:gap-6 lg:gap-12 w-full invisible will-change-[transform,opacity] shrink-0">
             <div className="flex-1">
-              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-(--font-technical-sans) tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">03 // Vision</span>
-              <p className="text-ink-dark font-(--font-elegant-serif) font-medium text-xs sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-relaxed">
+              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-technical-sans tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">03 // Vision</span>
+              <p className="text-ink-dark font-elegant-serif font-medium text-xs sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-relaxed">
                 At Yangerila, we believe music is more than just a talent — it's a life skill that everyone can and should learn. With this vision, we are proud to serve students across India.
               </p>
             </div>

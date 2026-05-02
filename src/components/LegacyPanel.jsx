@@ -326,9 +326,9 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
               <div className={`p-8 md:p-12 xl:p-16 rounded-4xl md:rounded-[2.5rem] w-full border-[3px] md:border-4 border-pastel-purple ${item.bg} text-left flex flex-col gap-2 md:gap-4 relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-linear-to-br from-white/5 via-transparent to-black/40 pointer-events-none mix-blend-overlay" />
                 <div className="relative z-10">
-                  <span className={`text-[10px] md:text-sm xl:text-base tracking-[0.4em] font-black uppercase ${item.dateColor} opacity-90 mb-1 md:mb-2 block font-(--font-technical-sans)`}>{item.date}</span>
-                  <h4 className={`text-5xl sm:text-6xl md:text-6xl lg:text-7xl xl:text-8xl font-black ${item.textColor} font-(--font-technical-sans) mb-3 md:mb-6 uppercase tracking-tighter leading-none`}>{item.title}</h4>
-                  <p className={`${item.textColor} font-(--font-elegant-serif) leading-relaxed text-sm sm:text-base md:text-xl xl:text-2xl opacity-90`}>{item.desc}</p>
+                  <span className={`text-[10px] md:text-sm xl:text-base tracking-[0.4em] font-black uppercase ${item.dateColor} opacity-90 mb-1 md:mb-2 block font-technical-sans`}>{item.date}</span>
+                  <h4 className={`text-5xl sm:text-6xl md:text-6xl lg:text-7xl xl:text-8xl font-black ${item.textColor} font-technical-sans mb-3 md:mb-6 uppercase tracking-tighter leading-none`}>{item.title}</h4>
+                  <p className={`${item.textColor} font-elegant-serif leading-relaxed text-sm sm:text-base md:text-xl xl:text-2xl opacity-90`}>{item.desc}</p>
                 </div>
               </div>
             </div>
@@ -341,16 +341,16 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         <div className="absolute inset-0 bg-ink-dark/90 z-0" />
         <div className="w-full max-w-7xl grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-8 relative z-10 px-4 sm:px-6 md:px-24">
           <div className="stat-card col-span-2 md:col-span-1 bg-ink-dark p-6 md:p-12 rounded-3xl md:rounded-3xl flex flex-col justify-center items-start border-2 border-pastel-blue shadow-[0_15px_40px_rgba(58,90,140,0.5)] relative overflow-hidden">
-            <span className="text-4xl md:text-5xl xl:text-7xl font-black text-pastel-blue relative z-10 font-(--font-technical-sans)"><span className="counter-val" data-target="20">0</span>+</span>
-            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-(--font-technical-sans) font-bold relative z-10">Years Exp</span>
+            <span className="text-4xl md:text-5xl xl:text-7xl font-black text-pastel-blue relative z-10 font-technical-sans"><span className="counter-val" data-target="20">0</span>+</span>
+            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-technical-sans font-bold relative z-10">Years Exp</span>
           </div>
           <div className="stat-card bg-ink-dark p-6 md:p-12 rounded-3xl md:rounded-3xl flex flex-col justify-center items-start border-2 border-pastel-pink shadow-[0_15px_40px_rgba(227,66,52,0.5)] relative overflow-hidden">
-            <span className="text-4xl md:text-5xl xl:text-7xl font-black text-pastel-pink relative z-10 font-(--font-technical-sans)"><span className="counter-val" data-target="4000">0</span>+</span>
-            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-(--font-technical-sans) font-bold relative z-10">Students</span>
+            <span className="text-4xl md:text-5xl xl:text-7xl font-black text-pastel-pink relative z-10 font-technical-sans"><span className="counter-val" data-target="4000">0</span>+</span>
+            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-technical-sans font-bold relative z-10">Students</span>
           </div>
           <div className="stat-card bg-ink-dark p-6 md:p-12 rounded-3xl md:rounded-3xl flex flex-col justify-center items-start border-2 border-pastel-mint shadow-[0_15px_40px_rgba(147,233,190,0.3)] relative overflow-hidden">
-            <span className="text-4xl md:text-5xl xl:text-7xl font-black text-pastel-mint relative z-10 font-(--font-technical-sans)"><span className="counter-val" data-target="12">0</span>+</span>
-            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-(--font-technical-sans) font-bold relative z-10">Countries</span>
+            <span className="text-4xl md:text-5xl xl:text-7xl font-black text-pastel-mint relative z-10 font-technical-sans"><span className="counter-val" data-target="12">0</span>+</span>
+            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-technical-sans font-bold relative z-10">Countries</span>
           </div>
         </div>
       </div>

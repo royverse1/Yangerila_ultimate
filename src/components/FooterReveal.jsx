@@ -173,22 +173,22 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
       {/* SECTION 10: Fun Fact */}
       <div ref={funFactRef} className="w-full h-dvh flex flex-col items-center justify-center text-center bg-transparent relative px-4 sm:px-6 md:px-12 shrink-0">
         <div className="max-w-5xl mx-auto flex flex-col items-center justify-center w-full">
-          <h2 className="fun-fact-el text-accent-teal font-(--font-technical-sans) tracking-[0.3em] font-black text-[10px] md:text-sm uppercase mb-8 md:mb-12 invisible">Fun Fact</h2>
+          <h2 className="fun-fact-el text-accent-teal font-technical-sans tracking-[0.3em] font-black text-[10px] md:text-sm uppercase mb-8 md:mb-12 invisible">Fun Fact</h2>
           <p className="fun-fact-el text-2xl sm:text-4xl md:text-6xl text-ink-dark font-medium text-serif-italic mb-8 md:mb-12 leading-relaxed invisible px-2">
             "Fender published a study stating that about 90% of guitar students quit playing within their first year."
           </p>
           <div className="fun-fact-el w-full h-px bg-ink-dark/20 my-8 md:my-12 relative overflow-hidden max-w-5xl invisible">
             <div className="absolute inset-y-0 left-0 bg-accent-teal w-1/3"></div>
           </div>
-          <h3 className="fun-fact-el text-2xl sm:text-4xl md:text-6xl font-(--font-technical-sans) text-ink-dark font-black uppercase tracking-tighter invisible">
+          <h3 className="fun-fact-el text-2xl sm:text-4xl md:text-6xl font-technical-sans text-ink-dark font-black uppercase tracking-tighter invisible">
             At Yangerila, more than <br className="md:hidden" /> <span className="text-accent-magenta">90% don't quit.</span>
           </h3>
-          <p className="fun-fact-el text-sm sm:text-base md:text-xl text-ink-dark/80 font-medium font-(--font-elegant-serif) mt-6 md:mt-8 invisible max-w-2xl px-4">This opposite statistic fills us with both happiness and confidence in our teaching methods.</p>
+          <p className="fun-fact-el text-sm sm:text-base md:text-xl text-ink-dark/80 font-medium font-elegant-serif mt-6 md:mt-8 invisible max-w-2xl px-4">This opposite statistic fills us with both happiness and confidence in our teaching methods.</p>
         </div>
       </div>
 
-      {/* Wrapper to overlap Section 11 & 12, hiding sub-pixel gap with -mt-[1px] */}
-      <div className="relative w-full h-dvh shrink-0 -mt-[1px] z-10">
+      {/* Wrapper to overlap Section 11 & 12, hiding sub-pixel gap with -mt-px */}
+      <div className="relative w-full h-dvh shrink-0 -mt-px z-10">
 
         {/* SECTION 11: Cinematic Carousel */}
         <div ref={voicesRef} className="absolute inset-0 w-full h-dvh overflow-hidden flex flex-col justify-center bg-transparent py-10 lg:py-16 px-0 border-t-[3px] border-ink-dark/10">
@@ -200,10 +200,10 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
           </div>
 
           <div className="voices-header shrink-0 flex flex-col px-4 sm:px-6 md:px-12 xl:px-24 mb-8 md:mb-12 items-center text-center invisible">
-            <h2 className="text-3xl sm:text-4xl md:text-7xl font-black font-(--font-technical-sans) text-paper-bg uppercase tracking-tight leading-none mb-3 md:mb-5">
+            <h2 className="text-3xl sm:text-4xl md:text-7xl font-black font-technical-sans text-paper-bg uppercase tracking-tight leading-none mb-3 md:mb-5">
               Voices of <span className="text-serif-italic font-medium text-pastel-mint lowercase">excellence</span>
             </h2>
-            <div className="flex items-center gap-4 text-paper-bg/80 text-xs md:text-sm font-black font-(--font-technical-sans)">
+            <div className="flex items-center gap-4 text-paper-bg/80 text-xs md:text-sm font-black font-technical-sans">
               <p>Use arrows or click to navigate.</p>
               <button
                 onClick={() => setUserPaused(!userPaused)}
@@ -220,8 +220,8 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            {/* Arrows pulled inwards, given a blur background, and forced over the stack (z-[60]) */}
-            <button onClick={() => { setUserPaused(true); handleNav(-1); }} className="absolute left-6 sm:left-12 md:left-24 lg:left-32 z-[60] p-3 md:p-4 rounded-full border-2 border-white/40 text-white bg-ink-dark/30 backdrop-blur-md transition-transform duration-300 hover:scale-110 active:scale-95 hover:bg-white hover:text-ink-dark hover:border-white shadow-lg">
+            {/* Arrows pulled inwards, given a blur background, and forced over the stack (z-60) */}
+            <button onClick={() => { setUserPaused(true); handleNav(-1); }} className="absolute left-6 sm:left-12 md:left-24 lg:left-32 z-60 p-3 md:p-4 rounded-full border-2 border-white/40 text-white bg-ink-dark/30 backdrop-blur-md transition-transform duration-300 hover:scale-110 active:scale-95 hover:bg-white hover:text-ink-dark hover:border-white shadow-lg">
               <ChevronLeft size={24} />
             </button>
 
@@ -245,17 +245,17 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
                     style={styles}
                   >
                     <div className="p-8 sm:p-10 md:p-16 relative z-10 h-full flex flex-col justify-between select-none">
-                      <p className={`font-medium font-(--font-elegant-serif) italic leading-relaxed transition-colors duration-700 ${isActive ? 'text-ink-dark text-lg sm:text-xl md:text-3xl' : 'text-ink-medium/80 text-sm sm:text-base md:text-xl'}`}>
+                      <p className={`font-medium font-elegant-serif italic leading-relaxed transition-colors duration-700 ${isActive ? 'text-ink-dark text-lg sm:text-xl md:text-3xl' : 'text-ink-medium/80 text-sm sm:text-base md:text-xl'}`}>
                         "{t.text}"
                       </p>
 
                       <div className={`w-full flex items-center gap-4 pt-5 md:pt-8 border-t-2 transition-colors duration-700 ${isActive ? 'border-ink-dark/20' : 'border-ink-dark/10'}`}>
-                        <div className={`w-12 h-12 md:w-16 md:h-16 shrink-0 rounded-full flex items-center justify-center font-(--font-technical-sans) font-black border-[3px] transition-colors duration-700 ${isActive ? 'border-accent-teal text-white bg-accent-teal shadow-md' : 'border-ink-dark/20 text-ink-dark bg-white'}`}>
+                        <div className={`w-12 h-12 md:w-16 md:h-16 shrink-0 rounded-full flex items-center justify-center font-technical-sans font-black border-[3px] transition-colors duration-700 ${isActive ? 'border-accent-teal text-white bg-accent-teal shadow-md' : 'border-ink-dark/20 text-ink-dark bg-white'}`}>
                           {t.name.split(' ').map(n => n[0]).join('')}
                         </div>
                         <div className="flex flex-col text-left justify-center overflow-hidden">
-                          <h4 className={`font-black font-(--font-technical-sans) leading-none truncate w-full transition-colors duration-700 ${isActive ? 'text-ink-dark text-base md:text-xl' : 'text-ink-medium text-sm md:text-base'}`}>{t.name}</h4>
-                          <p className={`uppercase font-(--font-technical-sans) tracking-[0.15em] mt-1.5 font-black leading-none truncate w-full transition-colors duration-700 ${isActive ? 'text-accent-teal text-[10px] md:text-xs' : 'text-ink-medium/50 text-[8px] md:text-[10px]'}`}>{t.role}</p>
+                          <h4 className={`font-black font-technical-sans leading-none truncate w-full transition-colors duration-700 ${isActive ? 'text-ink-dark text-base md:text-xl' : 'text-ink-medium text-sm md:text-base'}`}>{t.name}</h4>
+                          <p className={`uppercase font-technical-sans tracking-[0.15em] mt-1.5 font-black leading-none truncate w-full transition-colors duration-700 ${isActive ? 'text-accent-teal text-[10px] md:text-xs' : 'text-ink-medium/50 text-[8px] md:text-[10px]'}`}>{t.role}</p>
                         </div>
                       </div>
                     </div>
@@ -265,7 +265,7 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
               })}
             </div>
 
-            <button onClick={() => { setUserPaused(true); handleNav(1); }} className="absolute right-6 sm:right-12 md:right-24 lg:right-32 z-[60] p-3 md:p-4 rounded-full border-2 border-white/40 text-white bg-ink-dark/30 backdrop-blur-md transition-transform duration-300 hover:scale-110 active:scale-95 hover:bg-white hover:text-ink-dark hover:border-white shadow-lg">
+            <button onClick={() => { setUserPaused(true); handleNav(1); }} className="absolute right-6 sm:right-12 md:right-24 lg:right-32 z-60 p-3 md:p-4 rounded-full border-2 border-white/40 text-white bg-ink-dark/30 backdrop-blur-md transition-transform duration-300 hover:scale-110 active:scale-95 hover:bg-white hover:text-ink-dark hover:border-white shadow-lg">
               <ChevronRight size={24} />
             </button>
           </div>
@@ -277,22 +277,22 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
           <div className="w-full h-full flex flex-col justify-center relative bg-linear-to-br from-pastel-blue via-paper-bg to-pastel-mint">
             <div className="relative z-10 w-full px-4 sm:px-6 md:px-12 lg:px-24 max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-16 reveal-content-inner invisible">
               <div className="flex-1 text-center lg:text-left text-ink-dark w-full">
-                <h2 className="text-4xl sm:text-5xl md:text-7xl font-black font-(--font-technical-sans) uppercase tracking-tight mb-4 md:mb-6">Ready to Start?</h2>
-                <p className="text-sm md:text-lg xl:text-xl font-medium font-(--font-elegant-serif) mb-8 md:mb-12 text-ink-dark/80">Enroll today and begin your premium guitar journey.</p>
+                <h2 className="text-4xl sm:text-5xl md:text-7xl font-black font-technical-sans uppercase tracking-tight mb-4 md:mb-6">Ready to Start?</h2>
+                <p className="text-sm md:text-lg xl:text-xl font-medium font-elegant-serif mb-8 md:mb-12 text-ink-dark/80">Enroll today and begin your premium guitar journey.</p>
                 <div className="flex flex-col gap-4 items-center lg:items-start">
-                  <a href="tel:+918076530550" className="flex items-center gap-3 hover:text-accent-teal font-(--font-technical-sans) transition-colors tracking-widest uppercase font-black text-xs md:text-sm"><Phone size={16} /> +91 8076 530 550</a>
-                  <a href="mailto:care@yangerila.com" className="flex items-center gap-3 hover:text-accent-teal font-(--font-technical-sans) transition-colors tracking-widest uppercase font-black text-xs md:text-sm"><Mail size={16} /> care@yangerila.com</a>
+                  <a href="tel:+918076530550" className="flex items-center gap-3 hover:text-accent-teal font-technical-sans transition-colors tracking-widest uppercase font-black text-xs md:text-sm"><Phone size={16} /> +91 8076 530 550</a>
+                  <a href="mailto:care@yangerila.com" className="flex items-center gap-3 hover:text-accent-teal font-technical-sans transition-colors tracking-widest uppercase font-black text-xs md:text-sm"><Mail size={16} /> care@yangerila.com</a>
                 </div>
               </div>
 
               <div className="flex-1 w-full flex justify-center lg:justify-end mt-4 lg:mt-0">
                 <div className="p-6 md:p-10 xl:p-12 rounded-4xl md:rounded-[3rem] w-full max-w-md bg-paper-bg border-4 border-ink-dark relative shadow-[0_20px_50px_rgba(26,26,26,0.3)]">
-                  <h3 className="text-xl md:text-2xl font-(--font-technical-sans) font-black uppercase text-ink-dark tracking-widest mb-1">Waitlist</h3>
-                  <p className="text-[10px] md:text-xs text-accent-teal uppercase tracking-widest font-black font-(--font-technical-sans) mb-6 md:mb-8">Secure your slot</p>
+                  <h3 className="text-xl md:text-2xl font-technical-sans font-black uppercase text-ink-dark tracking-widest mb-1">Waitlist</h3>
+                  <p className="text-[10px] md:text-xs text-accent-teal uppercase tracking-widest font-black font-technical-sans mb-6 md:mb-8">Secure your slot</p>
                   <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:gap-4">
-                    <input required type="text" placeholder="FULL NAME" className="bg-white border-2 border-ink-dark/20 rounded-xl p-3 md:p-4 text-xs md:text-sm text-ink-dark font-black font-(--font-technical-sans) focus:outline-none focus:border-accent-teal transition-colors shadow-sm placeholder:text-ink-dark/30" />
-                    <input required type="email" placeholder="EMAIL ADDRESS" className="bg-white border-2 border-ink-dark/20 rounded-xl p-3 md:p-4 text-xs md:text-sm text-ink-dark font-black font-(--font-technical-sans) focus:outline-none focus:border-accent-teal transition-colors shadow-sm placeholder:text-ink-dark/30" />
-                    <button type="submit" className="bg-accent-teal text-white font-(--font-technical-sans) font-black p-4 md:p-5 w-full rounded-xl shadow-[0_10px_20px_rgba(58,90,140,0.4)] hover:shadow-xl border-2 border-transparent hover:border-accent-teal hover:bg-white hover:text-accent-teal transition-all uppercase tracking-widest text-[10px] md:text-sm">
+                    <input required type="text" placeholder="FULL NAME" className="bg-white border-2 border-ink-dark/20 rounded-xl p-3 md:p-4 text-xs md:text-sm text-ink-dark font-black font-technical-sans focus:outline-none focus:border-accent-teal transition-colors shadow-sm placeholder:text-ink-dark/30" />
+                    <input required type="email" placeholder="EMAIL ADDRESS" className="bg-white border-2 border-ink-dark/20 rounded-xl p-3 md:p-4 text-xs md:text-sm text-ink-dark font-black font-technical-sans focus:outline-none focus:border-accent-teal transition-colors shadow-sm placeholder:text-ink-dark/30" />
+                    <button type="submit" className="bg-accent-teal text-white font-technical-sans font-black p-4 md:p-5 w-full rounded-xl shadow-[0_10px_20px_rgba(58,90,140,0.4)] hover:shadow-xl border-2 border-transparent hover:border-accent-teal hover:bg-white hover:text-accent-teal transition-all uppercase tracking-widest text-[10px] md:text-sm">
                       {formStatus === 'success' ? 'Request Sent!' : 'Request Admission'}
                     </button>
                   </form>

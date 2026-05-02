@@ -75,9 +75,9 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 relative z-10 w-full flex flex-col items-center h-full">
 
         <div className="faq-header text-center mb-6 md:mb-10 w-full pt-4 md:pt-10 invisible shrink-0">
-          <span className="text-accent-teal font-(--font-technical-sans) tracking-[0.4em] font-black text-[10px] uppercase mb-2 md:mb-4 block">Support</span>
-          <h2 className="text-3xl sm:text-4xl md:text-7xl font-(--font-technical-sans) font-black text-ink-dark uppercase tracking-tighter leading-tight">
-            Frequently Asked <br className="hidden md:block" /> <span className="text-accent-teal font-(--font-elegant-serif) italic lowercase">insights</span>
+          <span className="text-accent-teal font-technical-sans tracking-[0.4em] font-black text-[10px] uppercase mb-2 md:mb-4 block">Support</span>
+          <h2 className="text-3xl sm:text-4xl md:text-7xl font-technical-sans font-black text-ink-dark uppercase tracking-tighter leading-tight">
+            Frequently Asked <br className="hidden md:block" /> <span className="text-accent-teal font-elegant-serif italic lowercase">insights</span>
           </h2>
         </div>
 
@@ -93,11 +93,11 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
           {faqCategories[activeCategory].map((faq, idx) => (
             <div key={`${activeCategory}-${idx}`} className={`bg-paper-bg rounded-3xl md:rounded-4xl overflow-hidden transition-colors duration-300 shrink-0 ${openIndex === idx ? 'border-[3px] border-accent-teal shadow-md' : 'border-2 border-ink-dark/10 shadow-sm'}`}>
               <button onClick={() => setOpenIndex(openIndex === idx ? -1 : idx)} className="w-full px-5 md:px-8 py-4 md:py-6 flex items-center justify-between text-left group bg-transparent focus:outline-none cursor-pointer">
-                <span className={`text-sm sm:text-base md:text-xl font-black font-(--font-technical-sans) uppercase tracking-tight transition-colors duration-300 pr-4 ${openIndex === idx ? 'text-accent-teal' : 'text-ink-dark group-hover:text-accent-teal'}`}>{faq.question}</span>
+                <span className={`text-sm sm:text-base md:text-xl font-black font-technical-sans uppercase tracking-tight transition-colors duration-300 pr-4 ${openIndex === idx ? 'text-accent-teal' : 'text-ink-dark group-hover:text-accent-teal'}`}>{faq.question}</span>
                 <ChevronDown size={18} className={`transition-transform duration-500 shrink-0 ${openIndex === idx ? 'rotate-180 text-accent-teal' : 'text-ink-dark/60'}`} />
               </button>
               <div ref={el => contentRefs.current[idx] = el} className="overflow-hidden invisible h-0">
-                <div className="px-5 md:px-8 pb-5 md:pb-8 pt-0 text-ink-dark/90 font-(--font-elegant-serif) font-medium leading-relaxed text-xs sm:text-sm md:text-lg">{faq.answer}</div>
+                <div className="px-5 md:px-8 pb-5 md:pb-8 pt-0 text-ink-dark/90 font-elegant-serif font-medium leading-relaxed text-xs sm:text-sm md:text-lg">{faq.answer}</div>
               </div>
             </div>
           ))}
