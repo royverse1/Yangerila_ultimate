@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { TextPlugin } from 'gsap/TextPlugin';
-import { Zap, Music, Star, Activity, X } from 'lucide-react';
+import { Zap, Music, Star, Activity, X, Check } from 'lucide-react';
 import SmartVideo from './SmartVideo';
 
 gsap.registerPlugin(ScrollTrigger, TextPlugin);
@@ -35,6 +35,46 @@ const courseData = [
   }
 ];
 
+const bonusData = [
+  {
+    id: 'referral',
+    title: "Referral Reward",
+    subtitle: "INR 1,000 Amazon Gift Card",
+    validity: "Always Active",
+    type: "form",
+    heading: "Referral Reward",
+    desc: "Know someone interested in learning guitar? Refer them to Yangerila Creative Studio for a free demo session. If they join, you'll receive an Amazon gift card worth ₹1000 as our thank-you for spreading the word.",
+  },
+  {
+    id: 'group',
+    title: "United We Stand",
+    subtitle: "30% OFF - Group Discount",
+    validity: "Always Active",
+    type: "text",
+    heading: "United we stand",
+    desc: "Learning is more fun together! Bring a friend, colleague, or family member along, and everyone joining as a group will receive 30% off the first month's fee. This offer is always active and open for all new group admissions.",
+  },
+  {
+    id: 'student_ref',
+    title: "Student Referral",
+    subtitle: "50% OFF - Next Fee",
+    validity: "Always Active",
+    type: "form",
+    heading: "Student Referral",
+    desc: "Share your experience and get 50% off your next month's fee when your referral joins! (Discount applies only to the referring student).",
+  },
+  {
+    id: 'festive',
+    title: "Festive Discount",
+    subtitle: "Diwali 2025",
+    validity: "Limited Period",
+    type: "code",
+    heading: "Celebrate Diwali with Us",
+    desc: "Hurry! Come Grab this opportunity to learn a new skill in this festive season, Yangerila Creative Studio — Offers a limited-time Diwali offer: 20% off your first month.",
+    code: "YangerilaDiwali25"
+  }
+];
+
 const MethodPanel = React.memo(function MethodPanel({ step, children, isReversingRef }) {
   const containerRef = useRef(null);
 
@@ -50,12 +90,26 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const [activeBonus, setActiveBonus] = useState(null);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
   const bonusesRef = useRef([]);
   const admissionSectionRef = useRef(null);
+
+  const [activeAdmissionTab, setActiveAdmissionTab] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState('demo');
 
   const xTo = useRef(null);
   const yTo = useRef(null);
   const tiltRafRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const resetAccordion = useCallback(() => {
     setExpandedIndex(null);
@@ -63,6 +117,11 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
   useEffect(() => {
     if (step > 6) resetAccordion();
+    if (step !== 8) setActiveBonus(null);
+    if (step !== 9) {
+      setActiveAdmissionTab(null);
+      setIsModalOpen(false);
+    }
   }, [step, resetAccordion]);
 
   const handlePanelClick = useCallback((index) => {
@@ -72,6 +131,11 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
       setExpandedIndex(index);
     }
   }, [expandedIndex, resetAccordion]);
+
+  const openModal = (type) => {
+    setModalType(type);
+    setIsModalOpen(true);
+  };
 
   useGSAP(() => {
     const isReversing = isReversingRef.current;
@@ -105,9 +169,9 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
       const panels = panelsRef.current.filter(Boolean);
       resetAccordion();
       if (!isReversing && panels.length > 0) {
-        const isMobile = window.innerWidth < 768;
+        const isMobileView = window.innerWidth < 768;
         gsap.fromTo(panels,
-          { autoAlpha: 0, x: isMobile ? 0 : -100, y: isMobile ? 100 : 0 },
+          { autoAlpha: 0, x: isMobileView ? 0 : -100, y: isMobileView ? 100 : 0 },
           { autoAlpha: 1, x: 0, y: 0, stagger: 0.1, duration: 0.8, ease: "back.out(1.2)", delay: 0.2 }
         );
       } else if (panels.length > 0) {
@@ -117,27 +181,26 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
     if (step === 8) {
       if (isReversing) {
-        gsap.set(bonusesRef.current, { scale: 1, autoAlpha: 1, y: 0 });
+        gsap.fromTo(bonusesRef.current,
+          { scale: 0.9, autoAlpha: 0, y: -50 },
+          { scale: 1, autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.8, ease: "back.out(1.2)", delay: 0.2 }
+        );
       } else {
         gsap.fromTo(bonusesRef.current,
-          { scale: 0.9, autoAlpha: 0, y: 50 },
-          { scale: 1, autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.8, ease: "back.out(1.5)", delay: 0.2 }
+          { scale: 0.8, autoAlpha: 0, y: 80 },
+          { scale: 1, autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.8, ease: "back.out(1.2)", delay: 0.2 }
         );
       }
+    } else {
+      gsap.to(bonusesRef.current, { autoAlpha: 0, duration: 0.3 });
     }
 
     if (step === 9) {
-      const admissionContent = admissionSectionRef.current?.querySelector('.admission-headline');
-      const admissionText = admissionSectionRef.current?.querySelector('.admission-text');
-      const admissionBtns = admissionSectionRef.current?.querySelectorAll('a');
-
+      const mainBlock = admissionSectionRef.current?.querySelector('.admission-main-block');
       if (isReversing) {
-        gsap.set([admissionContent, admissionText, admissionBtns], { scale: 1, autoAlpha: 1, y: 0 });
+        gsap.set(mainBlock, { autoAlpha: 1, y: 0, scale: 1 });
       } else {
-        const tl = gsap.timeline({ delay: 0.2 });
-        tl.fromTo(admissionContent, { scale: 0.9, autoAlpha: 0, y: 50 }, { scale: 1, autoAlpha: 1, y: 0, duration: 0.8, ease: "back.out(1.5)" })
-          .fromTo(admissionText, { scale: 0.9, autoAlpha: 0, y: 30 }, { scale: 1, autoAlpha: 1, y: 0, duration: 0.6 }, "-=0.4");
-        if (admissionBtns) tl.fromTo(admissionBtns, { scale: 0.9, autoAlpha: 0, y: 30 }, { scale: 1, autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.6 }, "-=0.4");
+        gsap.fromTo(mainBlock, { autoAlpha: 0, y: 50, scale: 0.95 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.8, ease: "back.out(1.5)", delay: 0.2 });
       }
     }
   }, { scope: containerRef, dependencies: [step, resetAccordion] });
@@ -161,9 +224,57 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
     if (yTo.current) yTo.current(0);
   };
 
+  const handleCopyCode = (code) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const getCardLayout = (idx, activeIndex) => {
+    const gap = isMobile ? 6 : 16;
+
+    if (activeIndex === null) {
+      const isRight = idx % 2 === 1;
+      const isBottom = idx >= 2;
+      return {
+        width: `calc(50% - ${gap / 2}px)`,
+        height: `calc(50% - ${gap / 2}px)`,
+        left: isRight ? `calc(50% + ${gap / 2}px)` : '0px',
+        top: isBottom ? `calc(50% + ${gap / 2}px)` : '0px',
+        zIndex: 10
+      };
+    } else {
+      if (idx === activeIndex) {
+        return {
+          width: '100%',
+          height: `calc(68% - ${gap / 2}px)`,
+          left: '0px',
+          top: '0px',
+          zIndex: 20
+        };
+      } else {
+        let inactivePosition = idx;
+        if (idx > activeIndex) inactivePosition -= 1;
+        const wCalc = `calc((100% - ${gap * 2}px) / 3)`;
+        let leftCalc = '0px';
+        if (inactivePosition === 1) leftCalc = `calc(${wCalc} + ${gap}px)`;
+        if (inactivePosition === 2) leftCalc = `calc((${wCalc} * 2) + ${gap * 2}px)`;
+
+        return {
+          width: wCalc,
+          height: `calc(32% - ${gap / 2}px)`,
+          left: leftCalc,
+          top: `calc(68% + ${gap / 2}px)`,
+          zIndex: 5
+        };
+      }
+    }
+  };
+
   return (
     <div ref={containerRef} className="w-full flex flex-col shrink-0 relative pointer-events-auto border-t-[3px] border-ink-dark/10 bg-transparent">
 
+      {/* Founder Section */}
       <div
         ref={founderContainerRef}
         id="founder_section"
@@ -199,7 +310,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
             </div>
 
             <div ref={tiltCardRef} className="relative shrink-0 transform-style-3d cursor-crosshair invisible flex justify-center md:justify-end mt-4 md:mt-0 w-full h-[25vh] md:h-auto md:w-auto">
-              <div className="founder_image_box w-auto h-full aspect-3/4 md:w-[320px] lg:w-[400px] md:h-auto bg-paper-bg border-10 md:border-16 border-paper-bg shadow-[0_20px_50px_rgba(26,26,26,0.3)] overflow-hidden pointer-events-none">
+              <div className="founder_image_box w-auto h-full aspect-[3/4] md:w-[320px] lg:w-[400px] md:h-auto bg-paper-bg border-10 md:border-16 border-paper-bg shadow-[0_20px_50px_rgba(26,26,26,0.3)] overflow-hidden pointer-events-none">
                 <img src={`${import.meta.env.BASE_URL}founder-guitar.jpg`} alt="Micky Dixit - Y Studio Founder" className="w-full h-full object-cover" />
               </div>
             </div>
@@ -208,6 +319,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
         </div>
       </div>
 
+      {/* Curriculum Section */}
       <div className="w-full h-dvh flex flex-col justify-center relative px-2 sm:px-6 md:px-12 lg:px-24 pt-6 md:pt-16 shrink-0 bg-transparent overflow-hidden">
 
         <div className="max-w-7xl mx-auto w-full text-center px-4 shrink-0 mb-4 md:mb-6">
@@ -306,51 +418,260 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
       {children}
 
+      {/* Bonuses & Discount FLIP-style Layout Section */}
       <div className="w-full h-dvh flex flex-col justify-center relative px-2 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0 bg-transparent border-t-[3px] border-ink-dark/10 overflow-hidden">
-        <div className="max-w-6xl mx-auto w-full text-center">
-          <h2 className="text-accent-teal tracking-[0.3em] font-black text-xs uppercase mb-3 md:mb-4 font-technical-sans">Exclusive Perks</h2>
-          <h3 className="text-3xl sm:text-4xl md:text-6xl font-black text-ink-dark uppercase tracking-tight mb-6 md:mb-16 tabular-nums font-technical-sans">Premium <span className="text-accent-teal">Rewards</span></h3>
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:gap-8 perspective-[1500px] w-full px-2 max-w-4xl mx-auto">
-            {[
-              { title: "INR 1,000", desc: "Referral Reward", offer: "Amazon Gift Card for every joining reference." },
-              { title: "30% OFF", desc: "Group Discount", offer: "Valid for groups of 3 or more students." },
-              { title: "50% OFF", desc: "Next Fee Reward", offer: "For your next month fee on student referral." },
-              { title: "Exclusive", desc: "Festive Perks", offer: "Special discounts and events all year round." }
-            ].map((bonus, idx) => (
-              <div
-                key={idx}
-                ref={el => bonusesRef.current[idx] = el}
-                onClick={() => setActiveBonus(activeBonus === idx ? null : idx)}
-                className="relative h-[16vh] md:h-[25vh] min-h-[140px] w-full cursor-pointer preserve-3d transition-transform duration-1000 invisible premium-glow rounded-xl md:rounded-4xl"
-                style={{ transform: activeBonus === idx ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
-              >
-                <div className="absolute inset-0 backface-hidden bg-paper-bg p-3 sm:p-5 md:p-8 rounded-xl md:rounded-4xl flex flex-col items-center justify-center border-2 border-ink-dark/20 text-center shadow-md">
-                  <h4 className={`text-lg sm:text-2xl md:text-4xl font-technical-sans font-black mb-1 md:mb-3 uppercase tracking-tighter tabular-nums ${idx === 1 || idx === 2 ? 'text-accent-magenta' : 'text-ink-dark'}`}>{bonus.title}</h4>
-                  <p className="text-ink-medium text-[7px] sm:text-[8px] md:text-xs font-black font-technical-sans uppercase tracking-widest md:tracking-widest tabular-nums">{bonus.desc}</p>
-                  <p className="text-[6px] sm:text-[7px] md:text-[10px] text-ink-dark/60 font-black font-technical-sans mt-2 md:mt-4 uppercase tracking-widest">Tap to reveal</p>
-                </div>
-                <div className="absolute inset-0 backface-hidden bg-accent-magenta p-3 sm:p-5 md:p-8 rounded-xl md:rounded-4xl flex flex-col items-center justify-center border-4 border-accent-magenta shadow-[0_15px_40px_rgba(227,66,52,0.4)] text-center" style={{ transform: 'rotateY(180deg)' }}>
-                  <h4 className="text-[9px] sm:text-sm md:text-xl font-black font-technical-sans text-white mb-1 md:mb-3 uppercase tracking-widest md:tracking-widest tabular-nums">{bonus.desc}</h4>
-                  <p className="text-white/90 font-elegant-serif text-[8px] sm:text-xs md:text-sm font-medium leading-snug md:leading-relaxed">{bonus.offer}</p>
-                </div>
-              </div>
-            ))}
+        <div className="max-w-6xl mx-auto w-full flex flex-col h-full pb-8">
+
+          <div className="text-center shrink-0 mb-4 md:mb-10 w-full">
+            <h3 className="text-4xl sm:text-5xl md:text-7xl font-elegant-serif font-black text-ink-dark tracking-tighter leading-tight">
+              Bonuses & <span className="text-accent-teal">Discount</span>
+            </h3>
+            <p className="text-accent-teal font-elegant-serif italic text-lg sm:text-xl md:text-3xl mt-1 md:mt-2">
+              Regularly Updated Offers
+            </p>
           </div>
+
+          <div className="relative flex-1 w-full max-w-4xl lg:max-w-5xl mx-auto min-h-[400px] perspective-[2000px]">
+            {bonusData.map((bonus, idx) => {
+              const isActive = activeBonus === idx;
+              const hasActive = activeBonus !== null;
+              const isInactive = hasActive && !isActive;
+
+              const layoutStyle = getCardLayout(idx, activeBonus);
+
+              return (
+                <div
+                  key={idx}
+                  ref={el => bonusesRef.current[idx] = el}
+                  className="absolute opacity-0"
+                  style={{
+                    width: layoutStyle.width,
+                    height: layoutStyle.height,
+                    left: layoutStyle.left,
+                    top: layoutStyle.top,
+                    zIndex: layoutStyle.zIndex,
+                    transition: 'width 0.8s cubic-bezier(0.25, 1, 0.4, 1), height 0.8s cubic-bezier(0.25, 1, 0.4, 1), left 0.8s cubic-bezier(0.25, 1, 0.4, 1), top 0.8s cubic-bezier(0.25, 1, 0.4, 1)'
+                  }}
+                >
+                  <div
+                    onClick={() => { if (!isActive) setActiveBonus(idx); }}
+                    className="w-full h-full relative cursor-pointer preserve-3d premium-glow"
+                    style={{
+                      transform: isActive ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                      transition: 'transform 0.8s cubic-bezier(0.25, 1, 0.4, 1)'
+                    }}
+                  >
+                    {/* Front of Card */}
+                    <div className="absolute inset-0 backface-hidden bg-paper-bg rounded-2xl md:rounded-3xl border-2 border-ink-dark/15 shadow-sm overflow-hidden group hover:border-accent-teal/50 transition-colors duration-300">
+                      <div className={`w-full h-full flex flex-col items-center justify-center text-center p-3 sm:p-5 md:p-8 origin-center transition-transform duration-[800ms] ease-[cubic-bezier(0.25,1,0.4,1)] ${isInactive ? 'scale-50 sm:scale-75 opacity-90' : 'scale-100 opacity-100 group-hover:scale-105'}`}>
+                        <h4 className={`text-base sm:text-xl md:text-3xl lg:text-4xl font-technical-sans font-black mb-1 md:mb-2 tracking-tighter leading-tight uppercase ${idx === 1 || idx === 2 ? 'text-accent-magenta' : 'text-accent-teal'}`}>
+                          {bonus.title}
+                        </h4>
+                        <p className="text-ink-dark font-bold font-technical-sans tracking-wide text-[9px] sm:text-xs md:text-sm mb-2 md:mb-4 uppercase">
+                          {bonus.subtitle}
+                        </p>
+                        <p className="text-ink-medium/70 font-bold font-technical-sans text-[7px] sm:text-[9px] md:text-[10px] uppercase tracking-widest">
+                          Valid till: {bonus.validity}
+                        </p>
+
+                        <div className={`overflow-hidden transition-all duration-[800ms] ease-[cubic-bezier(0.25,1,0.4,1)] flex items-center justify-center ${isInactive ? 'h-0 opacity-0 mt-0' : 'h-5 md:h-6 opacity-100 mt-2 md:mt-5'}`}>
+                          <p className="text-[6px] sm:text-[7px] md:text-[9px] text-ink-dark/50 font-black font-technical-sans uppercase tracking-[0.2em] bg-ink-dark/5 px-3 py-1.5 rounded-full whitespace-nowrap">
+                            Tap to reveal
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Back of Card (Expanded Content) */}
+                    <div className="absolute inset-0 backface-hidden bg-accent-magenta rounded-2xl md:rounded-3xl border-4 border-accent-magenta shadow-[0_15px_40px_rgba(227,66,52,0.4)] overflow-hidden" style={{ transform: 'rotateY(180deg)' }}>
+
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setActiveBonus(null); }}
+                        className={`absolute top-3 right-3 sm:top-5 sm:right-5 p-1.5 sm:p-2 bg-white/20 hover:bg-white text-white hover:text-accent-magenta rounded-full transition-all z-50 pointer-events-auto ${isActive ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+                      >
+                        <X size={isMobile ? 14 : 20} strokeWidth={3} />
+                      </button>
+
+                      <div className={`w-full h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-10 lg:p-12 overflow-y-auto scrollbar-hide transition-all duration-700 delay-[100ms] pointer-events-auto ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+
+                        <h4 className="text-base sm:text-2xl md:text-3xl lg:text-4xl font-black font-technical-sans text-white mb-2 md:mb-4 uppercase tracking-tighter leading-none shrink-0">
+                          {bonus.heading}
+                        </h4>
+                        <p className="text-white/95 font-elegant-serif text-xs sm:text-sm md:text-base lg:text-lg font-medium leading-relaxed max-w-2xl mb-4 md:mb-6 shrink-0">
+                          {bonus.desc}
+                        </p>
+
+                        {bonus.type === "form" && (
+                          <form onSubmit={(e) => e.preventDefault()} className="w-full max-w-[95%] sm:max-w-md md:max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4 shrink-0 mx-auto">
+                            <input type="text" placeholder="Your Name *" required className="w-full bg-white/10 border border-white/30 text-white placeholder:text-white/60 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-white transition-colors" />
+                            <input type="text" placeholder="Your Contact Number *" required className="w-full bg-white/10 border border-white/30 text-white placeholder:text-white/60 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-white transition-colors" />
+                            <input type="text" placeholder={bonus.id === 'student_ref' ? "New Student's Name *" : "Referred Person's Name *"} required className="w-full bg-white/10 border border-white/30 text-white placeholder:text-white/60 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-white transition-colors" />
+                            <input type="text" placeholder={bonus.id === 'student_ref' ? "New Student's Contact *" : "Referred Person's Contact *"} required className="w-full bg-white/10 border border-white/30 text-white placeholder:text-white/60 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-white transition-colors" />
+                            <button type="submit" className="md:col-span-2 mt-1 sm:mt-2 md:mt-0 bg-white text-accent-magenta hover:bg-ink-dark hover:border-ink-dark hover:text-white border-2 border-transparent px-4 py-2 sm:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-black uppercase tracking-widest transition-all w-full cursor-pointer">Submit Referral</button>
+                          </form>
+                        )}
+
+                        {bonus.type === "text" && (
+                          <button className="bg-white text-accent-magenta hover:bg-ink-dark hover:border-ink-dark hover:text-white border-2 border-transparent px-6 sm:px-8 py-3 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all mt-2 shrink-0 cursor-pointer">
+                            Claim Group Offer
+                          </button>
+                        )}
+
+                        {bonus.type === "code" && (
+                          <div className="flex flex-col items-center gap-3 shrink-0">
+                            <div className="flex items-center gap-3 border-2 border-dashed border-white/50 bg-white/10 rounded-xl px-4 py-3 sm:px-6 sm:py-4">
+                              <span className="text-white font-technical-sans font-black tracking-widest text-sm sm:text-lg md:text-xl">{bonus.code}</span>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleCopyCode(bonus.code); }}
+                                className="ml-2 sm:ml-4 bg-white text-accent-magenta hover:bg-ink-dark hover:text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-1.5 cursor-pointer"
+                              >
+                                {copiedCode ? <><Check size={12} /> Copied!</> : 'Copy'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
         </div>
       </div>
 
-      <div ref={admissionSectionRef} className="w-full h-dvh flex flex-col items-center justify-center text-center relative px-4 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0 bg-transparent overflow-hidden">
-        <h2 className="admission-headline text-3xl sm:text-5xl md:text-8xl font-black text-ink-dark font-technical-sans mb-4 md:mb-8 uppercase tracking-tight tabular-nums invisible">
-          Admissions <br />
-          <span className="text-accent-teal">Are Open</span>
-        </h2>
-        <p className="admission-text text-sm sm:text-xl md:text-2xl text-ink-medium font-medium max-w-3xl mx-auto mb-10 md:mb-16 text-serif-italic invisible px-2 sm:px-4">
-          Whether you want to simply play your favourite songs, or pursue mastery of the instrument, our teaching style and courses adapt to your precise needs.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 lg:gap-8 justify-center items-center w-full max-w-2xl mx-auto relative z-10 px-4">
-          <a href="#" className="adm-btn bg-paper-bg hover:bg-white w-full sm:w-auto text-center px-6 py-3.5 sm:px-8 sm:py-5 md:px-12 md:py-6 rounded-full text-ink-dark font-black font-technical-sans tracking-widest uppercase border-2 border-ink-dark/20 premium-glow invisible text-[10px] md:text-sm tabular-nums transition-colors">Free Demo Session</a>
-          <a href="#" className="adm-btn bg-accent-teal hover:bg-ink-dark w-full sm:w-auto text-center text-white px-6 py-3.5 sm:px-8 sm:py-5 md:px-12 md:py-6 rounded-full font-black font-technical-sans tracking-widest uppercase border-2 border-transparent premium-glow invisible text-[10px] md:text-sm tabular-nums transition-colors">Begin Admissions</a>
+      {/* Interactive Admission & Demo Section */}
+      <div ref={admissionSectionRef} className="w-full h-dvh flex flex-col items-center justify-center text-center relative px-4 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0 overflow-hidden transition-colors duration-700 pointer-events-auto" style={{ backgroundColor: activeAdmissionTab === 'demo' ? 'var(--color-pastel-mint)' : activeAdmissionTab === 'admission' ? 'var(--color-pastel-blue)' : 'transparent' }}>
+
+        {/* Dynamic Background Overlays for smooth tinting */}
+        <div className={`absolute inset-0 transition-opacity duration-700 pointer-events-none ${activeAdmissionTab === 'demo' ? 'bg-pastel-mint/30 opacity-100' : activeAdmissionTab === 'admission' ? 'bg-pastel-blue/20 opacity-100' : 'opacity-0'}`} />
+
+        <div className="admission-main-block relative z-10 w-full max-w-4xl mx-auto flex flex-col items-center justify-center h-full invisible">
+
+          {/* Default Start State */}
+          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${activeAdmissionTab === null ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible -translate-y-16 scale-95 pointer-events-none'}`}>
+            <h2 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-ink-dark font-technical-sans mb-4 md:mb-8 uppercase tracking-tighter tabular-nums leading-none">
+              Start Your <br className="hidden sm:block" />
+              <span className="text-accent-teal">Journey</span>
+            </h2>
+            <p className="text-sm sm:text-lg md:text-2xl text-ink-medium font-medium max-w-2xl mx-auto mb-10 md:mb-16 text-serif-italic px-2 sm:px-4 leading-relaxed">
+              Curious about mastering the guitar? Whether you want to explore our teaching style or are ready to enroll, choose your path below.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center w-full px-4">
+              <button onClick={() => setActiveAdmissionTab('demo')} className="bg-paper-bg hover:bg-white w-full sm:w-auto text-center px-8 py-4 md:px-12 md:py-5 rounded-full text-ink-dark font-black font-technical-sans tracking-widest uppercase border-2 border-ink-dark/20 premium-glow text-[10px] md:text-sm tabular-nums transition-colors cursor-pointer">
+                Free Demo
+              </button>
+              <button onClick={() => setActiveAdmissionTab('admission')} className="bg-accent-teal hover:bg-ink-dark w-full sm:w-auto text-center text-white px-8 py-4 md:px-12 md:py-5 rounded-full font-black font-technical-sans tracking-widest uppercase border-2 border-transparent premium-glow text-[10px] md:text-sm tabular-nums transition-colors cursor-pointer">
+                Admissions
+              </button>
+            </div>
+          </div>
+
+          {/* Expanded Demo State */}
+          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] delay-100 ${activeAdmissionTab === 'demo' ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-16 scale-95 pointer-events-none'}`}>
+            <div className="w-full flex justify-center mb-6 md:mb-10">
+              <button onClick={() => setActiveAdmissionTab(null)} className="flex items-center gap-2 text-ink-dark/60 hover:text-ink-dark font-black font-technical-sans uppercase tracking-widest text-[9px] sm:text-[10px] transition-colors cursor-pointer border-b-2 border-transparent hover:border-ink-dark pb-1">
+                ← Back to Options
+              </button>
+            </div>
+            <h2 className="text-3xl sm:text-5xl md:text-7xl font-black text-ink-dark font-technical-sans mb-4 md:mb-6 uppercase tracking-tighter tabular-nums leading-none">
+              Demo <span className="text-accent-teal">Session</span>
+            </h2>
+            <p className="text-sm sm:text-lg md:text-xl text-ink-dark/90 font-medium max-w-3xl mx-auto mb-8 md:mb-12 font-elegant-serif px-2 sm:px-4 leading-relaxed">
+              Come and experience our uniquely designed demo session. Unlike typical trial classes, this session gives you a complete overview of guitar types, playing techniques, and all the essential information every beginner should know before starting their journey. Best of all—it's completely free and online.
+            </p>
+            <button onClick={() => openModal('demo')} className="bg-ink-dark hover:bg-white hover:text-ink-dark w-full sm:w-auto text-center text-white px-10 py-4 md:px-14 md:py-5 rounded-full font-black font-technical-sans tracking-widest uppercase border-2 border-ink-dark shadow-xl text-[10px] md:text-sm tabular-nums transition-all cursor-pointer">
+              Book Here
+            </button>
+          </div>
+
+          {/* Expanded Admission State */}
+          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] delay-100 ${activeAdmissionTab === 'admission' ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-16 scale-95 pointer-events-none'}`}>
+            <div className="w-full flex justify-center mb-6 md:mb-10">
+              <button onClick={() => setActiveAdmissionTab(null)} className="flex items-center gap-2 text-ink-dark/60 hover:text-ink-dark font-black font-technical-sans uppercase tracking-widest text-[9px] sm:text-[10px] transition-colors cursor-pointer border-b-2 border-transparent hover:border-ink-dark pb-1">
+                ← Back to Options
+              </button>
+            </div>
+            <h2 className="text-3xl sm:text-5xl md:text-7xl font-black text-ink-dark font-technical-sans mb-4 md:mb-6 uppercase tracking-tighter tabular-nums leading-none">
+              Admissions
+            </h2>
+            <p className="text-sm sm:text-lg md:text-xl text-ink-dark/90 font-medium max-w-3xl mx-auto mb-8 md:mb-12 font-elegant-serif px-2 sm:px-4 leading-relaxed">
+              Interested in joining us? Simply fill out this form, and our Student Relationship Manager (SRM) will contact you to answer all your queries. Every student is given a demo session first, and once that's complete, your SRM will personally guide you through the admission process.
+            </p>
+            <button onClick={() => openModal('join')} className="bg-ink-dark hover:bg-white hover:text-ink-dark w-full sm:w-auto text-center text-white px-10 py-4 md:px-14 md:py-5 rounded-full font-black font-technical-sans tracking-widest uppercase border-2 border-ink-dark shadow-xl text-[10px] md:text-sm tabular-nums transition-all cursor-pointer">
+              Fill This Form
+            </button>
+          </div>
+
         </div>
+
+        {/* Global On-Screen Popup Modal for Forms (Absolute to Section instead of Fixed) */}
+        {isModalOpen && (
+          <div className="absolute inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-ink-dark/80 backdrop-blur-md transition-opacity duration-300 pointer-events-auto">
+            <div className="bg-ink-dark/95 border border-accent-teal/30 p-6 md:p-8 lg:p-10 rounded-3xl w-full max-w-xl max-h-[90vh] overflow-y-auto scrollbar-hide shadow-[0_20px_60px_rgba(0,0,0,0.4)] relative flex flex-col transform transition-transform duration-500 scale-100">
+
+              <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-white/60 hover:text-white bg-white/5 hover:bg-white/20 p-2 rounded-full transition-colors cursor-pointer">
+                <X size={20} strokeWidth={2.5} />
+              </button>
+
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-black font-technical-sans text-accent-teal mb-4 md:mb-6 text-center uppercase tracking-tight">
+                {modalType === 'demo' ? 'Demo Session Form' : 'Admission Form'}
+              </h3>
+
+              <form onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }} className="flex flex-col gap-3 sm:gap-4 w-full">
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">What brings you here? *</label>
+                  <div className="relative">
+                    <select defaultValue={modalType === 'demo' ? 'demo' : 'join'} className="w-full bg-white/5 border border-white/20 text-white px-4 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors appearance-none cursor-pointer">
+                      <option value="join" className="text-ink-dark">I want to join the academy</option>
+                      <option value="know" className="text-ink-dark">I want to know more</option>
+                      <option value="demo" className="text-ink-dark">I want to book a demo class</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white">
+                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">Name *</label>
+                  <input type="text" placeholder="Enter your full name" required className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/40 px-4 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors" />
+                </div>
+
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">Phone Number *</label>
+                  <input type="tel" placeholder="+91 98765 43210" required className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/40 px-4 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors" />
+                </div>
+
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">Age</label>
+                  <input type="number" placeholder="Enter your age" className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/40 px-4 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors" />
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-1 sm:mt-2">
+                  <div className="flex flex-col gap-2 text-left flex-1">
+                    <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">Have you learned guitar before? *</label>
+                    <div className="flex gap-4 ml-1">
+                      <label className="flex items-center gap-2 cursor-pointer text-[11px] sm:text-sm text-white font-technical-sans"><input type="radio" name="learned" value="yes" required className="accent-teal w-3.5 h-3.5 sm:w-4 sm:h-4 cursor-pointer" /> Yes</label>
+                      <label className="flex items-center gap-2 cursor-pointer text-[11px] sm:text-sm text-white font-technical-sans"><input type="radio" name="learned" value="no" required className="accent-teal w-3.5 h-3.5 sm:w-4 sm:h-4 cursor-pointer" /> No</label>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2 text-left flex-1">
+                    <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">Do you have a guitar? *</label>
+                    <div className="flex gap-4 ml-1">
+                      <label className="flex items-center gap-2 cursor-pointer text-[11px] sm:text-sm text-white font-technical-sans"><input type="radio" name="guitar" value="yes" required className="accent-teal w-3.5 h-3.5 sm:w-4 sm:h-4 cursor-pointer" /> Yes</label>
+                      <label className="flex items-center gap-2 cursor-pointer text-[11px] sm:text-sm text-white font-technical-sans"><input type="radio" name="guitar" value="no" required className="accent-teal w-3.5 h-3.5 sm:w-4 sm:h-4 cursor-pointer" /> No</label>
+                    </div>
+                  </div>
+                </div>
+
+                <button type="submit" className="mt-2 sm:mt-4 bg-accent-teal hover:bg-white text-white hover:text-ink-dark font-black font-technical-sans py-3.5 sm:py-4 rounded-xl text-xs sm:text-sm uppercase tracking-widest transition-colors shadow-lg cursor-pointer">Submit</button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
 
     </div>

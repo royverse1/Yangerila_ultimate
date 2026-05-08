@@ -292,7 +292,8 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
 
     if (step === 1) {
       if (isReversing) {
-        gsap.killTweensOf([containerRef.current, textRef.current, paragraphRef.current, maskRef.current, aboutRef.current, maskProxy.current, bentoRowsRef.current]);
+        // Fix applied here: containerRef.current has been removed from the kill array below
+        gsap.killTweensOf([textRef.current, paragraphRef.current, maskRef.current, aboutRef.current, maskProxy.current, bentoRowsRef.current]);
         gsap.set(maskRef.current, { autoAlpha: 0, scale: 120, force3D: true });
         maskProxy.current = { scale: 120, opacity: 0 };
         renderCanvas();
@@ -306,7 +307,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         tl.to(maskProxy.current, { scale: 120, ease: 'power3.inOut', duration: 1.2, onUpdate: renderCanvas }, 0);
         tl.to(letterYRef.current, { autoAlpha: 0, duration: 0.15, force3D: false }, 0);
         tl.to(textRef.current, { autoAlpha: 1, scale: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, 0.4);
-        tl.to(paragraphRef.current, { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, 0.5);
+        tl.to(paragraphRef.current, { auto: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, 0.5);
       }
     }
 

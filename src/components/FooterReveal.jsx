@@ -1,7 +1,7 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { Phone, Mail, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { Mail, ChevronLeft, ChevronRight, Pause, Play, MessageCircle, MapPin } from 'lucide-react';
 
 const testimonials = [
   { name: 'Amit Gulati', role: 'Banker', text: '“The group classes make me feel I am a part of something. I never thought this would be possible where I live.”' },
@@ -30,7 +30,6 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
     setFormStatus('success');
-    setTimeout(() => setFormStatus('idle'), 3000);
   }, []);
 
   const handleNav = useCallback((direction) => {
@@ -111,15 +110,14 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
       const carousel = voicesRef.current?.querySelector('.voices-carousel');
       const background = voicesRef.current?.querySelector('.carousel-bg-container');
 
-      if (isReversing) { // Coming backward from Step 12
+      if (isReversing) {
         gsap.set([header, carousel, background], { autoAlpha: 1, y: 0 });
-        // Slide the Contact form away
         gsap.to(revealSectionRef.current, {
           clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)",
           ease: "power3.inOut",
           duration: 0.8
         });
-      } else { // Coming forward from Step 10
+      } else {
         const tl = gsap.timeline({ delay: 0.2 });
         tl.fromTo(background, { autoAlpha: 0 }, { autoAlpha: 1, duration: 1.2, ease: "power2.inOut" })
           .fromTo(header, { autoAlpha: 0, y: 50 }, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" }, "-=0.6")
@@ -187,12 +185,10 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
         </div>
       </div>
 
-      {/* Wrapper to overlap Section 11 & 12, hiding sub-pixel gap with -mt-px */}
       <div className="relative w-full h-dvh shrink-0 -mt-px z-10">
 
         {/* SECTION 11: Cinematic Carousel */}
         <div ref={voicesRef} className="absolute inset-0 w-full h-dvh overflow-hidden flex flex-col justify-center bg-transparent py-10 lg:py-16 px-0 border-t-[3px] border-ink-dark/10">
-
           <div className="carousel-bg-container absolute inset-0 -z-20 overflow-hidden invisible pointer-events-none">
             <div className="absolute inset-0 bg-ink-dark"></div>
             <div ref={el => bokehRefs.current[0] = el} className="absolute top-[-20%] left-[-10%] w-screen h-[100vw] max-w-[1200px] max-h-[1200px] bg-[radial-gradient(circle_at_center,rgba(225,155,45,0.4)_0%,transparent_65%)] rounded-full will-change-transform"></div>
@@ -220,7 +216,6 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            {/* Arrows pulled inwards, given a blur background, and forced over the stack (z-60) */}
             <button onClick={() => { setUserPaused(true); handleNav(-1); }} className="absolute left-6 sm:left-12 md:left-24 lg:left-32 z-60 p-3 md:p-4 rounded-full border-2 border-white/40 text-white bg-ink-dark/30 backdrop-blur-md transition-transform duration-300 hover:scale-110 active:scale-95 hover:bg-white hover:text-ink-dark hover:border-white shadow-lg">
               <ChevronLeft size={24} />
             </button>
@@ -259,7 +254,6 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
                         </div>
                       </div>
                     </div>
-
                   </div>
                 );
               })}
@@ -269,35 +263,125 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
               <ChevronRight size={24} />
             </button>
           </div>
-
         </div>
 
-        {/* SECTION 12: Reveal & Contact (Now positioned Absolute, covering Step 11 natively) */}
-        <section ref={revealSectionRef} className="reveal-section absolute inset-0 w-full h-dvh overflow-hidden z-50 border-t-[3px] border-ink-dark" style={{ clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)" }}>
-          <div className="w-full h-full flex flex-col justify-center relative bg-linear-to-br from-pastel-blue via-paper-bg to-pastel-mint">
-            <div className="relative z-10 w-full px-4 sm:px-6 md:px-12 lg:px-24 max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-16 reveal-content-inner invisible">
-              <div className="flex-1 text-center lg:text-left text-ink-dark w-full">
-                <h2 className="text-4xl sm:text-5xl md:text-7xl font-black font-technical-sans uppercase tracking-tight mb-4 md:mb-6">Ready to Start?</h2>
-                <p className="text-sm md:text-lg xl:text-xl font-medium font-elegant-serif mb-8 md:mb-12 text-ink-dark/80">Enroll today and begin your premium guitar journey.</p>
-                <div className="flex flex-col gap-4 items-center lg:items-start">
-                  <a href="tel:+918076530550" className="flex items-center gap-3 hover:text-accent-teal font-technical-sans transition-colors tracking-widest uppercase font-black text-xs md:text-sm"><Phone size={16} /> +91 8076 530 550</a>
-                  <a href="mailto:care@yangerila.com" className="flex items-center gap-3 hover:text-accent-teal font-technical-sans transition-colors tracking-widest uppercase font-black text-xs md:text-sm"><Mail size={16} /> care@yangerila.com</a>
+        {/* SECTION 12: Reveal & Contact (WOOD-LIKE GRADIENT BACKGROUND - MOBILE OPTIMIZED) */}
+        <section ref={revealSectionRef} className="reveal-section absolute inset-0 w-full h-dvh overflow-hidden z-50 border-t-[3px] border-ink-dark bg-gradient-to-br from-[#EADDCA] via-[#D4B895] to-[#AA7E51]" style={{ clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)" }}>
+
+          <div className="w-full h-full relative overflow-y-auto scrollbar-hide">
+
+            <div className="min-h-full w-full px-4 sm:px-6 md:px-12 lg:px-24 pt-6 pb-8 md:py-24 max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-4 md:gap-12 lg:gap-16 reveal-content-inner invisible">
+
+              {/* Left Column: Text & Contact Info (Minimized on Mobile) */}
+              <div className="flex flex-col justify-center text-center lg:text-left text-ink-dark w-full max-w-xl mx-auto lg:mx-0 pt-2 lg:pt-0 shrink-0">
+                <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black font-technical-sans uppercase tracking-tight mb-2 md:mb-6 leading-tight drop-shadow-sm">
+                  Let's start your <br className="hidden lg:block" />
+                  <span className="text-white">guitar journey</span>
+                </h2>
+
+                {/* Paragraph hidden on mobile to save space */}
+                <p className="hidden md:block text-sm sm:text-base md:text-lg font-medium font-elegant-serif mb-8 md:mb-10 text-ink-dark/80">
+                  Ready to take the next step? Fill out the form, and our team will get back to you to schedule your demo or start your admission process.
+                </p>
+
+                {/* Elegant Contact Card */}
+                <div className="flex flex-col gap-2.5 md:gap-5 items-center lg:items-start bg-white/70 backdrop-blur-md p-3 sm:p-6 md:p-8 rounded-[1.25rem] md:rounded-3xl border border-white/50 shadow-sm w-full">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <div className="p-1.5 md:p-2.5 bg-ink-dark/5 rounded-full text-ink-dark/80"><MapPin className="w-4 h-4 md:w-[18px] md:h-[18px]" /></div>
+                    <div className="text-left">
+                      <p className="text-[8px] md:text-[10px] font-bold font-technical-sans text-ink-dark/60 uppercase tracking-widest">Headoffice</p>
+                      <p className="text-[11px] md:text-base font-bold font-technical-sans text-ink-dark">Based in Delhi NCR</p>
+                    </div>
+                  </div>
+
+                  <div className="w-full h-px bg-ink-dark/10 my-0 md:my-1"></div>
+
+                  <div className="flex flex-row gap-2 md:gap-4 w-full justify-center lg:justify-start">
+                    <a href="https://wa.me/918076530550" target="_blank" rel="noopener noreferrer" className="flex flex-1 items-center justify-center lg:justify-start gap-1.5 md:gap-3 p-2 md:p-3 rounded-xl md:rounded-2xl hover:bg-green-50 transition-colors group">
+                      <div className="p-1.5 md:p-2.5 bg-green-100 rounded-full text-green-600 group-hover:scale-110 transition-transform"><MessageCircle className="w-4 h-4 md:w-[18px] md:h-[18px]" /></div>
+                      <div className="text-left">
+                        <p className="text-[7px] md:text-[9px] font-bold font-technical-sans text-green-600/80 uppercase tracking-widest">WhatsApp</p>
+                        <p className="text-[9px] md:text-sm font-black font-technical-sans text-ink-dark">+91 8076 530 550</p>
+                      </div>
+                    </a>
+
+                    <a href="mailto:care@yangerila.com" className="flex flex-1 items-center justify-center lg:justify-start gap-1.5 md:gap-3 p-2 md:p-3 rounded-xl md:rounded-2xl hover:bg-blue-50 transition-colors group">
+                      <div className="p-1.5 md:p-2.5 bg-blue-100 rounded-full text-accent-teal group-hover:scale-110 transition-transform"><Mail className="w-4 h-4 md:w-[18px] md:h-[18px]" /></div>
+                      <div className="text-left">
+                        <p className="text-[7px] md:text-[9px] font-bold font-technical-sans text-accent-teal/80 uppercase tracking-widest">Email Us</p>
+                        <p className="text-[9px] md:text-sm font-black font-technical-sans text-ink-dark">care@yangerila.com</p>
+                      </div>
+                    </a>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex-1 w-full flex justify-center lg:justify-end mt-4 lg:mt-0">
-                <div className="p-6 md:p-10 xl:p-12 rounded-4xl md:rounded-[3rem] w-full max-w-md bg-paper-bg border-4 border-ink-dark relative shadow-[0_20px_50px_rgba(26,26,26,0.3)]">
-                  <h3 className="text-xl md:text-2xl font-technical-sans font-black uppercase text-ink-dark tracking-widest mb-1">Waitlist</h3>
-                  <p className="text-[10px] md:text-xs text-accent-teal uppercase tracking-widest font-black font-technical-sans mb-6 md:mb-8">Secure your slot</p>
-                  <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:gap-4">
-                    <input required type="text" placeholder="FULL NAME" className="bg-white border-2 border-ink-dark/20 rounded-xl p-3 md:p-4 text-xs md:text-sm text-ink-dark font-black font-technical-sans focus:outline-none focus:border-accent-teal transition-colors shadow-sm placeholder:text-ink-dark/30" />
-                    <input required type="email" placeholder="EMAIL ADDRESS" className="bg-white border-2 border-ink-dark/20 rounded-xl p-3 md:p-4 text-xs md:text-sm text-ink-dark font-black font-technical-sans focus:outline-none focus:border-accent-teal transition-colors shadow-sm placeholder:text-ink-dark/30" />
-                    <button type="submit" className="bg-accent-teal text-white font-technical-sans font-black p-4 md:p-5 w-full rounded-xl shadow-[0_10px_20px_rgba(58,90,140,0.4)] hover:shadow-xl border-2 border-transparent hover:border-accent-teal hover:bg-white hover:text-accent-teal transition-all uppercase tracking-widest text-[10px] md:text-sm">
-                      {formStatus === 'success' ? 'Request Sent!' : 'Request Admission'}
-                    </button>
-                  </form>
+              {/* Right Column: Waitlist Form (Maximized on Mobile) */}
+              <div className="flex-1 w-full flex justify-center lg:justify-end pb-6 md:pb-12 lg:pb-0">
+                <div className="w-full max-w-md bg-white rounded-3xl md:rounded-[2rem] p-5 md:p-10 shadow-[0_20px_60px_rgba(74,46,27,0.15)] border border-white/40 relative overflow-hidden">
+
+                  {formStatus === 'success' ? (
+                    <div className="flex flex-col items-center justify-center text-center py-12 animate-in fade-in zoom-in duration-500">
+                      <div className="w-20 h-20 bg-accent-teal text-white rounded-full flex items-center justify-center mb-6 shadow-lg shadow-accent-teal/30">
+                        <ChevronRight size={40} className="rotate-[-45deg]" strokeWidth={2.5} />
+                      </div>
+                      <h3 className="text-2xl font-black font-technical-sans text-ink-dark uppercase tracking-tight mb-2">Thank You!</h3>
+                      <p className="text-ink-medium/80 font-elegant-serif italic text-lg leading-relaxed">Your enquiry has been<br />succesfully submitted</p>
+                      <button
+                        onClick={() => setFormStatus('idle')}
+                        className="mt-8 text-accent-teal font-bold font-technical-sans text-[10px] sm:text-xs uppercase tracking-widest hover:underline"
+                      >
+                        Send another request
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="mb-4 md:mb-8 text-center lg:text-left">
+                        <h3 className="text-xl md:text-3xl font-technical-sans font-black uppercase text-ink-dark tracking-wide mb-0.5 md:mb-1">Waitlist</h3>
+                        <p className="text-[8px] md:text-[10px] text-[#AA7E51] uppercase tracking-widest font-black font-technical-sans">Secure your slot</p>
+                      </div>
+
+                      <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:gap-8">
+
+                        <div className="relative">
+                          <input required type="text" placeholder="Full Name *" className="w-full bg-transparent border-b-2 border-ink-dark/20 px-1 py-1.5 md:py-2 text-xs md:text-base text-ink-dark font-medium font-technical-sans focus:outline-none focus:border-accent-teal transition-colors placeholder:text-ink-dark/50 rounded-none" />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8">
+                          <div className="relative">
+                            <input required type="email" placeholder="Email Address *" className="w-full bg-transparent border-b-2 border-ink-dark/20 px-1 py-1.5 md:py-2 text-xs md:text-base text-ink-dark font-medium font-technical-sans focus:outline-none focus:border-accent-teal transition-colors placeholder:text-ink-dark/50 rounded-none" />
+                          </div>
+                          <div className="relative">
+                            <input required type="tel" placeholder="Phone number *" className="w-full bg-transparent border-b-2 border-ink-dark/20 px-1 py-1.5 md:py-2 text-xs md:text-base text-ink-dark font-medium font-technical-sans focus:outline-none focus:border-accent-teal transition-colors placeholder:text-ink-dark/50 rounded-none" />
+                          </div>
+                        </div>
+
+                        <div className="relative">
+                          <select required defaultValue="" className="w-full bg-transparent border-b-2 border-ink-dark/20 px-1 py-1.5 md:py-2 text-xs md:text-base text-ink-dark font-medium font-technical-sans focus:outline-none focus:border-accent-teal transition-colors appearance-none cursor-pointer invalid:text-ink-dark/50 rounded-none">
+                            <option value="" disabled>Select an option</option>
+                            <option value="admission" className="text-ink-dark">How do i take Admission?</option>
+                            <option value="info" className="text-ink-dark">I want to know more</option>
+                            <option value="demo" className="text-ink-dark">Shedule a Demo Session for me.</option>
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-ink-dark/60">
+                            <ChevronRight className="rotate-90 md:w-[18px] md:h-[18px] w-4 h-4" strokeWidth={2} />
+                          </div>
+                        </div>
+
+                        <div className="relative">
+                          <input type="text" placeholder="City / Message (Optional)" className="w-full bg-transparent border-b-2 border-ink-dark/20 px-1 py-1.5 md:py-2 text-xs md:text-base text-ink-dark font-medium font-technical-sans focus:outline-none focus:border-accent-teal transition-colors placeholder:text-ink-dark/50 rounded-none" />
+                        </div>
+
+                        <button type="submit" className="mt-2 md:mt-4 bg-pastel-mint hover:bg-accent-teal text-ink-dark hover:text-white font-technical-sans font-black px-6 md:px-8 py-2.5 md:py-3.5 rounded-full w-fit transition-colors shadow-sm text-xs md:text-sm tracking-wide self-center lg:self-start mx-auto lg:mx-0">
+                          Submit
+                        </button>
+                      </form>
+                    </>
+                  )}
+
                 </div>
               </div>
+
             </div>
           </div>
         </section>
