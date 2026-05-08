@@ -183,11 +183,15 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
 
       if (isReversing) {
         gsap.set([header, carousel, background], { autoAlpha: 1, y: 0 });
-        gsap.to(revealSectionRef.current, {
-          clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)",
-          ease: "power3.inOut",
-          duration: 0.8
-        });
+        // Smooth reverse transition from Contact: animates from open down to closed, expanding 1% offscreen to kill the white line artifact
+        gsap.fromTo(revealSectionRef.current,
+          { clipPath: "polygon(-1% -1%, 101% -1%, 101% 101%, -1% 101%)" },
+          {
+            clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)",
+            ease: "power3.inOut",
+            duration: 1.0
+          }
+        );
       } else {
         const tl = gsap.timeline({ delay: 0.2 });
         tl.fromTo(background, { autoAlpha: 0 }, { autoAlpha: 1, duration: 1.2, ease: "power2.inOut" })
@@ -205,7 +209,8 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
       gsap.fromTo(revealSectionRef.current,
         { clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)" },
         {
-          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          // Expands mask slightly off-screen to eradicate the sub-pixel white line artifact on contact screen
+          clipPath: "polygon(-1% -1%, 101% -1%, 101% 101%, -1% 101%)",
           ease: "power3.inOut",
           duration: 1.0,
           onComplete: () => {
@@ -250,9 +255,10 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
         .font-cursive { font-family: 'Dancing Script', 'Allura', cursive; }
       `}} />
 
-      <div ref={containerRef} className="w-full flex flex-col shrink-0 pointer-events-auto border-t-[3px] border-ink-dark/10">
+      {/* Removed border-t-[3px] here to eliminate the white line bug */}
+      <div ref={containerRef} className="w-full flex flex-col shrink-0 pointer-events-auto">
 
-        {/* SECTION 10: Fun Fact */}
+        {/* SECTION 10: Fun Fact (Restored all missing text paragraphs) */}
         <div ref={funFactRef} className="w-full h-dvh flex flex-col items-center justify-center text-center bg-transparent relative px-4 sm:px-6 md:px-12 shrink-0">
           <div className="max-w-5xl mx-auto flex flex-col items-center justify-center w-full">
             <h2 className="fun-fact-el text-accent-teal font-technical-sans tracking-[0.3em] font-black text-[10px] md:text-sm uppercase mb-8 md:mb-12 invisible">Fun Fact</h2>
@@ -272,18 +278,20 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
         <div className="relative w-full h-dvh shrink-0 -mt-px z-10">
 
           {/* SECTION 11: Cinematic Carousel */}
-          <div ref={voicesRef} className="absolute inset-0 w-full h-dvh overflow-hidden flex flex-col justify-center bg-transparent py-10 lg:py-16 px-0 border-t-[3px] border-ink-dark/10">
-            <div className="carousel-bg-container absolute inset-0 -z-20 overflow-hidden invisible pointer-events-none">
-              <div className="absolute inset-0 bg-ink-dark"></div>
+          {/* Removed border-t-[3px] here to eliminate the white line bug */}
+          <div ref={voicesRef} className="absolute inset-0 w-full h-dvh overflow-hidden flex flex-col justify-center bg-transparent py-10 lg:py-16 px-0">
+            {/* Added Wood Gradient Background */}
+            <div className="carousel-bg-container absolute inset-0 -z-20 overflow-hidden invisible pointer-events-none" style={{ background: 'linear-gradient(135deg, #4E3524 0%, #2D1B0E 50%, #1A0F0A 100%)' }}>
               <div ref={el => bokehRefs.current[0] = el} className="absolute top-[-20%] left-[-10%] w-screen h-[100vw] max-w-[1200px] max-h-[1200px] bg-[radial-gradient(circle_at_center,rgba(225,155,45,0.4)_0%,transparent_65%)] rounded-full will-change-transform"></div>
               <div ref={el => bokehRefs.current[1] = el} className="absolute bottom-[-20%] right-[-10%] w-[120vw] h-[120vw] max-w-[1400px] max-h-[1400px] bg-[radial-gradient(circle_at_center,rgba(147,233,190,0.3)_0%,transparent_65%)] rounded-full will-change-transform"></div>
             </div>
 
             <div className="voices-header shrink-0 flex flex-col px-4 sm:px-6 md:px-12 xl:px-24 mb-8 md:mb-12 items-center text-center invisible">
-              <h2 className="text-3xl sm:text-4xl md:text-7xl font-black font-technical-sans text-paper-bg uppercase tracking-tight leading-none mb-3 md:mb-5">
-                Voices of <span className="text-serif-italic font-medium text-pastel-mint lowercase">excellence</span>
+              {/* Updated Heading for wood contrast */}
+              <h2 className="text-4xl sm:text-5xl md:text-7xl font-black font-technical-sans text-white uppercase tracking-tight leading-none mb-3 md:mb-5 drop-shadow-md">
+                Testimonials
               </h2>
-              <div className="flex items-center gap-4 text-paper-bg/80 text-xs md:text-sm font-black font-technical-sans">
+              <div className="flex items-center gap-4 text-white/80 text-xs md:text-sm font-black font-technical-sans">
                 <p>Use arrows or click to navigate.</p>
                 <button
                   onClick={() => setUserPaused(!userPaused)}
@@ -309,6 +317,7 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
                   const isActive = activeIndex === idx;
                   const styles = getCardStyle(idx);
 
+                  {/* Original light, semi-transparent glassmorphism styling for cards restored */ }
                   return (
                     <div
                       key={idx}
@@ -329,12 +338,12 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
                         </p>
 
                         <div className={`w-full flex items-center gap-4 pt-5 md:pt-8 border-t-2 transition-colors duration-700 ${isActive ? 'border-ink-dark/20' : 'border-ink-dark/10'}`}>
-                          <div className={`w-12 h-12 md:w-16 md:h-16 shrink-0 rounded-full flex items-center justify-center font-technical-sans font-black border-[3px] transition-colors duration-700 ${isActive ? 'border-accent-teal text-white bg-accent-teal shadow-md' : 'border-ink-dark/20 text-ink-dark bg-white'}`}>
+                          <div className={`w-12 h-12 md:w-16 md:h-16 shrink-0 rounded-full flex items-center justify-center font-technical-sans font-black border-[3px] transition-colors duration-700 ${isActive ? 'border-[#E19B2D] text-white bg-[#E19B2D] shadow-md' : 'border-ink-dark/20 text-ink-dark bg-white'}`}>
                             {t.name.split(' ').map(n => n[0]).join('')}
                           </div>
                           <div className="flex flex-col text-left justify-center overflow-hidden">
                             <h4 className={`font-black font-technical-sans leading-none truncate w-full transition-colors duration-700 ${isActive ? 'text-ink-dark text-base md:text-xl' : 'text-ink-medium text-sm md:text-base'}`}>{t.name}</h4>
-                            <p className={`uppercase font-technical-sans tracking-[0.15em] mt-1.5 font-black leading-none truncate w-full transition-colors duration-700 ${isActive ? 'text-accent-teal text-[10px] md:text-xs' : 'text-ink-medium/50 text-[8px] md:text-[10px]'}`}>{t.role}</p>
+                            <p className={`uppercase font-technical-sans tracking-[0.15em] mt-1.5 font-black leading-none truncate w-full transition-colors duration-700 ${isActive ? 'text-[#E19B2D] text-[10px] md:text-xs' : 'text-ink-medium/50 text-[8px] md:text-[10px]'}`}>{t.role}</p>
                           </div>
                         </div>
                       </div>
@@ -350,7 +359,8 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
           </div>
 
           {/* SECTION 12: Reveal & Contact */}
-          <section ref={revealSectionRef} className="reveal-section absolute inset-0 w-full h-dvh overflow-hidden z-50 border-t-[3px] border-ink-dark bg-cover bg-center" style={{ backgroundImage: `url(${contactBg})`, clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)" }}>
+          {/* Removed border-t-[3px] here to eliminate the white line bug */}
+          <section ref={revealSectionRef} className="reveal-section absolute inset-0 w-full h-dvh overflow-hidden z-50 bg-cover bg-center" style={{ backgroundImage: `url(${contactBg})`, clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)" }}>
 
             <div className="absolute inset-0 bg-black/40 mix-blend-overlay pointer-events-none"></div>
 

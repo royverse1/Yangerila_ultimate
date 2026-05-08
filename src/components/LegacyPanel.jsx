@@ -71,7 +71,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
     );
   }, []);
 
-  const flyToCard = (targetIndex, dur = 1.2) => {
+  const flyToCard = (targetIndex, dur = 0.9) => { // Reduced from 1.2 for snappier feeling
     if (enginePausedRef.current) return;
 
     const targetFrame = (TOTAL_FRAMES / 2) * targetIndex;
@@ -185,7 +185,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         flyToCard(cardIndexRef.current);
         isActiveRef.current = false;
         clearTimeout(interactionTimeoutRef.current);
-        interactionTimeoutRef.current = setTimeout(() => { isActiveRef.current = true; }, 1200);
+        interactionTimeoutRef.current = setTimeout(() => { isActiveRef.current = true; }, 700); // reduced delay lock
       } else if (self.event.type !== 'wheel' || Math.abs(self.deltaY) > 20) {
         isActiveRef.current = false;
         window.dispatchEvent(new CustomEvent('requestNextStep'));
@@ -196,7 +196,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         flyToCard(cardIndexRef.current);
         isActiveRef.current = false;
         clearTimeout(interactionTimeoutRef.current);
-        interactionTimeoutRef.current = setTimeout(() => { isActiveRef.current = true; }, 1200);
+        interactionTimeoutRef.current = setTimeout(() => { isActiveRef.current = true; }, 700); // reduced delay lock
       } else if (self.event.type !== 'wheel' || Math.abs(self.deltaY) > 20) {
         isActiveRef.current = false;
         window.dispatchEvent(new CustomEvent('requestPrevStep'));
@@ -209,11 +209,9 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
       target: window,
       type: 'wheel,touch',
       onDown: (self) => {
-        // Wheel Down = Next. Swipe Down = Prev.
         handlePanelIntent(self.event.type === 'wheel' ? 'next' : 'prev', self);
       },
       onUp: (self) => {
-        // Wheel Up = Prev. Swipe Up = Next.
         handlePanelIntent(self.event.type === 'wheel' ? 'prev' : 'next', self);
       },
       tolerance: 20,
@@ -282,7 +280,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
       }
 
       clearTimeout(interactionTimeoutRef.current);
-      interactionTimeoutRef.current = setTimeout(() => { isActiveRef.current = true; }, 900);
+      interactionTimeoutRef.current = setTimeout(() => { isActiveRef.current = true; }, 700);
     }
 
     if (step === 4) {

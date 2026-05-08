@@ -42,6 +42,7 @@ export default function App() {
 
   const INERTIA_WINDOW = 50;
   const inertiaDeadTime = useRef(0);
+  const boundaryDeadTime = useRef(0);
 
   const [isIntroPlaying, setIsIntroPlaying] = useState(true);
   const isIntroPlayingRef = useRef(true);
@@ -191,7 +192,7 @@ export default function App() {
       gsap.to(elevatorRef.current, { y: '100dvh', duration: speed, ease: 'power3.inOut', force3D: true });
     } else {
       let floor = currentStepRef.current - 5;
-      if (currentStepRef.current === 12) floor = 6; // Lock elevator so the clipPath reveal is seamless
+      if (currentStepRef.current === 12) floor = 6;
 
       gsap.to(elevatorRef.current, {
         y: `-${floor * 100}dvh`,
@@ -223,10 +224,18 @@ export default function App() {
         const targetElement = self.event?.target?.closest?.('.scrollbar-hide, .about-scroll-container, .expanded-content, .faq-content') ?? null;
 
         if (targetElement) {
-          if (intent === 'next') {
-            if (targetElement.scrollHeight - Math.ceil(targetElement.scrollTop) > targetElement.clientHeight + 2) return;
-          } else {
-            if (targetElement.scrollTop > 2) return;
+          const isScrollable = targetElement.scrollHeight > targetElement.clientHeight;
+          if (isScrollable) {
+            const isAtBottom = Math.abs(targetElement.scrollHeight - targetElement.scrollTop - targetElement.clientHeight) <= 5;
+            const isAtTop = targetElement.scrollTop <= 5;
+
+            if (intent === 'next') {
+              if (!isAtBottom) { boundaryDeadTime.current = Date.now() + 400; return; }
+              if (Date.now() < boundaryDeadTime.current) return;
+            } else {
+              if (!isAtTop) { boundaryDeadTime.current = Date.now() + 400; return; }
+              if (Date.now() < boundaryDeadTime.current) return;
+            }
           }
         }
 
@@ -244,10 +253,18 @@ export default function App() {
         const targetElement = self.event?.target?.closest?.('.scrollbar-hide, .about-scroll-container, .expanded-content, .faq-content') ?? null;
 
         if (targetElement) {
-          if (intent === 'next') {
-            if (targetElement.scrollHeight - Math.ceil(targetElement.scrollTop) > targetElement.clientHeight + 2) return;
-          } else {
-            if (targetElement.scrollTop > 2) return;
+          const isScrollable = targetElement.scrollHeight > targetElement.clientHeight;
+          if (isScrollable) {
+            const isAtBottom = Math.abs(targetElement.scrollHeight - targetElement.scrollTop - targetElement.clientHeight) <= 5;
+            const isAtTop = targetElement.scrollTop <= 5;
+
+            if (intent === 'next') {
+              if (!isAtBottom) { boundaryDeadTime.current = Date.now() + 400; return; }
+              if (Date.now() < boundaryDeadTime.current) return;
+            } else {
+              if (!isAtTop) { boundaryDeadTime.current = Date.now() + 400; return; }
+              if (Date.now() < boundaryDeadTime.current) return;
+            }
           }
         }
 
@@ -281,14 +298,15 @@ export default function App() {
   }, [handleScrollIntent]);
 
   const navLinks = [
-    { label: 'Welcome', step: 1 },
-    { label: 'Our Legacy', step: 3 },
-    { label: "Founder's Note", step: 5 },
-    { label: 'Curriculum', step: 6 },
-    { label: 'Insights (FAQ)', step: 7 },
-    { label: 'Premium Rewards', step: 8 },
+    { label: 'Home', step: 1 },
+    { label: 'Legacy', step: 3 },
+    { label: 'Founder', step: 5 },
+    { label: 'Courses', step: 6 },
+    { label: 'FAQ', step: 7 },
+    { label: 'Offers', step: 8 },
     { label: 'Admissions', step: 9 },
     { label: 'Testimonials', step: 11 },
+    { label: 'Contact', step: 12 }
   ];
 
   return (
