@@ -219,16 +219,13 @@ export default function App() {
       type: 'wheel,touch',
       onDown: (self) => {
         if (isComponentLockedRef.current) return;
-
         const intent = self.event.type === 'wheel' ? 'next' : 'prev';
         const targetElement = self.event?.target?.closest?.('.scrollbar-hide, .about-scroll-container, .expanded-content, .faq-content') ?? null;
-
         if (targetElement) {
           const isScrollable = targetElement.scrollHeight > targetElement.clientHeight;
           if (isScrollable) {
             const isAtBottom = Math.abs(targetElement.scrollHeight - targetElement.scrollTop - targetElement.clientHeight) <= 5;
             const isAtTop = targetElement.scrollTop <= 5;
-
             if (intent === 'next') {
               if (!isAtBottom) { boundaryDeadTime.current = Date.now() + 400; return; }
               if (Date.now() < boundaryDeadTime.current) return;
@@ -238,26 +235,21 @@ export default function App() {
             }
           }
         }
-
         attemptAudioAutoplay();
         setIsUIMinimized(true);
         setMusicExpanded(false);
         setIsMenuOpen(false);
-
         handleScrollIntent(intent);
       },
       onUp: (self) => {
         if (isComponentLockedRef.current) return;
-
         const intent = self.event.type === 'wheel' ? 'prev' : 'next';
         const targetElement = self.event?.target?.closest?.('.scrollbar-hide, .about-scroll-container, .expanded-content, .faq-content') ?? null;
-
         if (targetElement) {
           const isScrollable = targetElement.scrollHeight > targetElement.clientHeight;
           if (isScrollable) {
             const isAtBottom = Math.abs(targetElement.scrollHeight - targetElement.scrollTop - targetElement.clientHeight) <= 5;
             const isAtTop = targetElement.scrollTop <= 5;
-
             if (intent === 'next') {
               if (!isAtBottom) { boundaryDeadTime.current = Date.now() + 400; return; }
               if (Date.now() < boundaryDeadTime.current) return;
@@ -267,12 +259,10 @@ export default function App() {
             }
           }
         }
-
         attemptAudioAutoplay();
         setIsUIMinimized(true);
         setMusicExpanded(false);
         setIsMenuOpen(false);
-
         handleScrollIntent(intent);
       },
       preventDefault: false,
@@ -297,22 +287,23 @@ export default function App() {
     return () => { obs.kill(); window.removeEventListener('keydown', handleKeyDown); };
   }, [handleScrollIntent]);
 
+  // ADDED "About" linking to step 2
   const navLinks = [
-    { label: 'Home', step: 1 },
-    { label: 'Legacy', step: 3 },
-    { label: 'Founder', step: 5 },
-    { label: 'Courses', step: 6 },
-    { label: 'FAQ', step: 7 },
-    { label: 'Offers', step: 8 },
+    { label: 'Welcome', step: 1 },
+    { label: 'About', step: 2 },
+    { label: 'Our Legacy', step: 3 },
+    { label: "Founder's Note", step: 5 },
+    { label: 'Curriculum', step: 6 },
+    { label: 'Insights (FAQ)', step: 7 },
+    { label: 'Premium Rewards', step: 8 },
     { label: 'Admissions', step: 9 },
     { label: 'Testimonials', step: 11 },
-    { label: 'Contact', step: 12 }
+    { label: 'Contact Us', step: 12 },
   ];
 
   return (
     <div className="relative w-full h-dvh overflow-hidden bg-transparent font-sans">
       <StaticPastelBackground step={currentStep} />
-
       <audio ref={audioRef} src={ambientMusic} loop preload="auto" />
 
       <div className={`fixed bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 right-4 sm:right-6 md:right-8 z-100 pointer-events-none flex justify-between items-end transition-opacity duration-1000 ${isIntroPlaying ? 'opacity-0' : 'opacity-100'}`}>
