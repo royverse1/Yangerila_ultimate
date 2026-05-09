@@ -7,6 +7,7 @@ import heroVideoMobile from '../assets/y_hero_v.mp4';
 
 gsap.registerPlugin(TextPlugin);
 
+// Global registry so only the video nearest viewport centre plays on mobile
 const mobileVideoRegistry = new Set();
 const mobileVideoThrottle = () => {
   const vh = window.innerHeight;
@@ -39,6 +40,7 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
   }, [isActiveStep]);
 
   const handleStop = useCallback((delay = 0) => {
+    clearTimeout(pauseTimeoutRef.current);
     if (delay > 0) {
       pauseTimeoutRef.current = setTimeout(() => {
         setIsInteracting(false);
@@ -46,7 +48,6 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
       }, delay);
     } else {
       setIsInteracting(false);
-      clearTimeout(pauseTimeoutRef.current);
       if (videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; }
     }
   }, []);
@@ -65,7 +66,7 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
     const obs = new IntersectionObserver(([e]) => {
       if (!isActiveStep) { handleStop(0); return; }
       if (window.matchMedia('(max-width: 768px)').matches) {
-        mobileThrottleThrottle();
+        mobileVideoThrottle();
       } else if (!e.isIntersecting) {
         handleStop(0);
       }
@@ -73,8 +74,6 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
     if (containerRef.current) obs.observe(containerRef.current);
     return () => obs.disconnect();
   }, [isActiveStep, handlePlay, handleStop]);
-
-  const mobileThrottleThrottle = () => mobileVideoThrottle();
 
   useEffect(() => {
     if (!isActiveStep) handleStop(0);
@@ -91,7 +90,8 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
       onTouchCancel={() => handleStop(0)}
     >
       <video ref={videoRef} src={src} poster={poster} muted loop playsInline decoding="async" className="w-full h-full object-cover scale-[1.02] will-change-transform" />
-      <div className="absolute inset-0 bg-linear-to-br from-white/20 via-transparent to-black/10 pointer-events-none mix-blend-overlay" />
+      {/* PERFORMANCE FIX: md:mix-blend-overlay to prevent mobile GPU overload */}
+      <div className="absolute inset-0 bg-linear-to-br from-white/20 via-transparent to-black/10 pointer-events-none md:mix-blend-overlay" />
     </div>
   );
 });
@@ -139,6 +139,8 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.globalAlpha = maskProxy.current.opacity;
@@ -151,6 +153,8 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     ctx.globalAlpha = 1;
 
     ctx.translate(canvas.width / 2, canvas.height / 2);
+
+    ctx.scale(dpr, dpr);
 
     const proxyScale = maskProxy.current.scale;
     ctx.scale(proxyScale, proxyScale);
@@ -165,6 +169,9 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     const p = new Path2D(yLogoPath);
     ctx.fill(p);
 
+    ctx.lineWidth = 0.5;
+    ctx.stroke(p);
+
     ctx.resetTransform();
     ctx.globalCompositeOperation = 'source-over';
   }, []);
@@ -175,16 +182,18 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       if (window.innerWidth !== lastWidth) {
         lastWidth = window.innerWidth;
         if (canvasRef.current) {
-          canvasRef.current.width = window.innerWidth;
-          canvasRef.current.height = window.innerHeight;
+          const dpr = window.devicePixelRatio || 1;
+          canvasRef.current.width = window.innerWidth * dpr;
+          canvasRef.current.height = window.innerHeight * dpr;
           renderCanvas();
         }
       }
     };
     window.addEventListener('resize', resize);
     if (canvasRef.current) {
-      canvasRef.current.width = window.innerWidth;
-      canvasRef.current.height = window.innerHeight;
+      const dpr = window.devicePixelRatio || 1;
+      canvasRef.current.width = window.innerWidth * dpr;
+      canvasRef.current.height = window.innerHeight * dpr;
       renderCanvas();
     }
     return () => window.removeEventListener('resize', resize);
@@ -305,7 +314,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         tl.to(maskProxy.current, { scale: 120, ease: 'power3.inOut', duration: 1.2, onUpdate: renderCanvas }, 0);
         tl.to(letterYRef.current, { autoAlpha: 0, duration: 0.15, force3D: false }, 0);
         tl.to(textRef.current, { autoAlpha: 1, scale: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, 0.4);
-        tl.to(paragraphRef.current, { auto: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, 0.5);
+        tl.to(paragraphRef.current, { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, 0.5);
       }
     }
 
@@ -380,49 +389,45 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       </div>
 
       <div ref={aboutRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center invisible translate-y-10 px-4 sm:px-6 lg:px-24 bg-paper-bg border-t-2 border-ink-dark shadow-[0_-10px_40px_rgba(0,0,0,0.15)] will-change-transform">
-        {/* 75% ZOOM FIX: Severely reduced padding, gaps, and max widths explicitly on lg/xl breakpoints for short laptops. */}
-        <div className="about-scroll-container max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto w-full flex flex-col gap-2 lg:gap-3 xl:gap-4 2xl:gap-6 relative z-10 max-h-[85dvh] lg:max-h-[80dvh] overflow-y-auto overflow-x-hidden pb-4 pt-4 px-4 scrollbar-hide">
+        <div className="about-scroll-container max-w-6xl mx-auto w-full flex flex-col gap-3 md:gap-6 lg:gap-8 relative z-10 max-h-[85dvh] overflow-y-auto overflow-x-hidden pb-4 pt-4 px-4 scrollbar-hide">
 
-          <div className="w-full border-t-[3px] border-accent-teal pt-2 xl:pt-3 mb-1 shrink-0">
-            <h2 className="text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-black font-technical-sans text-ink-dark uppercase tracking-tighter leading-none mb-1">About</h2>
-            <h3 className="text-sm lg:text-base xl:text-lg 2xl:text-xl text-ink-medium font-light font-elegant-serif italic">Yangerila.</h3>
+          <div className="w-full border-t-[3px] border-accent-teal pt-2 md:pt-4 mb-1 md:mb-2 shrink-0">
+            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-black font-technical-sans text-ink-dark uppercase tracking-tighter leading-none mb-1">About</h2>
+            <h3 className="text-sm md:text-xl lg:text-2xl text-ink-medium font-light font-elegant-serif italic">Yangerila.</h3>
           </div>
 
-          <div ref={el => addToBentoRefs(el, 0)} className="flex flex-row items-center gap-3 lg:gap-5 xl:gap-8 w-full invisible will-change-[transform,opacity] shrink-0">
+          <div ref={el => addToBentoRefs(el, 0)} className="flex flex-row items-center gap-3 md:gap-6 lg:gap-12 w-full invisible will-change-[transform,opacity] shrink-0">
             <div className="flex-1">
-              <span className="block text-[8px] lg:text-[9px] xl:text-[10px] 2xl:text-xs font-bold font-technical-sans tracking-[0.2em] text-accent-teal uppercase mb-1">01 // Origin</span>
-              <p className="text-ink-dark font-elegant-serif font-medium text-xs lg:text-sm xl:text-base 2xl:text-lg leading-relaxed">
+              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-technical-sans tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">01 // Origin</span>
+              <p className="text-ink-dark font-elegant-serif font-medium text-xs sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-relaxed">
                 <span className="text-accent-teal">Yangerila Creative Studio</span> is a guitar-specialty academy based in Indirapuram. We offer carefully designed courses that cover multiple aspects of guitar playing.
               </p>
             </div>
-            {/* Reduced Video Size on lg/xl */}
-            <div className="w-[10vh] h-[10vh] sm:w-[14vh] sm:h-[14vh] lg:w-24 lg:h-24 xl:w-28 xl:h-28 2xl:w-36 2xl:h-36 shrink-0 aspect-square">
+            <div className="w-[10vh] h-[10vh] sm:w-[14vh] sm:h-[14vh] md:w-[18vh] md:h-[18vh] lg:w-48 lg:h-48 shrink-0 aspect-square">
               <HoverVideo src={`${import.meta.env.BASE_URL}videos/1.mp4`} isActiveStep={isAboutActive} />
             </div>
           </div>
 
-          <div ref={el => addToBentoRefs(el, 1)} className="flex flex-row-reverse items-center gap-3 lg:gap-5 xl:gap-8 w-full invisible will-change-[transform,opacity] shrink-0">
+          <div ref={el => addToBentoRefs(el, 1)} className="flex flex-row-reverse items-center gap-3 md:gap-6 lg:gap-12 w-full invisible will-change-[transform,opacity] shrink-0">
             <div className="flex-1 text-right md:text-left">
-              <span className="block text-[8px] lg:text-[9px] xl:text-[10px] 2xl:text-xs font-bold font-technical-sans tracking-[0.2em] text-accent-teal uppercase mb-1">02 // Approach</span>
-              <p className="text-ink-dark font-elegant-serif italic text-xs lg:text-base xl:text-base 2xl:text-xl leading-relaxed">
+              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-technical-sans tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">02 // Approach</span>
+              <p className="text-ink-dark font-elegant-serif italic text-xs sm:text-base md:text-lg lg:text-2xl xl:text-3xl leading-relaxed">
                 Our online classes are redefining the way guitar is taught, combining live interactive sessions, structured courses, and constant teacher support.
               </p>
             </div>
-            {/* Reduced Video Size on lg/xl */}
-            <div className="w-[10vh] h-[10vh] sm:w-[14vh] sm:h-[14vh] lg:w-24 lg:h-24 xl:w-28 xl:h-28 2xl:w-36 2xl:h-36 shrink-0 aspect-square">
+            <div className="w-[10vh] h-[10vh] sm:w-[14vh] sm:h-[14vh] md:w-[18vh] md:h-[18vh] lg:w-48 lg:h-48 shrink-0 aspect-square">
               <HoverVideo src={`${import.meta.env.BASE_URL}videos/2.mp4`} isActiveStep={isAboutActive} />
             </div>
           </div>
 
-          <div ref={el => addToBentoRefs(el, 2)} className="flex flex-row items-center gap-3 lg:gap-5 xl:gap-8 w-full invisible will-change-[transform,opacity] shrink-0">
+          <div ref={el => addToBentoRefs(el, 2)} className="flex flex-row items-center gap-3 md:gap-6 lg:gap-12 w-full invisible will-change-[transform,opacity] shrink-0">
             <div className="flex-1">
-              <span className="block text-[8px] lg:text-[9px] xl:text-[10px] 2xl:text-xs font-bold font-technical-sans tracking-[0.2em] text-accent-teal uppercase mb-1">03 // Vision</span>
-              <p className="text-ink-dark font-elegant-serif font-medium text-xs lg:text-sm xl:text-base 2xl:text-lg leading-relaxed">
+              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-technical-sans tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">03 // Vision</span>
+              <p className="text-ink-dark font-elegant-serif font-medium text-xs sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-relaxed">
                 At Yangerila, we believe music is more than just a talent — it's a life skill that everyone can and should learn. With this vision, we are proud to serve students across India.
               </p>
             </div>
-            {/* Reduced Video Size on lg/xl */}
-            <div className="w-[10vh] h-[10vh] sm:w-[14vh] sm:h-[14vh] lg:w-24 lg:h-24 xl:w-28 xl:h-28 2xl:w-36 2xl:h-36 shrink-0 aspect-square">
+            <div className="w-[10vh] h-[10vh] sm:w-[14vh] sm:h-[14vh] md:w-[18vh] md:h-[18vh] lg:w-48 lg:h-48 shrink-0 aspect-square">
               <HoverVideo src={`${import.meta.env.BASE_URL}videos/3.mp4`} isActiveStep={isAboutActive} />
             </div>
           </div>
@@ -434,8 +439,9 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
 
       <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
         <div ref={maskRef} className="w-[25vw] md:w-[8vw] aspect-157/171 will-change-transform" style={{ transform: 'translateZ(0)' }}>
-          <svg viewBox="0 0 157 171" className="w-full h-full overflow-visible">
-            <path ref={letterYRef} d={yLogoPath} fill="transparent" stroke="var(--color-accent-teal)" strokeWidth="1.5" className="drop-shadow-[0_0_10px_rgba(58,90,140,0.6)]" />
+          <svg viewBox="0 0 157 171" className="w-full h-full overflow-visible" style={{ shapeRendering: 'geometricPrecision' }}>
+            {/* PERFORMANCE FIX: md:drop-shadow added to prevent mobile SVG lag during scale */}
+            <path ref={letterYRef} d={yLogoPath} fill="transparent" stroke="var(--color-accent-teal)" strokeWidth="1.5" className="md:drop-shadow-[0_0_10px_rgba(58,90,140,0.6)]" style={{ vectorEffect: 'non-scaling-stroke' }} />
           </svg>
         </div>
       </div>

@@ -227,9 +227,9 @@ const faqData = [
 const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
   const [activeCategoryId, setActiveCategoryId] = useState(null);
   const [openIndex, setOpenIndex] = useState(-1);
+  const [slideDir, setSlideDir] = useState('forward'); // Controls smooth native slide direction
   const containerRef = useRef(null);
 
-  // Default to first category open on desktop only
   useEffect(() => {
     if (window.innerWidth >= 1024) {
       setActiveCategoryId(faqData[0].id);
@@ -254,13 +254,13 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
     }
   }, { scope: containerRef, dependencies: [step] });
 
+  // Mobile Handlers (Sets Direction for smooth sliding)
   const handleCategoryClick = (id) => {
     if (window.innerWidth < 1024) {
-      // On mobile: toggle accordion open/closed
-      setActiveCategoryId(prev => prev === id ? null : id);
+      setSlideDir('forward');
+      setActiveCategoryId(id);
       setOpenIndex(-1);
     } else {
-      // On desktop: keep side pane open, just switch content
       if (activeCategoryId !== id) {
         setActiveCategoryId(id);
         setOpenIndex(-1);
@@ -268,17 +268,31 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
     }
   };
 
-  const handleQuestionClick = (idx, e) => {
+  const handleQuestionClickMobile = (idx, e) => {
+    e.stopPropagation();
+    setSlideDir('forward');
+    setOpenIndex(idx);
+  };
+
+  const goBackToCategories = () => {
+    setSlideDir('backward');
+    setActiveCategoryId(null);
+  };
+
+  const goBackToQuestions = () => {
+    setSlideDir('backward');
+    setOpenIndex(-1);
+  };
+
+  const handleQuestionClickDesktop = (idx, e) => {
     e.stopPropagation();
     setOpenIndex(prev => prev === idx ? -1 : idx);
   };
 
   return (
-    // 90% effect applied natively: Slightly reduced box width and expanded top-padding
     <section ref={containerRef} className="w-full h-dvh shrink-0 relative flex flex-col items-center justify-center bg-transparent pt-2 lg:pt-6 xl:pt-10 2xl:pt-14 pb-2 border-t-[3px] border-ink-dark/10 overflow-hidden">
       <div className="max-w-[95%] xl:max-w-[80vw] 2xl:max-w-[75vw] mx-auto w-full h-full flex flex-col items-center relative z-10">
 
-        {/* 90% Zoom Headers: Breathing room restored, fonts slightly slimmed */}
         <div className="faq-header text-center mb-1 lg:mb-4 xl:mb-6 2xl:mb-8 w-full pt-0 xl:pt-2 2xl:pt-4 invisible shrink-0">
           <h2 className="text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-elegant-serif font-black text-ink-dark tracking-tighter leading-tight">
             FAQs
@@ -288,76 +302,39 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
           </p>
         </div>
 
-        {/* Box fits cleanly into standard 1080p layout */}
         <div className="faq-box invisible flex flex-col bg-paper-bg border border-ink-dark/10 shadow-[0_20px_60px_rgba(0,0,0,0.15)] rounded-3xl md:rounded-[2.5rem] w-full max-h-[85dvh] lg:max-h-[75dvh] xl:max-h-[75dvh] 2xl:max-h-[75dvh] overflow-hidden flex-1">
 
           <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
 
-            {/* Left Sidebar Layout (Scaled for 90% effect) */}
-            <div className="w-full lg:w-[35%] xl:w-[32%] 2xl:w-[30%] bg-white/40 p-2 lg:p-4 xl:p-5 2xl:p-6 flex flex-col gap-1.5 xl:gap-2 2xl:gap-3 overflow-y-auto scrollbar-hide border-b lg:border-b-0 lg:border-r border-ink-dark/10 shrink-0">
+            {/* DESKTOP LEFT PANE (Hidden on Mobile) */}
+            <div className="hidden lg:flex w-full lg:w-[35%] xl:w-[32%] 2xl:w-[30%] bg-white/40 p-2 lg:p-4 xl:p-5 2xl:p-6 flex-col gap-1.5 xl:gap-2 2xl:gap-3 overflow-y-auto scrollbar-hide border-r border-ink-dark/10 shrink-0">
               {faqData.map((cat) => {
                 const Icon = cat.icon;
                 const isActive = activeCategoryId === cat.id;
 
                 return (
-                  <div key={cat.id} className="flex flex-col shrink-0">
-                    <button
-                      onClick={() => handleCategoryClick(cat.id)}
-                      className={`flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 lg:py-2 xl:py-3.5 2xl:py-4 rounded-xl 2xl:rounded-2xl w-full text-left transition-all duration-300 border-2 cursor-pointer shrink-0 ${isActive
-                        ? 'bg-white border-accent-teal/60 shadow-[0_10px_30px_rgba(58,90,140,0.1)] lg:scale-[1.02]'
-                        : 'bg-white/60 border-transparent hover:bg-white hover:border-ink-dark/10'
-                        }`}
-                    >
-                      <div className="flex items-center gap-3 sm:gap-4 xl:gap-4">
-                        <div className={`p-2.5 lg:p-2 xl:p-2.5 2xl:p-3 rounded-full shrink-0 border border-ink-dark/5 ${isActive ? 'bg-accent-teal/10 text-accent-teal' : 'bg-white text-ink-dark/70'}`}>
-                          <Icon size={18} className="lg:w-4 lg:h-4 xl:w-5 xl:h-5 2xl:w-5 2xl:h-5" />
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                          <span className={`text-xs sm:text-sm lg:text-xs xl:text-sm 2xl:text-base font-black font-technical-sans transition-colors ${isActive ? 'text-ink-dark' : 'text-ink-dark/80'}`}>
-                            {cat.title}
-                          </span>
-                          <span className={`text-[9px] sm:text-[10px] lg:text-[9px] xl:text-[10px] 2xl:text-xs font-technical-sans font-bold transition-colors ${isActive ? 'text-accent-teal' : 'text-accent-teal/60'}`}>
-                            {cat.questions.length} Questions
-                          </span>
-                        </div>
+                  <div
+                    key={cat.id}
+                    onClick={() => handleCategoryClick(cat.id)}
+                    className={`flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 lg:py-2 xl:py-3.5 2xl:py-4 rounded-xl 2xl:rounded-2xl w-full text-left transition-all duration-300 border-2 cursor-pointer shrink-0 ${isActive
+                      ? 'bg-white border-accent-teal/60 shadow-[0_10px_30px_rgba(58,90,140,0.1)] lg:scale-[1.02]'
+                      : 'bg-white/60 border-transparent hover:bg-white hover:border-ink-dark/10'
+                      }`}
+                  >
+                    <div className="flex items-center gap-3 sm:gap-4 xl:gap-4">
+                      <div className={`p-2.5 lg:p-2 xl:p-2.5 2xl:p-3 rounded-full shrink-0 border border-ink-dark/5 ${isActive ? 'bg-accent-teal/10 text-accent-teal' : 'bg-white text-ink-dark/70'}`}>
+                        <Icon size={18} className="lg:w-4 lg:h-4 xl:w-5 xl:h-5 2xl:w-5 2xl:h-5" />
                       </div>
-                      <ChevronRight size={16} className={`shrink-0 transition-all ${isActive ? 'text-accent-teal opacity-100 lg:translate-x-1 rotate-90 lg:rotate-0' : 'text-ink-dark/30 lg:opacity-0 -translate-x-2'}`} />
-                    </button>
-
-                    {/* MOBILE INLINE QUESTIONS ACCORDION (Untouched) */}
-                    <div className={`lg:hidden grid transition-[grid-template-rows] duration-500 ease-in-out ${isActive ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-                      <div className="overflow-hidden">
-                        <div className="bg-white/50 border border-white rounded-xl 2xl:rounded-2xl p-1.5 sm:p-3 mt-1 mb-0.5 flex flex-col gap-0.5 shadow-sm">
-                          {cat.questions.map((faq, idx) => {
-                            const isQuestionOpen = openIndex === idx;
-                            return (
-                              <div key={idx} className="border-b border-ink-dark/5 last:border-b-0">
-                                <button
-                                  onClick={(e) => handleQuestionClick(idx, e)}
-                                  className="w-full py-2.5 sm:py-3 flex items-center justify-between text-left group bg-transparent focus:outline-none cursor-pointer gap-2"
-                                >
-                                  <span className={`text-[11px] sm:text-sm font-black font-technical-sans transition-colors duration-300 pr-2 ${isQuestionOpen ? 'text-ink-dark' : 'text-ink-dark/80 group-hover:text-accent-teal'}`}>
-                                    {faq.question}
-                                  </span>
-                                  <div className={`shrink-0 p-1 rounded-full border transition-all duration-300 flex items-center justify-center ${isQuestionOpen ? 'border-accent-teal text-accent-teal bg-accent-teal/5' : 'border-transparent text-ink-dark/40 bg-white/60'}`}>
-                                    {isQuestionOpen ? <Minus size={12} /> : <Plus size={12} />}
-                                  </div>
-                                </button>
-                                <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isQuestionOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-                                  <div className="overflow-hidden">
-                                    <div className="pb-3 pt-1 text-ink-medium/90 font-elegant-serif leading-relaxed text-[11px] sm:text-xs pr-2 sm:pr-4">
-                                      {faq.answer}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className={`text-xs sm:text-sm lg:text-xs xl:text-sm 2xl:text-base font-black font-technical-sans transition-colors ${isActive ? 'text-ink-dark' : 'text-ink-dark/80'}`}>
+                          {cat.title}
+                        </span>
+                        <span className={`text-[9px] sm:text-[10px] lg:text-[9px] xl:text-[10px] 2xl:text-xs font-technical-sans font-bold transition-colors ${isActive ? 'text-accent-teal' : 'text-accent-teal/60'}`}>
+                          {cat.questions.length} Questions
+                        </span>
                       </div>
                     </div>
-                    {/* END MOBILE INLINE QUESTIONS */}
-
+                    <ChevronRight size={16} className={`shrink-0 transition-all ${isActive ? 'text-accent-teal opacity-100 lg:translate-x-1 rotate-90 lg:rotate-0' : 'text-ink-dark/30 lg:opacity-0 -translate-x-2'}`} />
                   </div>
                 );
               })}
@@ -370,8 +347,8 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
                   const isOpen = openIndex === idx;
                   return (
                     <div key={idx} className="border-b border-ink-dark/10 last:border-b-0">
-                      <button
-                        onClick={(e) => handleQuestionClick(idx, e)}
+                      <div
+                        onClick={(e) => handleQuestionClickDesktop(idx, e)}
                         className="w-full py-3 lg:py-4 xl:py-5 2xl:py-6 flex items-center justify-between text-left group bg-transparent focus:outline-none cursor-pointer gap-4"
                       >
                         <span className={`text-sm lg:text-sm xl:text-base 2xl:text-base font-black font-technical-sans transition-colors duration-300 pr-4 ${isOpen ? 'text-ink-dark' : 'text-ink-dark/80 group-hover:text-accent-teal'}`}>
@@ -380,7 +357,7 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
                         <div className={`shrink-0 p-1 rounded-full border transition-all duration-300 flex items-center justify-center ${isOpen ? 'border-accent-teal text-accent-teal bg-accent-teal/5' : 'border-ink-dark/20 text-ink-dark/60 bg-white'}`}>
                           {isOpen ? <Minus size={16} /> : <Plus size={16} />}
                         </div>
-                      </button>
+                      </div>
                       <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                         <div className="overflow-hidden">
                           <div className="pb-4 xl:pb-5 2xl:pb-6 pt-1 text-ink-medium/90 font-elegant-serif leading-relaxed text-xs xl:text-sm 2xl:text-sm pr-4 xl:pr-8 2xl:pr-12">
@@ -394,9 +371,94 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
               </div>
             </div>
 
+            {/* MOBILE MULTI-LEVEL DRILL DOWN PANE (Hidden on Desktop) */}
+            <div className={`flex lg:hidden flex-col flex-1 w-full h-full relative overflow-hidden bg-white/40 ${activeCategoryId !== null ? 'mobile-scroll-lock' : ''}`}>
+
+              {/* Level 0: Categories List */}
+              {activeCategoryId === null && (
+                <div key="level-0" className={`flex flex-col w-full h-full p-4 sm:p-6 overflow-y-auto scrollbar-hide ${slideDir === 'forward' ? 'slide-forward' : 'slide-backward'}`}>
+                  <div className="flex flex-col mb-4 px-1">
+                    <span className="text-accent-teal font-black text-[10px] tracking-widest uppercase mb-1">Topics</span>
+                    <h3 className="text-2xl font-black font-technical-sans text-ink-dark">Select a Category</h3>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    {faqData.map((cat) => {
+                      const Icon = cat.icon;
+                      return (
+                        <div
+                          key={cat.id}
+                          onClick={() => handleCategoryClick(cat.id)}
+                          className="flex items-center justify-between px-4 py-4 rounded-2xl w-full text-left transition-all duration-300 border-2 border-transparent bg-white/60 hover:bg-white hover:border-ink-dark/10 shadow-sm cursor-pointer"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 rounded-full shrink-0 border border-ink-dark/5 bg-white text-ink-dark/70 shadow-sm">
+                              <Icon size={20} />
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-base font-black font-technical-sans text-ink-dark">{cat.title}</span>
+                              <span className="text-[10px] font-technical-sans font-bold text-accent-teal uppercase tracking-widest">{cat.questions.length} Questions</span>
+                            </div>
+                          </div>
+                          <ChevronRight size={20} className="text-ink-dark/30 shrink-0" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Level 1: Questions List */}
+              {activeCategoryId !== null && openIndex === -1 && activeCategory && (
+                <div key={`level-1-${activeCategoryId}`} className={`flex flex-col w-full h-full p-4 sm:p-6 overflow-y-auto scrollbar-hide bg-white/60 ${slideDir === 'forward' ? 'slide-forward' : 'slide-backward'}`}>
+                  <button onClick={goBackToCategories} className="flex items-center gap-2 text-ink-dark/60 hover:text-ink-dark font-black font-technical-sans uppercase tracking-widest text-[10px] transition-colors cursor-pointer border-b-2 border-transparent hover:border-ink-dark pb-1 mb-6 w-fit shrink-0">
+                    ← Back to Categories
+                  </button>
+
+                  <div className="flex items-center gap-3 mb-6 shrink-0 px-1">
+                    <div className="p-3 rounded-full bg-accent-teal/10 text-accent-teal border border-accent-teal/20">
+                      <activeCategory.icon size={24} />
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-black font-technical-sans text-ink-dark leading-tight">{activeCategory.title}</h2>
+                  </div>
+
+                  <div className="flex flex-col gap-3 pb-4">
+                    {activeCategory.questions.map((faq, idx) => (
+                      <div
+                        key={idx}
+                        onClick={(e) => handleQuestionClickMobile(idx, e)}
+                        className="w-full p-4 sm:p-5 bg-white border border-ink-dark/5 rounded-2xl flex items-center justify-between text-left group shadow-sm hover:border-accent-teal/40 transition-colors gap-4 cursor-pointer"
+                      >
+                        <span className="text-sm sm:text-base font-black font-technical-sans text-ink-dark/80 group-hover:text-accent-teal">{faq.question}</span>
+                        <div className="p-1.5 rounded-full bg-ink-dark/5 text-ink-dark/40 group-hover:bg-accent-teal/10 group-hover:text-accent-teal transition-colors shrink-0">
+                          <ChevronRight size={16} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Level 2: Answer View */}
+              {activeCategoryId !== null && openIndex !== -1 && activeCategory && (
+                <div key={`level-2-${activeCategoryId}-${openIndex}`} className={`flex flex-col w-full h-full p-4 sm:p-6 overflow-y-auto scrollbar-hide bg-white/80 ${slideDir === 'forward' ? 'slide-forward' : 'slide-backward'}`}>
+                  <button onClick={goBackToQuestions} className="flex items-center gap-2 text-ink-dark/60 hover:text-ink-dark font-black font-technical-sans uppercase tracking-widest text-[10px] transition-colors cursor-pointer border-b-2 border-transparent hover:border-ink-dark pb-1 mb-6 w-fit shrink-0">
+                    ← Back to Questions
+                  </button>
+
+                  <h2 className="text-xl sm:text-2xl font-black font-technical-sans text-ink-dark mb-6 leading-snug shrink-0 px-1">
+                    {activeCategory.questions[openIndex].question}
+                  </h2>
+
+                  <div className="pb-8 px-1 text-ink-medium/90 font-elegant-serif leading-relaxed text-sm sm:text-base">
+                    {activeCategory.questions[openIndex].answer}
+                  </div>
+                </div>
+              )}
+
+            </div>
+
           </div>
 
-          {/* Bottom Banner - Scaled precisely for the "90% zoom" look */}
           <div className="hidden md:block w-full bg-ink-dark/5 border-t border-ink-dark/10 p-4 lg:p-4 xl:p-4 2xl:p-5 shrink-0">
             <div className="grid grid-cols-4 gap-4 xl:gap-5 2xl:gap-6 w-full px-2">
               <div className="flex items-center gap-2 xl:gap-3 2xl:gap-4">

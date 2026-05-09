@@ -132,6 +132,34 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
     }
   }, [expandedIndex, resetAccordion]);
 
+  const handleBonusClick = useCallback((idx) => {
+    if (activeBonus !== idx) {
+      if (isMobile) {
+        window.history.pushState({ bonusOpen: true }, '');
+      }
+      setActiveBonus(idx);
+    }
+  }, [activeBonus, isMobile]);
+
+  const handleCloseBonus = useCallback((e) => {
+    if (e) e.stopPropagation();
+    if (window.history.state?.bonusOpen) {
+      window.history.back();
+    } else {
+      setActiveBonus(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = (e) => {
+      if (activeBonus !== null) {
+        setActiveBonus(null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [activeBonus]);
+
   const openModal = (type) => {
     setModalType(type);
     setIsModalOpen(true);
@@ -245,28 +273,50 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
       };
     } else {
       if (idx === activeIndex) {
-        return {
-          width: '100%',
-          height: `calc(68% - ${gap / 2}px)`,
-          left: '0px',
-          top: '0px',
-          zIndex: 20
-        };
+        if (isMobile) {
+          return {
+            width: '100%',
+            height: '100%',
+            left: '0px',
+            top: '0px',
+            zIndex: 20
+          };
+        } else {
+          return {
+            width: '100%',
+            height: `calc(68% - ${gap / 2}px)`,
+            left: '0px',
+            top: '0px',
+            zIndex: 20
+          };
+        }
       } else {
-        let inactivePosition = idx;
-        if (idx > activeIndex) inactivePosition -= 1;
-        const wCalc = `calc((100% - ${gap * 2}px) / 3)`;
-        let leftCalc = '0px';
-        if (inactivePosition === 1) leftCalc = `calc(${wCalc} + ${gap}px)`;
-        if (inactivePosition === 2) leftCalc = `calc((${wCalc} * 2) + ${gap * 2}px)`;
+        if (isMobile) {
+          const isRight = idx % 2 === 1;
+          const isBottom = idx >= 2;
+          return {
+            width: `calc(50% - ${gap / 2}px)`,
+            height: `calc(50% - ${gap / 2}px)`,
+            left: isRight ? '150%' : '-50%',
+            top: isBottom ? '150%' : '-50%',
+            zIndex: 5
+          };
+        } else {
+          let inactivePosition = idx;
+          if (idx > activeIndex) inactivePosition -= 1;
+          const wCalc = `calc((100% - ${gap * 2}px) / 3)`;
+          let leftCalc = '0px';
+          if (inactivePosition === 1) leftCalc = `calc(${wCalc} + ${gap}px)`;
+          if (inactivePosition === 2) leftCalc = `calc((${wCalc} * 2) + ${gap * 2}px)`;
 
-        return {
-          width: wCalc,
-          height: `calc(32% - ${gap / 2}px)`,
-          left: leftCalc,
-          top: `calc(68% + ${gap / 2}px)`,
-          zIndex: 5
-        };
+          return {
+            width: wCalc,
+            height: `calc(32% - ${gap / 2}px)`,
+            left: leftCalc,
+            top: `calc(68% + ${gap / 2}px)`,
+            zIndex: 5
+          };
+        }
       }
     }
   };
@@ -454,7 +504,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                   }}
                 >
                   <div
-                    onClick={() => { if (!isActive) setActiveBonus(idx); }}
+                    onClick={() => { if (!isActive) handleBonusClick(idx); }}
                     className="w-full h-full relative cursor-pointer preserve-3d premium-glow"
                     style={{
                       transform: isActive ? 'rotateY(180deg)' : 'rotateY(0deg)',
@@ -486,13 +536,13 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                     <div className="absolute inset-0 backface-hidden bg-accent-magenta rounded-2xl md:rounded-3xl border-4 border-accent-magenta shadow-[0_15px_40px_rgba(227,66,52,0.4)] overflow-hidden" style={{ transform: 'rotateY(180deg)' }}>
 
                       <button
-                        onClick={(e) => { e.stopPropagation(); setActiveBonus(null); }}
+                        onClick={handleCloseBonus}
                         className={`absolute top-3 right-3 sm:top-5 sm:right-5 p-1.5 sm:p-2 bg-white/20 hover:bg-white text-white hover:text-accent-magenta rounded-full transition-all z-50 pointer-events-auto ${isActive ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
                       >
                         <X size={isMobile ? 14 : 20} strokeWidth={3} />
                       </button>
 
-                      <div className={`w-full h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-10 lg:p-12 overflow-y-auto scrollbar-hide transition-all duration-700 delay-[100ms] pointer-events-auto ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+                      <div className={`w-full h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-10 lg:p-12 overflow-y-auto scrollbar-hide transition-all duration-700 delay-[100ms] pointer-events-auto ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} ${isActive && isMobile ? 'mobile-scroll-lock' : ''}`}>
 
                         <h4 className="text-base sm:text-2xl md:text-3xl lg:text-4xl font-black font-technical-sans text-white mb-2 md:mb-4 uppercase tracking-tighter leading-none shrink-0">
                           {bonus.heading}

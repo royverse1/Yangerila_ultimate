@@ -23,9 +23,10 @@ const StaticPastelBackground = React.memo(function StaticPastelBackground({ step
     return 'linear-gradient(135deg, var(--color-pastel-blue) 0%, var(--color-paper-bg) 100%)';
   };
   return (
+    // Removed will-change and transform to prevent GPU memory bloat on mobile
     <div
       className="fixed inset-0 z-[-3] pointer-events-none transition-colors duration-1000 ease-in-out"
-      style={{ background: getBgStyle(step), willChange: 'transform', transform: 'translateZ(0)' }}
+      style={{ background: getBgStyle(step) }}
     />
   );
 });
@@ -34,6 +35,7 @@ export default function App() {
   const [currentStep, setCurrentStep] = useState(0);
 
   const currentStepRef = useRef(0);
+  const prevStepRef = useRef(0);
   const isLockedRef = useRef(false);
   const isComponentLockedRef = useRef(false);
   const isReversingRef = useRef(false);
@@ -105,6 +107,7 @@ export default function App() {
     isComponentLockedRef.current = (finalStep === 3);
     inertiaDeadTime.current = now + INERTIA_WINDOW;
 
+    prevStepRef.current = currentStepRef.current;
     currentStepRef.current = finalStep;
     setCurrentStep(finalStep);
     setIsMenuOpen(false);
@@ -187,9 +190,12 @@ export default function App() {
   };
 
   useGSAP(() => {
-    const speed = isReversingRef.current ? 0.3 : 0.8;
+    const distance = Math.abs(currentStepRef.current - prevStepRef.current);
+    const speed = Math.min(0.8 + (distance * 0.15), 1.4);
+    const ease = distance > 1 ? 'power4.inOut' : 'power3.inOut';
+
     if (currentStepRef.current < 5) {
-      gsap.to(elevatorRef.current, { y: '100dvh', duration: speed, ease: 'power3.inOut', force3D: true });
+      gsap.to(elevatorRef.current, { y: '100dvh', duration: speed, ease: ease, force3D: true });
     } else {
       let floor = currentStepRef.current - 5;
       if (currentStepRef.current === 12) floor = 6;
@@ -197,7 +203,7 @@ export default function App() {
       gsap.to(elevatorRef.current, {
         y: `-${floor * 100}dvh`,
         duration: speed,
-        ease: 'power3.inOut',
+        ease: ease,
         force3D: true,
         onComplete: () => { isLockedRef.current = false; }
       });
@@ -219,8 +225,12 @@ export default function App() {
       type: 'wheel,touch',
       onDown: (self) => {
         if (isComponentLockedRef.current) return;
+
+        const target = self.event?.target;
+        if (target && target.closest('input, select, textarea, .mobile-scroll-lock')) return;
+
         const intent = self.event.type === 'wheel' ? 'next' : 'prev';
-        const targetElement = self.event?.target?.closest?.('.scrollbar-hide, .about-scroll-container, .expanded-content, .faq-content') ?? null;
+        const targetElement = target?.closest?.('.scrollbar-hide, .about-scroll-container, .expanded-content, .faq-content') ?? null;
         if (targetElement) {
           const isScrollable = targetElement.scrollHeight > targetElement.clientHeight;
           if (isScrollable) {
@@ -243,8 +253,12 @@ export default function App() {
       },
       onUp: (self) => {
         if (isComponentLockedRef.current) return;
+
+        const target = self.event?.target;
+        if (target && target.closest('input, select, textarea, .mobile-scroll-lock')) return;
+
         const intent = self.event.type === 'wheel' ? 'prev' : 'next';
-        const targetElement = self.event?.target?.closest?.('.scrollbar-hide, .about-scroll-container, .expanded-content, .faq-content') ?? null;
+        const targetElement = target?.closest?.('.scrollbar-hide, .about-scroll-container, .expanded-content, .faq-content') ?? null;
         if (targetElement) {
           const isScrollable = targetElement.scrollHeight > targetElement.clientHeight;
           if (isScrollable) {
@@ -270,6 +284,8 @@ export default function App() {
     });
 
     const handleKeyDown = (e) => {
+      if (e.target && e.target.closest('input, textarea, select')) return;
+
       if (isLockedRef.current || isIntroPlayingRef.current || isComponentLockedRef.current) return;
       if (Date.now() < inertiaDeadTime.current) return;
       if (e.key === 'ArrowDown' || e.key === 'PageDown') {
@@ -287,7 +303,6 @@ export default function App() {
     return () => { obs.kill(); window.removeEventListener('keydown', handleKeyDown); };
   }, [handleScrollIntent]);
 
-  // ADDED "About" linking to step 2
   const navLinks = [
     { label: 'Welcome', step: 1 },
     { label: 'About', step: 2 },
@@ -306,12 +321,13 @@ export default function App() {
       <StaticPastelBackground step={currentStep} />
       <audio ref={audioRef} src={ambientMusic} loop preload="auto" />
 
+      {/* Changed backdrop-blur-xl to backdrop-blur-md on mobile for massive performance gain */}
       <div className={`fixed bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 right-4 sm:right-6 md:right-8 z-100 pointer-events-none flex justify-between items-end transition-opacity duration-1000 ${isIntroPlaying ? 'opacity-0' : 'opacity-100'}`}>
         <button
           onClick={handleMusicClick}
           onMouseEnter={handleDesktopHoverEnter}
           onMouseLeave={handleDesktopHoverLeave}
-          className={`pointer-events-auto relative flex items-center bg-white/60 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.1)] rounded-full overflow-hidden ease-[cubic-bezier(0.25,1,0.5,1)] origin-bottom-left cursor-pointer focus:outline-none touch-manipulation
+          className={`pointer-events-auto relative flex items-center bg-white/60 backdrop-blur-md md:backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.1)] rounded-full overflow-hidden ease-[cubic-bezier(0.25,1,0.5,1)] origin-bottom-left cursor-pointer focus:outline-none touch-manipulation
             transition-[width,transform,opacity,background-color] duration-500
             ${isUIMinimized ? 'scale-75 opacity-50 bg-white/40' : 'scale-100 opacity-100 hover:bg-white/90'}
             ${musicExpanded ? 'w-[160px] md:w-[180px]' : 'w-[42px] md:w-[46px]'}
@@ -338,7 +354,7 @@ export default function App() {
         </button>
 
         <div className="pointer-events-auto relative">
-          <div className={`absolute bottom-full right-0 mb-3 bg-white/30 backdrop-blur-2xl border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.1)] rounded-2xl p-2 w-[140px] md:w-[160px] flex flex-col transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] origin-bottom-right
+          <div className={`absolute bottom-full right-0 mb-3 bg-white/30 backdrop-blur-xl border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.1)] rounded-2xl p-2 w-[140px] md:w-[160px] flex flex-col transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] origin-bottom-right
             ${isMenuOpen ? 'scale-100 opacity-100 visible translate-y-0' : 'scale-90 opacity-0 invisible translate-y-4'}
           `}>
             {navLinks.map((link, idx) => (
@@ -354,7 +370,7 @@ export default function App() {
 
           <button
             onClick={handleMenuClick}
-            className={`flex items-center justify-center bg-white/60 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.1)] rounded-full text-ink-dark hover:bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] origin-bottom-right focus:outline-none touch-manipulation
+            className={`flex items-center justify-center bg-white/60 backdrop-blur-md md:backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.1)] rounded-full text-ink-dark hover:bg-white transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] origin-bottom-right focus:outline-none touch-manipulation
               w-[42px] md:w-[46px] h-[42px] md:h-[46px]
               ${isUIMinimized && !isMenuOpen ? 'scale-75 opacity-50 bg-white/40' : 'scale-100 opacity-100 active:scale-95'}
             `}

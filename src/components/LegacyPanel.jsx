@@ -71,7 +71,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
     );
   }, []);
 
-  const flyToCard = (targetIndex, dur = 0.9) => { // Reduced from 1.2 for snappier feeling
+  const flyToCard = (targetIndex, dur = 0.9) => {
     if (enginePausedRef.current) return;
 
     const targetFrame = (TOTAL_FRAMES / 2) * targetIndex;
@@ -128,7 +128,10 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
       img.src = getFrameUrl(i);
     };
 
-    for (let i = 0; i <= 10; i++) loadFrame(i);
+    // FIX: "Keyframe First" Loading Strategy
+    for (let i = 0; i <= 10; i++) loadFrame(i); // Initial start
+    loadFrame(82);  // Midpoint (Card 2)
+    loadFrame(164); // End (Card 3)
 
     const lazyTimer = setTimeout(() => {
       for (let i = 11; i <= TOTAL_FRAMES; i++) loadFrame(i);
@@ -185,7 +188,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         flyToCard(cardIndexRef.current);
         isActiveRef.current = false;
         clearTimeout(interactionTimeoutRef.current);
-        interactionTimeoutRef.current = setTimeout(() => { isActiveRef.current = true; }, 700); // reduced delay lock
+        interactionTimeoutRef.current = setTimeout(() => { isActiveRef.current = true; }, 700);
       } else if (self.event.type !== 'wheel' || Math.abs(self.deltaY) > 20) {
         isActiveRef.current = false;
         window.dispatchEvent(new CustomEvent('requestNextStep'));
@@ -196,7 +199,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         flyToCard(cardIndexRef.current);
         isActiveRef.current = false;
         clearTimeout(interactionTimeoutRef.current);
-        interactionTimeoutRef.current = setTimeout(() => { isActiveRef.current = true; }, 700); // reduced delay lock
+        interactionTimeoutRef.current = setTimeout(() => { isActiveRef.current = true; }, 700);
       } else if (self.event.type !== 'wheel' || Math.abs(self.deltaY) > 20) {
         isActiveRef.current = false;
         window.dispatchEvent(new CustomEvent('requestPrevStep'));

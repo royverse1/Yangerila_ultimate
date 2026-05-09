@@ -46,8 +46,17 @@
     opacity: 0.03;
     background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/c7zMAAAABnRSTlMAERIjM0N0XfUAAAAdSURBVDjLxYyxEQAhDAM7x3B0N+A4/0qigQdI8hL92bVv+bT3uX7n+p3rd67fuX7n+p3rd67fuX7n+v3p3wE8/gA/q/h73gAAAABJRU5ErkJggg==");
     background-repeat: repeat;
-    transform: translateZ(0);
-    will-change: transform;
+    /* Removed will-change for global performance */
+  }
+
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+  select::-ms-expand {
+    display: none;
   }
 }
 
@@ -57,7 +66,6 @@
     font-style: italic;
   }
 
-  /* Accordion Layout Transitions */
   .panel-accordion {
     transition: flex 0.6s cubic-bezier(0.25, 1, 0.5, 1);
   }
@@ -80,7 +88,6 @@
     }
   }
 
-  /* Internal Content CSS Transitions (Replaces GSAP) */
   .panel-accordion .normal-content,
   .panel-accordion .normal-icon {
     transition: opacity 0.3s ease;
@@ -106,7 +113,6 @@
     pointer-events: auto;
   }
 
-  /* Premium Box Glows */
   .premium-glow {
     box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
     transition: box-shadow 0.4s ease, transform 0.4s ease;
@@ -133,5 +139,38 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* --- NATIVE MOBILE FAQ TRANSITIONS --- */
+  @keyframes slideInForward {
+    0% {
+      transform: translateX(40px);
+      opacity: 0;
+    }
+
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInBackward {
+    0% {
+      transform: translateX(-40px);
+      opacity: 0;
+    }
+
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .slide-forward {
+    animation: slideInForward 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  }
+
+  .slide-backward {
+    animation: slideInBackward 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   }
 }
