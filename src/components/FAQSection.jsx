@@ -227,8 +227,11 @@ const faqData = [
 const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
   const [activeCategoryId, setActiveCategoryId] = useState(null);
   const [openIndex, setOpenIndex] = useState(-1);
-  const [slideDir, setSlideDir] = useState('forward'); // Controls smooth native slide direction
+  const [slideDir, setSlideDir] = useState('forward');
   const containerRef = useRef(null);
+
+  // Swipe gesture tracking ref
+  const touchStartData = useRef({ y: 0, isAtTop: false, valid: false });
 
   useEffect(() => {
     if (window.innerWidth >= 1024) {
@@ -254,7 +257,7 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
     }
   }, { scope: containerRef, dependencies: [step] });
 
-  // Mobile Handlers (Sets Direction for smooth sliding)
+  // Mobile Handlers
   const handleCategoryClick = (id) => {
     if (window.innerWidth < 1024) {
       setSlideDir('forward');
@@ -289,6 +292,30 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
     setOpenIndex(prev => prev === idx ? -1 : idx);
   };
 
+  // NATIVE SWIPE-BACK LOGIC
+  const handleSwipeStart = (e) => {
+    // Ignore inputs, selects, textareas, and buttons
+    if (e.target.closest('input, textarea, select, button')) {
+      touchStartData.current.valid = false;
+      return;
+    }
+    touchStartData.current = {
+      y: e.touches[0].clientY,
+      isAtTop: e.currentTarget.scrollTop <= 5, // Are we at the very top of the scroll container?
+      valid: true
+    };
+  };
+
+  const handleSwipeEnd = (e, backAction) => {
+    if (!touchStartData.current.valid || !touchStartData.current.isAtTop) return;
+    const deltaY = e.changedTouches[0].clientY - touchStartData.current.y;
+
+    // If the user pulled DOWN by more than 70px, trigger the back action
+    if (deltaY > 70) {
+      backAction();
+    }
+  };
+
   return (
     <section ref={containerRef} className="w-full h-dvh shrink-0 relative flex flex-col items-center justify-center bg-transparent pt-2 lg:pt-6 xl:pt-10 2xl:pt-14 pb-2 border-t-[3px] border-ink-dark/10 overflow-hidden">
       <div className="max-w-[95%] xl:max-w-[80vw] 2xl:max-w-[75vw] mx-auto w-full h-full flex flex-col items-center relative z-10">
@@ -306,7 +333,7 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
 
           <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
 
-            {/* DESKTOP LEFT PANE (Hidden on Mobile) */}
+            {/* DESKTOP LEFT PANE */}
             <div className="hidden lg:flex w-full lg:w-[35%] xl:w-[32%] 2xl:w-[30%] bg-white/40 p-2 lg:p-4 xl:p-5 2xl:p-6 flex-col gap-1.5 xl:gap-2 2xl:gap-3 overflow-y-auto scrollbar-hide border-r border-ink-dark/10 shrink-0">
               {faqData.map((cat) => {
                 const Icon = cat.icon;
@@ -340,7 +367,7 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
               })}
             </div>
 
-            {/* DESKTOP RIGHT PANE (Hidden on mobile) */}
+            {/* DESKTOP RIGHT PANE */}
             <div className="hidden lg:block w-[65%] xl:w-[68%] 2xl:w-[70%] p-3 lg:p-6 xl:p-8 2xl:p-10 overflow-y-auto scrollbar-hide bg-white/20 overscroll-contain">
               <div className="flex flex-col w-full">
                 {activeCategory.questions.map((faq, idx) => {
@@ -371,7 +398,7 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
               </div>
             </div>
 
-            {/* MOBILE MULTI-LEVEL DRILL DOWN PANE (Hidden on Desktop) */}
+            {/* MOBILE MULTI-LEVEL DRILL DOWN PANE */}
             <div className={`flex lg:hidden flex-col flex-1 w-full h-full relative overflow-hidden bg-white/40 ${activeCategoryId !== null ? 'mobile-scroll-lock' : ''}`}>
 
               {/* Level 0: Categories List */}
@@ -407,9 +434,14 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
                 </div>
               )}
 
-              {/* Level 1: Questions List */}
+              {/* Level 1: Questions List (SWIPE ENABLED) */}
               {activeCategoryId !== null && openIndex === -1 && activeCategory && (
-                <div key={`level-1-${activeCategoryId}`} className={`flex flex-col w-full h-full p-4 sm:p-6 overflow-y-auto scrollbar-hide bg-white/60 ${slideDir === 'forward' ? 'slide-forward' : 'slide-backward'}`}>
+                <div
+                  key={`level-1-${activeCategoryId}`}
+                  onTouchStart={handleSwipeStart}
+                  onTouchEnd={(e) => handleSwipeEnd(e, goBackToCategories)}
+                  className={`flex flex-col w-full h-full p-4 sm:p-6 overflow-y-auto scrollbar-hide bg-white/60 ${slideDir === 'forward' ? 'slide-forward' : 'slide-backward'}`}
+                >
                   <button onClick={goBackToCategories} className="flex items-center gap-2 text-ink-dark/60 hover:text-ink-dark font-black font-technical-sans uppercase tracking-widest text-[10px] transition-colors cursor-pointer border-b-2 border-transparent hover:border-ink-dark pb-1 mb-6 w-fit shrink-0">
                     ← Back to Categories
                   </button>
@@ -438,9 +470,14 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
                 </div>
               )}
 
-              {/* Level 2: Answer View */}
+              {/* Level 2: Answer View (SWIPE ENABLED) */}
               {activeCategoryId !== null && openIndex !== -1 && activeCategory && (
-                <div key={`level-2-${activeCategoryId}-${openIndex}`} className={`flex flex-col w-full h-full p-4 sm:p-6 overflow-y-auto scrollbar-hide bg-white/80 ${slideDir === 'forward' ? 'slide-forward' : 'slide-backward'}`}>
+                <div
+                  key={`level-2-${activeCategoryId}-${openIndex}`}
+                  onTouchStart={handleSwipeStart}
+                  onTouchEnd={(e) => handleSwipeEnd(e, goBackToQuestions)}
+                  className={`flex flex-col w-full h-full p-4 sm:p-6 overflow-y-auto scrollbar-hide bg-white/80 ${slideDir === 'forward' ? 'slide-forward' : 'slide-backward'}`}
+                >
                   <button onClick={goBackToQuestions} className="flex items-center gap-2 text-ink-dark/60 hover:text-ink-dark font-black font-technical-sans uppercase tracking-widest text-[10px] transition-colors cursor-pointer border-b-2 border-transparent hover:border-ink-dark pb-1 mb-6 w-fit shrink-0">
                     ← Back to Questions
                   </button>

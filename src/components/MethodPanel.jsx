@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { TextPlugin } from 'gsap/TextPlugin';
-import { Zap, Music, Star, Activity, X, Check } from 'lucide-react';
+import { Zap, Music, Star, Activity, X, Check, ChevronRight } from 'lucide-react';
 import SmartVideo from './SmartVideo';
 
 gsap.registerPlugin(ScrollTrigger, TextPlugin);
@@ -93,6 +93,9 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
   const [copiedCode, setCopiedCode] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  // Swipe gesture tracking ref
+  const touchStartData = useRef({ y: 0, isAtTop: false, valid: false });
+
   const bonusesRef = useRef([]);
   const admissionSectionRef = useRef(null);
 
@@ -163,6 +166,28 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
   const openModal = (type) => {
     setModalType(type);
     setIsModalOpen(true);
+  };
+
+  // NATIVE SWIPE-BACK LOGIC
+  const handleSwipeStart = (e) => {
+    if (e.target.closest('input, textarea, select, button')) {
+      touchStartData.current.valid = false;
+      return;
+    }
+    touchStartData.current = {
+      y: e.touches[0].clientY,
+      isAtTop: e.currentTarget.scrollTop <= 5,
+      valid: true
+    };
+  };
+
+  const handleSwipeEnd = (e, backAction) => {
+    if (!touchStartData.current.valid || !touchStartData.current.isAtTop) return;
+    const deltaY = e.changedTouches[0].clientY - touchStartData.current.y;
+
+    if (deltaY > 70) {
+      backAction();
+    }
   };
 
   useGSAP(() => {
@@ -532,7 +557,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                       </div>
                     </div>
 
-                    {/* Back of Card (Expanded Content) */}
+                    {/* Back of Card (Expanded Content with Swipe Logic) */}
                     <div className="absolute inset-0 backface-hidden bg-accent-magenta rounded-2xl md:rounded-3xl border-4 border-accent-magenta shadow-[0_15px_40px_rgba(227,66,52,0.4)] overflow-hidden" style={{ transform: 'rotateY(180deg)' }}>
 
                       <button
@@ -542,7 +567,11 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                         <X size={isMobile ? 14 : 20} strokeWidth={3} />
                       </button>
 
-                      <div className={`w-full h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-10 lg:p-12 overflow-y-auto scrollbar-hide transition-all duration-700 delay-[100ms] pointer-events-auto ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} ${isActive && isMobile ? 'mobile-scroll-lock' : ''}`}>
+                      <div
+                        onTouchStart={handleSwipeStart}
+                        onTouchEnd={(e) => handleSwipeEnd(e, handleCloseBonus)}
+                        className={`w-full h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-10 lg:p-12 overflow-y-auto scrollbar-hide transition-all duration-700 delay-[100ms] pointer-events-auto ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} ${isActive && isMobile ? 'mobile-scroll-lock' : ''}`}
+                      >
 
                         <h4 className="text-base sm:text-2xl md:text-3xl lg:text-4xl font-black font-technical-sans text-white mb-2 md:mb-4 uppercase tracking-tighter leading-none shrink-0">
                           {bonus.heading}
@@ -613,94 +642,58 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
               <button onClick={() => setActiveAdmissionTab('demo')} className="bg-paper-bg hover:bg-white w-full sm:w-auto text-center px-8 py-4 md:px-12 md:py-5 rounded-full text-ink-dark font-black font-technical-sans tracking-widest uppercase border-2 border-ink-dark/20 premium-glow text-[10px] md:text-sm tabular-nums transition-colors cursor-pointer">
                 Free Demo
               </button>
-              <button onClick={() => setActiveAdmissionTab('admission')} className="bg-accent-teal hover:bg-ink-dark w-full sm:w-auto text-center text-white px-8 py-4 md:px-12 md:py-5 rounded-full font-black font-technical-sans tracking-widest uppercase border-2 border-transparent premium-glow text-[10px] md:text-sm tabular-nums transition-colors cursor-pointer">
-                Admissions
+              <span className="text-ink-dark/40 italic font-medium font-elegant-serif">or</span>
+              <button onClick={() => setActiveAdmissionTab('admission')} className="bg-ink-dark hover:bg-accent-teal w-full sm:w-auto text-center px-8 py-4 md:px-12 md:py-5 rounded-full text-white font-black font-technical-sans tracking-widest uppercase premium-glow text-[10px] md:text-sm tabular-nums transition-colors cursor-pointer">
+                Enroll Now
               </button>
             </div>
           </div>
 
-          {/* Expanded Demo State */}
-          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] delay-100 ${activeAdmissionTab === 'demo' ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-16 scale-95 pointer-events-none'}`}>
-            <div className="w-full flex justify-center mb-6 md:mb-10">
-              <button onClick={() => setActiveAdmissionTab(null)} className="flex items-center gap-2 text-ink-dark/60 hover:text-ink-dark font-black font-technical-sans uppercase tracking-widest text-[9px] sm:text-[10px] transition-colors cursor-pointer border-b-2 border-transparent hover:border-ink-dark pb-1">
-                ← Back to Options
-              </button>
+          {/* Demo State */}
+          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${activeAdmissionTab === 'demo' ? 'opacity-100 visible translate-y-0 scale-100 pointer-events-auto' : 'opacity-0 invisible translate-y-16 scale-95 pointer-events-none'}`}>
+            <button onClick={() => setActiveAdmissionTab(null)} className="absolute top-0 md:top-10 left-4 md:left-0 text-ink-dark/60 hover:text-ink-dark flex items-center gap-2 font-black uppercase text-[10px] tracking-widest transition-colors cursor-pointer border-b-2 border-transparent hover:border-ink-dark pb-1"><ChevronRight className="w-4 h-4 rotate-180" /> Back</button>
+            <h3 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-ink-dark font-technical-sans uppercase tracking-tighter mb-4">Book a <span className="text-accent-teal">Demo</span></h3>
+            <p className="text-ink-medium font-elegant-serif max-w-xl mx-auto mb-8 sm:mb-12 text-sm sm:text-base md:text-xl">Experience our unique teaching methodology firsthand. A free 45-minute interactive session to assess your level and map your journey.</p>
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center w-full px-4 max-w-lg mx-auto">
+              <button onClick={() => openModal('demo')} className="flex-1 bg-ink-dark hover:bg-accent-teal text-white font-black font-technical-sans py-4 sm:py-5 rounded-2xl text-[10px] sm:text-xs uppercase tracking-widest transition-all premium-glow cursor-pointer">Fill Details</button>
+              <a href="https://wa.me/918076530550" target="_blank" rel="noopener noreferrer" className="flex-1 bg-[#25D366] hover:bg-[#128C7E] text-white font-black font-technical-sans py-4 sm:py-5 rounded-2xl text-[10px] sm:text-xs uppercase tracking-widest transition-all premium-glow flex items-center justify-center gap-2 cursor-pointer">WhatsApp Us</a>
             </div>
-            <h2 className="text-3xl sm:text-5xl md:text-7xl font-black text-ink-dark font-technical-sans mb-4 md:mb-6 uppercase tracking-tighter tabular-nums leading-none">
-              Demo <span className="text-accent-teal">Session</span>
-            </h2>
-            <p className="text-sm sm:text-lg md:text-xl text-ink-dark/90 font-medium max-w-3xl mx-auto mb-8 md:mb-12 font-elegant-serif px-2 sm:px-4 leading-relaxed">
-              Come and experience our uniquely designed demo session. Unlike typical trial classes, this session gives you a complete overview of guitar types, playing techniques, and all the essential information every beginner should know before starting their journey. Best of all—it's completely free and online.
-            </p>
-            <button onClick={() => openModal('demo')} className="bg-ink-dark hover:bg-white hover:text-ink-dark w-full sm:w-auto text-center text-white px-10 py-4 md:px-14 md:py-5 rounded-full font-black font-technical-sans tracking-widest uppercase border-2 border-ink-dark shadow-xl text-[10px] md:text-sm tabular-nums transition-all cursor-pointer">
-              Book Here
-            </button>
           </div>
 
-          {/* Expanded Admission State */}
-          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] delay-100 ${activeAdmissionTab === 'admission' ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-16 scale-95 pointer-events-none'}`}>
-            <div className="w-full flex justify-center mb-6 md:mb-10">
-              <button onClick={() => setActiveAdmissionTab(null)} className="flex items-center gap-2 text-ink-dark/60 hover:text-ink-dark font-black font-technical-sans uppercase tracking-widest text-[9px] sm:text-[10px] transition-colors cursor-pointer border-b-2 border-transparent hover:border-ink-dark pb-1">
-                ← Back to Options
-              </button>
+          {/* Admission State */}
+          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${activeAdmissionTab === 'admission' ? 'opacity-100 visible translate-y-0 scale-100 pointer-events-auto' : 'opacity-0 invisible translate-y-16 scale-95 pointer-events-none'}`}>
+            <button onClick={() => setActiveAdmissionTab(null)} className="absolute top-0 md:top-10 left-4 md:left-0 text-ink-dark/60 hover:text-ink-dark flex items-center gap-2 font-black uppercase text-[10px] tracking-widest transition-colors cursor-pointer border-b-2 border-transparent hover:border-ink-dark pb-1"><ChevronRight className="w-4 h-4 rotate-180" /> Back</button>
+            <h3 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-ink-dark font-technical-sans uppercase tracking-tighter mb-4">Ready to <span className="text-accent-teal">Enroll</span>?</h3>
+            <p className="text-ink-medium font-elegant-serif max-w-xl mx-auto mb-8 sm:mb-12 text-sm sm:text-base md:text-xl">Join the community of passionate guitarists. Complete your admission process and get instant access to the Batch Hub.</p>
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center w-full px-4 max-w-lg mx-auto">
+              <button onClick={() => openModal('admission')} className="flex-1 bg-ink-dark hover:bg-accent-teal text-white font-black font-technical-sans py-4 sm:py-5 rounded-2xl text-[10px] sm:text-xs uppercase tracking-widest transition-all premium-glow cursor-pointer">Admission Form</button>
+              <a href="tel:+918076530550" className="flex-1 bg-paper-bg hover:bg-white text-ink-dark font-black font-technical-sans py-4 sm:py-5 rounded-2xl text-[10px] sm:text-xs uppercase tracking-widest transition-all border-2 border-ink-dark/20 premium-glow flex items-center justify-center gap-2 cursor-pointer">Call Support</a>
             </div>
-            <h2 className="text-3xl sm:text-5xl md:text-7xl font-black text-ink-dark font-technical-sans mb-4 md:mb-6 uppercase tracking-tighter tabular-nums leading-none">
-              Admissions
-            </h2>
-            <p className="text-sm sm:text-lg md:text-xl text-ink-dark/90 font-medium max-w-3xl mx-auto mb-8 md:mb-12 font-elegant-serif px-2 sm:px-4 leading-relaxed">
-              Interested in joining us? Simply fill out this form, and our Student Relationship Manager (SRM) will contact you to answer all your queries. Every student is given a demo session first, and once that's complete, your SRM will personally guide you through the admission process.
-            </p>
-            <button onClick={() => openModal('join')} className="bg-ink-dark hover:bg-white hover:text-ink-dark w-full sm:w-auto text-center text-white px-10 py-4 md:px-14 md:py-5 rounded-full font-black font-technical-sans tracking-widest uppercase border-2 border-ink-dark shadow-xl text-[10px] md:text-sm tabular-nums transition-all cursor-pointer">
-              Fill This Form
-            </button>
           </div>
 
         </div>
 
-        {/* Global On-Screen Popup Modal for Forms (Absolute to Section instead of Fixed) */}
+        {/* Modal for Forms */}
         {isModalOpen && (
-          <div className="absolute inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-ink-dark/80 backdrop-blur-md transition-opacity duration-300 pointer-events-auto">
-            <div className="bg-ink-dark/95 border border-accent-teal/30 p-6 md:p-8 lg:p-10 rounded-3xl w-full max-w-xl max-h-[90vh] overflow-y-auto scrollbar-hide shadow-[0_20px_60px_rgba(0,0,0,0.4)] relative flex flex-col transform transition-transform duration-500 scale-100">
-
-              <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-white/60 hover:text-white bg-white/5 hover:bg-white/20 p-2 rounded-full transition-colors cursor-pointer">
-                <X size={20} strokeWidth={2.5} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-dark/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+            <div className="bg-ink-dark border border-white/10 rounded-3xl p-6 sm:p-8 md:p-12 max-w-2xl w-full relative shadow-[0_20px_60px_rgba(0,0,0,0.5)] transform transition-all">
+              <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 sm:top-6 sm:right-6 text-white/50 hover:text-white p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors cursor-pointer">
+                <X size={20} />
               </button>
+              <h4 className="text-2xl sm:text-3xl md:text-4xl font-black text-white font-technical-sans uppercase tracking-tighter mb-2">
+                {modalType === 'demo' ? 'Book Free Demo' : 'Admission Form'}
+              </h4>
+              <p className="text-white/60 font-elegant-serif mb-6 sm:mb-8 text-xs sm:text-sm">Please fill out the details below and our team will contact you shortly.</p>
 
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-black font-technical-sans text-accent-teal mb-4 md:mb-6 text-center uppercase tracking-tight">
-                {modalType === 'demo' ? 'Demo Session Form' : 'Admission Form'}
-              </h3>
-
-              <form onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }} className="flex flex-col gap-3 sm:gap-4 w-full">
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">What brings you here? *</label>
-                  <div className="relative">
-                    <select defaultValue={modalType === 'demo' ? 'demo' : 'join'} className="w-full bg-white/5 border border-white/20 text-white px-4 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors appearance-none cursor-pointer">
-                      <option value="join" className="text-ink-dark">I want to join the academy</option>
-                      <option value="know" className="text-ink-dark">I want to know more</option>
-                      <option value="demo" className="text-ink-dark">I want to book a demo class</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white">
-                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
-                    </div>
-                  </div>
+              <form onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }} className="flex flex-col gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <input type="text" placeholder="First Name *" required className="bg-white/5 border border-white/10 text-white placeholder:text-white/40 px-4 py-3 rounded-xl text-xs sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors" />
+                  <input type="text" placeholder="Last Name *" required className="bg-white/5 border border-white/10 text-white placeholder:text-white/40 px-4 py-3 rounded-xl text-xs sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors" />
                 </div>
+                <input type="tel" placeholder="Contact Number (WhatsApp) *" required className="bg-white/5 border border-white/10 text-white placeholder:text-white/40 px-4 py-3 rounded-xl text-xs sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors" />
+                <input type="email" placeholder="Email Address" className="bg-white/5 border border-white/10 text-white placeholder:text-white/40 px-4 py-3 rounded-xl text-xs sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors" />
 
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">Name *</label>
-                  <input type="text" placeholder="Enter your full name" required className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/40 px-4 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors" />
-                </div>
-
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">Phone Number *</label>
-                  <input type="tel" placeholder="+91 98765 43210" required className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/40 px-4 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors" />
-                </div>
-
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">Age</label>
-                  <input type="number" placeholder="Enter your age" className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/40 px-4 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors" />
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-1 sm:mt-2">
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-2 bg-white/5 p-4 rounded-xl border border-white/10">
                   <div className="flex flex-col gap-2 text-left flex-1">
                     <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">Have you learned guitar before? *</label>
                     <div className="flex gap-4 ml-1">
