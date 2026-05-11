@@ -3,7 +3,6 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { Mail, ChevronLeft, ChevronRight, Pause, Play, MessageCircle, MapPin, Phone } from 'lucide-react';
 
-// Import your custom background image natively
 import contactBg from '../assets/contact_bg.jpg';
 
 const testimonials = [
@@ -18,8 +17,6 @@ const AnimatedHeading = ({ text, trigger, delayOffset = 0, className = "", chars
   const charsRef = useRef([]);
 
   useEffect(() => {
-    // FIX: Do NOT instantly hide the text when trigger is false. 
-    // Just return. This allows the text to stay fully visible while the panel slides away on scroll.
     if (!trigger) return;
 
     let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$";
@@ -183,7 +180,6 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
 
       if (isReversing) {
         gsap.set([header, carousel, background], { autoAlpha: 1, y: 0 });
-        // Smooth reverse transition from Contact: animates from open down to closed, expanding 1% offscreen to kill the white line artifact
         gsap.fromTo(revealSectionRef.current,
           { clipPath: "polygon(-1% -1%, 101% -1%, 101% 101%, -1% 101%)" },
           {
@@ -209,7 +205,6 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
       gsap.fromTo(revealSectionRef.current,
         { clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)" },
         {
-          // Expands mask slightly off-screen to eradicate the sub-pixel white line artifact on contact screen
           clipPath: "polygon(-1% -1%, 101% -1%, 101% 101%, -1% 101%)",
           ease: "power3.inOut",
           duration: 1.0,
@@ -255,10 +250,9 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
         .font-cursive { font-family: 'Dancing Script', 'Allura', cursive; }
       `}} />
 
-      {/* Removed border-t-[3px] here to eliminate the white line bug */}
       <div ref={containerRef} className="w-full flex flex-col shrink-0 pointer-events-auto">
 
-        {/* SECTION 10: Fun Fact (Restored all missing text paragraphs) */}
+        {/* SECTION 10: Fun Fact */}
         <div ref={funFactRef} className="w-full h-dvh flex flex-col items-center justify-center text-center bg-transparent relative px-4 sm:px-6 md:px-12 shrink-0">
           <div className="max-w-5xl mx-auto flex flex-col items-center justify-center w-full">
             <h2 className="fun-fact-el text-accent-teal font-technical-sans tracking-[0.3em] font-black text-[10px] md:text-sm uppercase mb-8 md:mb-12 invisible">Fun Fact</h2>
@@ -278,16 +272,13 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
         <div className="relative w-full h-dvh shrink-0 -mt-px z-10">
 
           {/* SECTION 11: Cinematic Carousel */}
-          {/* Removed border-t-[3px] here to eliminate the white line bug */}
           <div ref={voicesRef} className="absolute inset-0 w-full h-dvh overflow-hidden flex flex-col justify-center bg-transparent py-10 lg:py-16 px-0">
-            {/* Added Wood Gradient Background */}
             <div className="carousel-bg-container absolute inset-0 -z-20 overflow-hidden invisible pointer-events-none" style={{ background: 'linear-gradient(135deg, #4E3524 0%, #2D1B0E 50%, #1A0F0A 100%)' }}>
               <div ref={el => bokehRefs.current[0] = el} className="absolute top-[-20%] left-[-10%] w-screen h-[100vw] max-w-[1200px] max-h-[1200px] bg-[radial-gradient(circle_at_center,rgba(225,155,45,0.4)_0%,transparent_65%)] rounded-full will-change-transform"></div>
               <div ref={el => bokehRefs.current[1] = el} className="absolute bottom-[-20%] right-[-10%] w-[120vw] h-[120vw] max-w-[1400px] max-h-[1400px] bg-[radial-gradient(circle_at_center,rgba(147,233,190,0.3)_0%,transparent_65%)] rounded-full will-change-transform"></div>
             </div>
 
             <div className="voices-header shrink-0 flex flex-col px-4 sm:px-6 md:px-12 xl:px-24 mb-8 md:mb-12 items-center text-center invisible">
-              {/* Updated Heading for wood contrast */}
               <h2 className="text-4xl sm:text-5xl md:text-7xl font-black font-technical-sans text-white uppercase tracking-tight leading-none mb-3 md:mb-5 drop-shadow-md">
                 Testimonials
               </h2>
@@ -317,7 +308,6 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
                   const isActive = activeIndex === idx;
                   const styles = getCardStyle(idx);
 
-                  {/* Original light, semi-transparent glassmorphism styling for cards restored */ }
                   return (
                     <div
                       key={idx}
@@ -359,8 +349,8 @@ const FooterReveal = React.memo(function FooterReveal({ step, isReversingRef }) 
           </div>
 
           {/* SECTION 12: Reveal & Contact */}
-          {/* Removed border-t-[3px] here to eliminate the white line bug */}
-          <section ref={revealSectionRef} className="reveal-section absolute inset-0 w-full h-dvh overflow-hidden z-50 bg-cover bg-center" style={{ backgroundImage: `url(${contactBg})`, clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)" }}>
+          {/* FIX: bg-right md:bg-center keeps the guitar in view on mobile screens */}
+          <section ref={revealSectionRef} className="reveal-section absolute inset-0 w-full h-dvh overflow-hidden z-50 bg-cover bg-right md:bg-center" style={{ backgroundImage: `url(${contactBg})`, clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)" }}>
 
             <div className="absolute inset-0 bg-black/40 mix-blend-overlay pointer-events-none"></div>
 

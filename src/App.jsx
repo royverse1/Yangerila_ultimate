@@ -23,7 +23,6 @@ const StaticPastelBackground = React.memo(function StaticPastelBackground({ step
     return 'linear-gradient(135deg, var(--color-pastel-blue) 0%, var(--color-paper-bg) 100%)';
   };
   return (
-    // Removed will-change and transform to prevent GPU memory bloat on mobile
     <div
       className="fixed inset-0 z-[-3] pointer-events-none transition-colors duration-1000 ease-in-out"
       style={{ background: getBgStyle(step) }}
@@ -246,9 +245,12 @@ export default function App() {
           }
         }
         attemptAudioAutoplay();
-        setIsUIMinimized(true);
-        setMusicExpanded(false);
-        setIsMenuOpen(false);
+
+        // FIX: Prevent Render Thrashing by checking state before updating
+        setIsUIMinimized(prev => prev ? prev : true);
+        setMusicExpanded(prev => prev ? false : prev);
+        setIsMenuOpen(prev => prev ? false : prev);
+
         handleScrollIntent(intent);
       },
       onUp: (self) => {
@@ -274,9 +276,12 @@ export default function App() {
           }
         }
         attemptAudioAutoplay();
-        setIsUIMinimized(true);
-        setMusicExpanded(false);
-        setIsMenuOpen(false);
+
+        // FIX: Prevent Render Thrashing by checking state before updating
+        setIsUIMinimized(prev => prev ? prev : true);
+        setMusicExpanded(prev => prev ? false : prev);
+        setIsMenuOpen(prev => prev ? false : prev);
+
         handleScrollIntent(intent);
       },
       preventDefault: false,
@@ -290,11 +295,19 @@ export default function App() {
       if (Date.now() < inertiaDeadTime.current) return;
       if (e.key === 'ArrowDown' || e.key === 'PageDown') {
         attemptAudioAutoplay();
-        setIsUIMinimized(true); setMusicExpanded(false); setIsMenuOpen(false);
+
+        setIsUIMinimized(prev => prev ? prev : true);
+        setMusicExpanded(prev => prev ? false : prev);
+        setIsMenuOpen(prev => prev ? false : prev);
+
         goToStep(currentStepRef.current + 1);
       } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
         attemptAudioAutoplay();
-        setIsUIMinimized(true); setMusicExpanded(false); setIsMenuOpen(false);
+
+        setIsUIMinimized(prev => prev ? prev : true);
+        setMusicExpanded(prev => prev ? false : prev);
+        setIsMenuOpen(prev => prev ? false : prev);
+
         goToStep(currentStepRef.current - 1);
       }
     };
@@ -321,7 +334,6 @@ export default function App() {
       <StaticPastelBackground step={currentStep} />
       <audio ref={audioRef} src={ambientMusic} loop preload="auto" />
 
-      {/* Changed backdrop-blur-xl to backdrop-blur-md on mobile for massive performance gain */}
       <div className={`fixed bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 right-4 sm:right-6 md:right-8 z-100 pointer-events-none flex justify-between items-end transition-opacity duration-1000 ${isIntroPlaying ? 'opacity-0' : 'opacity-100'}`}>
         <button
           onClick={handleMusicClick}

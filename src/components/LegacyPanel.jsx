@@ -55,8 +55,31 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
 
   const renderFrame = useCallback((index) => {
     const canvas = canvasRef.current;
-    const img = imagesRef.current[Math.round(index)];
-    if (!canvas || !img) return;
+    if (!canvas) return;
+
+    let targetIdx = Math.round(index);
+    let img = imagesRef.current[targetIdx];
+
+    // FIX: Nearest Neighbor Fallback. 
+    // If the frame hasn't loaded (fast scrolling), find the closest loaded frame to prevent canvas freeze.
+    if (!img) {
+      let offset = 1;
+      while (offset <= TOTAL_FRAMES) {
+        if (targetIdx - offset >= 0 && imagesRef.current[targetIdx - offset]) {
+          img = imagesRef.current[targetIdx - offset];
+          break;
+        }
+        if (targetIdx + offset <= TOTAL_FRAMES && imagesRef.current[targetIdx + offset]) {
+          img = imagesRef.current[targetIdx + offset];
+          break;
+        }
+        offset++;
+      }
+    }
+
+    // If absolutely zero frames are loaded yet, just skip to avoid crashing
+    if (!img) return;
+
     const ctx = canvas.getContext('2d', { alpha: false });
 
     const hRatio = canvas.width / img.naturalWidth;
@@ -71,10 +94,28 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
     );
   }, []);
 
+  const loadFramePriority = (i) => {
+    if (i >= 0 && i <= TOTAL_FRAMES && !imagesRef.current[i]) {
+      const img = new Image();
+      img.onload = () => {
+        imagesRef.current[i] = img;
+        // Re-render if this was the exact frame the user is currently parked on
+        if (i === Math.round(frameRef.current.current)) renderFrame(i);
+      };
+      img.src = getFrameUrl(i);
+    }
+  };
+
   const flyToCard = (targetIndex, dur = 0.9) => {
     if (enginePausedRef.current) return;
 
     const targetFrame = (TOTAL_FRAMES / 2) * targetIndex;
+
+    // FIX: Target Aggression.
+    // Instantly prioritize loading the destination frame and its neighbors before the sequence catches up.
+    loadFramePriority(targetFrame);
+    loadFramePriority(targetFrame - 1);
+    loadFramePriority(targetFrame + 1);
 
     gsap.to(frameRef.current, {
       current: targetFrame,
@@ -118,23 +159,13 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
   useEffect(() => {
     const canvas = canvasRef.current;
 
-    const loadFrame = (i) => {
-      if (imagesRef.current[i]) return;
-      const img = new Image();
-      img.onload = () => {
-        imagesRef.current[i] = img;
-        if (i === Math.round(frameRef.current.current)) renderFrame(i);
-      };
-      img.src = getFrameUrl(i);
-    };
-
-    // FIX: "Keyframe First" Loading Strategy
-    for (let i = 0; i <= 10; i++) loadFrame(i); // Initial start
-    loadFrame(82);  // Midpoint (Card 2)
-    loadFrame(164); // End (Card 3)
+    // Initial sequence loading strategy
+    for (let i = 0; i <= 10; i++) loadFramePriority(i);
+    loadFramePriority(82);
+    loadFramePriority(164);
 
     const lazyTimer = setTimeout(() => {
-      for (let i = 11; i <= TOTAL_FRAMES; i++) loadFrame(i);
+      for (let i = 11; i <= TOTAL_FRAMES; i++) loadFramePriority(i);
     }, 2000);
 
     let resizeTimer;

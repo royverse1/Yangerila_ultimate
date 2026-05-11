@@ -312,7 +312,12 @@ const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
 
     // If the user pulled DOWN by more than 70px, trigger the back action
     if (deltaY > 70) {
-      backAction();
+      e.stopPropagation();
+      // FIX: 50ms delay prevents race condition where React removes .mobile-scroll-lock 
+      // before GSAP Observer's onUp event finishes evaluating.
+      setTimeout(() => {
+        backAction();
+      }, 50);
     }
   };
 
