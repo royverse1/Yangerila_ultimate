@@ -9,8 +9,8 @@ import SmartVideo from './SmartVideo';
 gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
 // Highly efficient local component to force video restart on mount
-// Now watches 'isActive' to ensure it restarts from 0 even if re-opened quickly
-const CardVideo = React.memo(({ webm, mp4, isActive }) => {
+// Video is now pinned to the right to preserve graphics, and uses the card's theme color as a base
+const CardVideo = React.memo(({ webm, mp4, isActive, bgColor }) => {
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -29,8 +29,8 @@ const CardVideo = React.memo(({ webm, mp4, isActive }) => {
       autoPlay
       muted
       playsInline
-      // Applied the card's exact beige color here to prevent white/black flashes before the first frame renders
-      className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none bg-[#F5EFE6]"
+      className="absolute inset-0 w-full h-full object-cover object-[85%_center] md:object-right z-0 pointer-events-none"
+      style={{ backgroundColor: bgColor }}
     >
       <source src={webm} type="video/webm" />
       <source src={mp4} type="video/mp4" />
@@ -683,7 +683,8 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                     </div>
 
                     {/* Back of Card (Expanded Content with Native AutoPlay Video) */}
-                    <div className={`absolute inset-0 backface-hidden bg-[#F5EFE6] rounded-2xl md:rounded-3xl border-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden ${isActive ? 'pointer-events-auto' : 'pointer-events-none'}`} style={{ transform: 'rotateY(180deg)', borderColor: bonus.iconColor }}>
+                    {/* The backgroundColor here fixes any white gap during the 3D flip calculation edge cases */}
+                    <div className={`absolute inset-0 backface-hidden rounded-2xl md:rounded-3xl border-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden ${isActive ? 'pointer-events-auto' : 'pointer-events-none'}`} style={{ transform: 'rotateY(180deg)', borderColor: bonus.iconColor, backgroundColor: bonus.iconColor }}>
 
                       {/* Native Video Component stays mounted during 'isClosing' to prevent the white flash! */}
                       {(isActive || isClosing) && (
@@ -691,6 +692,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                           isActive={isActive} // Passes true when active, ensures restart from 0
                           webm={`${import.meta.env.BASE_URL}videos/${bonus.videoWebm}`}
                           mp4={`${import.meta.env.BASE_URL}videos/${bonus.videoMp4}`}
+                          bgColor={bonus.iconColor} // Passes the card theme color down
                         />
                       )}
 
