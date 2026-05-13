@@ -9,8 +9,8 @@ import SmartVideo from './SmartVideo';
 gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
 // Highly efficient local component to force video restart on mount
-// Video is now pinned to the right to preserve graphics, and uses the card's theme color as a base
-const CardVideo = React.memo(({ webm, mp4, isActive, bgColor }) => {
+// Video is pinned to the right to preserve graphics, and uses #f9debd to prevent white flashes
+const CardVideo = React.memo(({ webm, mp4, isActive }) => {
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ const CardVideo = React.memo(({ webm, mp4, isActive, bgColor }) => {
       muted
       playsInline
       className="absolute inset-0 w-full h-full object-cover object-[85%_center] md:object-right z-0 pointer-events-none"
-      style={{ backgroundColor: bgColor }}
+      style={{ backgroundColor: '#f9debd' }}
     >
       <source src={webm} type="video/webm" />
       <source src={mp4} type="video/mp4" />
@@ -141,7 +141,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const [activeBonus, setActiveBonus] = useState(null);
-  const [closingBonus, setClosingBonus] = useState(null); // Fixes the white flash by delaying unmount
   const [copiedCode, setCopiedCode] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -181,13 +180,11 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
     if (step > 6) resetAccordion();
     if (step !== 8) {
       setActiveBonus(null);
-      setClosingBonus(null);
     }
     if (step !== 9) {
       setActiveAdmissionTab(null);
       setIsModalOpen(false);
     }
-    // Update rect when entering founder step
     if (step === 5 && founderContainerRef.current) {
       founderContainerRect.current = founderContainerRef.current.getBoundingClientRect();
     }
@@ -207,35 +204,22 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
         window.history.pushState({ bonusOpen: true }, '');
       }
       setActiveBonus(idx);
-      setClosingBonus(null); // Cancel any ongoing close cleanup if rapidly re-opened
     }
   }, [activeBonus, isMobile]);
 
-  // Clean, singular click handler to prevent event bubbling and double-fires
+  // Clean, instantaneous close handler
   const handleCloseBonus = useCallback((e) => {
     if (e) {
       e.stopPropagation();
       e.preventDefault();
     }
-    if (activeBonus !== null) {
-      setClosingBonus(activeBonus); // Triggers the visual close but keeps video mounted
-      setActiveBonus(null);
-
-      // Remove the video completely from the DOM *after* the 0.7s flip finishes
-      setTimeout(() => {
-        setClosingBonus((currentClosing) => currentClosing === activeBonus ? null : currentClosing);
-      }, 700);
-    }
-  }, [activeBonus]);
+    setActiveBonus(null);
+  }, []);
 
   useEffect(() => {
     const handlePopState = (e) => {
       if (activeBonus !== null) {
-        setClosingBonus(activeBonus);
         setActiveBonus(null);
-        setTimeout(() => {
-          setClosingBonus(null);
-        }, 700);
       }
     };
     window.addEventListener('popstate', handlePopState);
@@ -247,7 +231,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
     setIsModalOpen(true);
   };
 
-  // NATIVE SWIPE-BACK LOGIC (Optimized for instant response)
+  // NATIVE SWIPE-BACK LOGIC
   const handleSwipeStart = (e) => {
     if (e.target.closest('input, textarea, select, button')) {
       touchStartData.current.valid = false;
@@ -266,7 +250,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
     if (deltaY > 70) {
       e.stopPropagation();
-      backAction(); // Trigger immediately, no artificial delay
+      backAction();
     }
   };
 
@@ -576,7 +560,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
       {children}
 
-      {/* Bonuses & Discount FLIP-style Layout Section */}
+      {/* Bonuses & Discount CROSS-FADE Layout Section */}
       <div className="w-full h-dvh flex flex-col justify-center relative px-2 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0 bg-[#F8F2EA] border-t-[3px] border-ink-dark/10 overflow-hidden">
 
         {/* Background Looping Video Layer */}
@@ -589,12 +573,12 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
           />
         </div>
 
-        {/* Sliding Guitar Layer - Hidden on mobile, shifted right on desktop */}
+        {/* Sliding Guitar Layer - Fully visible on mobile now */}
         <img
           ref={guitarRef}
           src={`${import.meta.env.BASE_URL}assets/guitar_left.png`}
           alt="Acoustic Guitar"
-          className="hidden md:block absolute bottom-[-5%] left-[2%] lg:left-[5%] h-[85%] object-contain z-10 invisible pointer-events-none"
+          className="absolute bottom-[-5%] left-[-40%] sm:left-[-20%] md:left-[2%] lg:left-[5%] h-[55%] md:h-[85%] object-contain z-10 invisible pointer-events-none"
           style={{
             transform: 'translateX(-100%)',
             filter: 'drop-shadow(4px 10px 15px rgba(45, 42, 38, 0.2))'
@@ -612,12 +596,10 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
             </p>
           </div>
 
-          <div className="relative flex-1 w-full max-w-4xl lg:max-w-5xl mx-auto min-h-[400px] perspective-[2000px] z-30 pointer-events-auto">
+          <div className="relative flex-1 w-full max-w-4xl lg:max-w-5xl mx-auto min-h-[400px] z-30 pointer-events-auto">
             {bonusData.map((bonus, idx) => {
               const isActive = activeBonus === idx;
-              const isClosing = closingBonus === idx;
               const hasActive = activeBonus !== null;
-              // Only shrink the unselected cards when one is open. (Not when closing).
               const isInactive = hasActive && !isActive;
 
               const layoutStyle = getCardLayout(idx, activeBonus);
@@ -633,31 +615,29 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                     left: layoutStyle.left,
                     top: layoutStyle.top,
                     zIndex: layoutStyle.zIndex,
-                    // Reduced duration to 0.7s to fix the "empty" lingering feeling
-                    transition: 'width 0.7s cubic-bezier(0.25, 1, 0.4, 1), height 0.7s cubic-bezier(0.25, 1, 0.4, 1), left 0.7s cubic-bezier(0.25, 1, 0.4, 1), top 0.7s cubic-bezier(0.25, 1, 0.4, 1), z-index 0.7s step-end'
+                    // Snappy positioning transition
+                    transition: 'width 0.6s cubic-bezier(0.25, 1, 0.4, 1), height 0.6s cubic-bezier(0.25, 1, 0.4, 1), left 0.6s cubic-bezier(0.25, 1, 0.4, 1), top 0.6s cubic-bezier(0.25, 1, 0.4, 1), z-index 0.6s step-end'
                   }}
                 >
                   <div
-                    onClick={() => { if (!isActive && !isClosing) handleBonusClick(idx); }}
-                    className="w-full h-full relative cursor-pointer preserve-3d premium-glow"
-                    style={{
-                      transform: (isActive || isClosing) ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                      transition: 'transform 0.7s cubic-bezier(0.25, 1, 0.4, 1)'
-                    }}
+                    onClick={() => { if (!isActive) handleBonusClick(idx); }}
+                    // Added bg-[#f9debd] here so there is never a white background showing
+                    className={`w-full h-full relative cursor-pointer premium-glow rounded-2xl md:rounded-3xl border-2 overflow-hidden transition-all duration-500 bg-[#f9debd] ${isActive ? 'shadow-[0_20px_50px_rgba(0,0,0,0.4)]' : 'border-[#E1D5C5] shadow-[0_10px_30px_rgba(0,0,0,0.08)] hover:border-[#A44A26]'}`}
+                    style={{ borderColor: isActive ? bonus.iconColor : '' }}
                   >
-                    {/* Front of Card - Static Image & Content */}
-                    <div className={`absolute inset-0 backface-hidden bg-[#F5EFE6] rounded-2xl md:rounded-3xl border-2 border-[#E1D5C5] shadow-[0_10px_30px_rgba(0,0,0,0.08)] overflow-hidden group transition-colors duration-300 hover:border-[#A44A26] ${(isActive || isClosing) ? 'pointer-events-none' : 'pointer-events-auto'}`}>
 
-                      {/* Background Image Layer */}
+                    {/* --- LAYER 1: Front of Card (Static Image & Summarized Text) --- */}
+                    {/* Fades out and scales down smoothly when the card expands. Also has bg-[#f9debd] */}
+                    <div className={`absolute inset-0 bg-[#f9debd] transition-all duration-500 ease-[cubic-bezier(0.25,1,0.4,1)] ${isActive ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100 pointer-events-auto'}`}>
                       <img
                         src={`${import.meta.env.BASE_URL}assets/${bonus.bgImage}`}
                         alt=""
-                        className="absolute inset-0 w-full h-full object-cover object-[85%_center] md:object-right opacity-90 mix-blend-multiply z-0 transition-transform duration-700 group-hover:scale-105 pointer-events-none"
+                        className="absolute inset-0 w-full h-full object-cover object-[85%_center] md:object-right opacity-90 mix-blend-multiply z-0 pointer-events-none"
                       />
 
-                      <div className={`relative z-10 w-full h-full flex flex-row items-center justify-start text-left p-2.5 sm:p-5 md:p-8 origin-center transition-transform duration-[700ms] ease-[cubic-bezier(0.25,1,0.4,1)] ${isInactive ? 'scale-50 sm:scale-75 opacity-90' : 'scale-100 opacity-100 group-hover:scale-[1.02]'}`}>
+                      <div className={`relative z-10 w-full h-full flex flex-row items-center justify-start text-left p-2.5 sm:p-5 md:p-8 transition-transform duration-500 ${isInactive ? 'scale-75 opacity-90' : 'scale-100 opacity-100'}`}>
 
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center shrink-0 mr-3 sm:mr-4 md:mr-6 shadow-md" style={{ backgroundColor: bonus.iconColor }}>
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center shrink-0 mr-3 sm:mr-4 md:mr-6 shadow-md transition-transform hover:scale-105" style={{ backgroundColor: bonus.iconColor }}>
                           <bonus.icon size={24} className="text-white w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
                         </div>
 
@@ -672,7 +652,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                             Valid till: {bonus.validity}
                           </p>
 
-                          <div className={`overflow-hidden transition-all duration-[700ms] ease-[cubic-bezier(0.25,1,0.4,1)] flex items-center justify-start ${isInactive ? 'h-0 opacity-0 mt-0' : 'h-4 sm:h-5 md:h-6 opacity-100 mt-1.5 sm:mt-2 md:mt-3'}`}>
+                          <div className={`overflow-hidden transition-all duration-500 flex items-center justify-start ${isInactive ? 'h-0 opacity-0 mt-0' : 'h-4 sm:h-5 md:h-6 opacity-100 mt-1.5 sm:mt-2 md:mt-3'}`}>
                             <p className="text-[5px] sm:text-[6px] md:text-[8px] font-black font-technical-sans uppercase tracking-[0.2em] bg-[#E8DCC8] px-2 sm:px-3 py-1 sm:py-1.5 rounded-full whitespace-nowrap" style={{ color: bonus.iconColor }}>
                               Tap to reveal
                             </p>
@@ -682,25 +662,22 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                       </div>
                     </div>
 
-                    {/* Back of Card (Expanded Content with Native AutoPlay Video) */}
-                    {/* The backgroundColor here fixes any white gap during the 3D flip calculation edge cases */}
-                    <div className={`absolute inset-0 backface-hidden rounded-2xl md:rounded-3xl border-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden ${isActive ? 'pointer-events-auto' : 'pointer-events-none'}`} style={{ transform: 'rotateY(180deg)', borderColor: bonus.iconColor, backgroundColor: bonus.iconColor }}>
+                    {/* --- LAYER 2: Expanded Content (Video & Form) --- */}
+                    {/* Fades in and scales up slightly when the card is clicked. Also base colored #f9debd */}
+                    <div className={`absolute inset-0 bg-[#f9debd] transition-all duration-600 ease-[cubic-bezier(0.25,1,0.4,1)] ${isActive ? 'opacity-100 scale-100 pointer-events-auto delay-100' : 'opacity-0 scale-105 pointer-events-none'}`}>
 
-                      {/* Native Video Component stays mounted during 'isClosing' to prevent the white flash! */}
-                      {(isActive || isClosing) && (
+                      {isActive && (
                         <CardVideo
-                          isActive={isActive} // Passes true when active, ensures restart from 0
+                          isActive={isActive}
                           webm={`${import.meta.env.BASE_URL}videos/${bonus.videoWebm}`}
                           mp4={`${import.meta.env.BASE_URL}videos/${bonus.videoMp4}`}
-                          bgColor={bonus.iconColor} // Passes the card theme color down
                         />
                       )}
 
-                      {/* X Button fixed with clean single click handler */}
                       <button
                         type="button"
                         onClick={handleCloseBonus}
-                        className={`absolute top-3 right-3 sm:top-5 sm:right-5 p-2 bg-[#E8DCC8]/80 backdrop-blur-sm hover:bg-[#E8DCC8] text-[#2D2A26] border border-[#2D2A26]/10 rounded-full transition-all z-[100] cursor-pointer ${isActive ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'}`}
+                        className={`absolute top-3 right-3 sm:top-5 sm:right-5 p-2 bg-[#E8DCC8]/90 backdrop-blur-md hover:bg-[#E8DCC8] text-[#2D2A26] border border-[#2D2A26]/10 rounded-full transition-all z-[100] cursor-pointer ${isActive ? 'pointer-events-auto' : 'pointer-events-none'}`}
                       >
                         <X size={isMobile ? 16 : 24} strokeWidth={2.5} />
                       </button>
@@ -708,7 +685,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                       <div
                         onTouchStart={handleSwipeStart}
                         onTouchEnd={(e) => handleSwipeEnd(e, handleCloseBonus)}
-                        className={`w-full h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-10 lg:p-12 scrollbar-hide transition-all duration-700 delay-[100ms] relative z-10 ${isActive ? 'opacity-100 translate-y-0 overflow-y-auto pointer-events-auto' : 'opacity-0 translate-y-8 overflow-hidden pointer-events-none'}`}
+                        className={`w-full h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-10 lg:p-12 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.4,1)] relative z-10 ${isActive ? 'translate-y-0 overflow-y-auto scrollbar-hide' : 'translate-y-8 overflow-hidden'}`}
                       >
 
                         <h4 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-technical-sans uppercase tracking-tighter leading-none shrink-0" style={{ color: bonus.iconColor }}>
@@ -720,10 +697,10 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
                         {bonus.type === "form" && (
                           <form onSubmit={(e) => e.preventDefault()} className="w-full max-w-[95%] sm:max-w-md md:max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4 shrink-0 mx-auto">
-                            <input type="text" placeholder="Your Name *" required className="w-full bg-white/40 border border-[#2D2A26]/20 text-[#2D2A26] placeholder:text-[#2D2A26]/50 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-ink-dark transition-colors backdrop-blur-md shadow-sm" />
-                            <input type="text" placeholder="Your Contact Number *" required className="w-full bg-white/40 border border-[#2D2A26]/20 text-[#2D2A26] placeholder:text-[#2D2A26]/50 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-ink-dark transition-colors backdrop-blur-md shadow-sm" />
-                            <input type="text" placeholder={bonus.id === 'student_ref' ? "New Student's Name *" : "Referred Person's Name *"} required className="w-full bg-white/40 border border-[#2D2A26]/20 text-[#2D2A26] placeholder:text-[#2D2A26]/50 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-ink-dark transition-colors backdrop-blur-md shadow-sm" />
-                            <input type="text" placeholder={bonus.id === 'student_ref' ? "New Student's Contact *" : "Referred Person's Contact *"} required className="w-full bg-white/40 border border-[#2D2A26]/20 text-[#2D2A26] placeholder:text-[#2D2A26]/50 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-ink-dark transition-colors backdrop-blur-md shadow-sm" />
+                            <input type="text" placeholder="Your Name *" required className="w-full bg-white/50 border border-[#2D2A26]/20 text-[#2D2A26] placeholder:text-[#2D2A26]/60 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-ink-dark transition-colors backdrop-blur-md shadow-sm" />
+                            <input type="text" placeholder="Your Contact Number *" required className="w-full bg-white/50 border border-[#2D2A26]/20 text-[#2D2A26] placeholder:text-[#2D2A26]/60 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-ink-dark transition-colors backdrop-blur-md shadow-sm" />
+                            <input type="text" placeholder={bonus.id === 'student_ref' ? "New Student's Name *" : "Referred Person's Name *"} required className="w-full bg-white/50 border border-[#2D2A26]/20 text-[#2D2A26] placeholder:text-[#2D2A26]/60 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-ink-dark transition-colors backdrop-blur-md shadow-sm" />
+                            <input type="text" placeholder={bonus.id === 'student_ref' ? "New Student's Contact *" : "Referred Person's Contact *"} required className="w-full bg-white/50 border border-[#2D2A26]/20 text-[#2D2A26] placeholder:text-[#2D2A26]/60 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-ink-dark transition-colors backdrop-blur-md shadow-sm" />
                             <button type="submit" className="md:col-span-2 mt-1 sm:mt-2 md:mt-0 text-white hover:opacity-90 border-2 border-transparent px-4 py-2 sm:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-black uppercase tracking-widest transition-all w-full cursor-pointer shadow-md" style={{ backgroundColor: bonus.iconColor }}>Submit Referral</button>
                           </form>
                         )}
@@ -736,7 +713,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
                         {bonus.type === "code" && (
                           <div className="flex flex-col items-center gap-3 shrink-0">
-                            <div className="flex items-center gap-3 border-2 border-dashed border-[#2D2A26]/30 bg-white/40 backdrop-blur-md rounded-xl px-4 py-3 sm:px-6 sm:py-4 shadow-sm">
+                            <div className="flex items-center gap-3 border-2 border-dashed border-[#2D2A26]/30 bg-white/50 backdrop-blur-md rounded-xl px-4 py-3 sm:px-6 sm:py-4 shadow-sm">
                               <span className="text-[#2D2A26] font-technical-sans font-black tracking-widest text-sm sm:text-lg md:text-xl">{bonus.code}</span>
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleCopyCode(bonus.code); }}
