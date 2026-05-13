@@ -3,10 +3,40 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { TextPlugin } from 'gsap/TextPlugin';
-import { Zap, Music, Star, Activity, X, Check, ChevronRight } from 'lucide-react';
+import { Zap, Music, Star, Activity, X, Check, ChevronRight, Gift, Users, GraduationCap, Sparkles } from 'lucide-react';
 import SmartVideo from './SmartVideo';
 
 gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
+// Highly efficient local component to force video restart on mount
+// Now watches 'isActive' to ensure it restarts from 0 even if re-opened quickly
+const CardVideo = React.memo(({ webm, mp4, isActive }) => {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (videoRef.current && isActive) {
+      videoRef.current.currentTime = 0;
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => console.log("Card video autoplay prevented:", error));
+      }
+    }
+  }, [isActive]);
+
+  return (
+    <video
+      ref={videoRef}
+      autoPlay
+      muted
+      playsInline
+      // Applied the card's exact beige color here to prevent white/black flashes before the first frame renders
+      className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none bg-[#F5EFE6]"
+    >
+      <source src={webm} type="video/webm" />
+      <source src={mp4} type="video/mp4" />
+    </video>
+  );
+});
 
 const courseData = [
   {
@@ -44,6 +74,11 @@ const bonusData = [
     type: "form",
     heading: "Referral Reward",
     desc: "Know someone interested in learning guitar? Refer them to Yangerila Creative Studio for a free demo session. If they join, you'll receive an Amazon gift card worth ₹1000 as our thank-you for spreading the word.",
+    icon: Gift,
+    iconColor: "#6A3A1A",
+    videoMp4: "bonus_referral.mp4",
+    videoWebm: "bonus_referral.webm",
+    bgImage: "bonus_referral.jpg"
   },
   {
     id: 'group',
@@ -53,6 +88,11 @@ const bonusData = [
     type: "text",
     heading: "United we stand",
     desc: "Learning is more fun together! Bring a friend, colleague, or family member along, and everyone joining as a group will receive 30% off the first month's fee. This offer is always active and open for all new group admissions.",
+    icon: Users,
+    iconColor: "#A44A26",
+    videoMp4: "bonus_group.mp4",
+    videoWebm: "bonus_group.webm",
+    bgImage: "bonus_group.jpg"
   },
   {
     id: 'student_ref',
@@ -62,6 +102,11 @@ const bonusData = [
     type: "form",
     heading: "Student Referral",
     desc: "Share your experience and get 50% off your next month's fee when your referral joins! (Discount applies only to the referring student).",
+    icon: GraduationCap,
+    iconColor: "#A37C27",
+    videoMp4: "bonus_student.mp4",
+    videoWebm: "bonus_student.webm",
+    bgImage: "bonus_student.jpg"
   },
   {
     id: 'festive',
@@ -71,7 +116,12 @@ const bonusData = [
     type: "code",
     heading: "Celebrate Diwali with Us",
     desc: "Hurry! Come Grab this opportunity to learn a new skill in this festive season, Yangerila Creative Studio — Offers a limited-time Diwali offer: 20% off your first month.",
-    code: "YangerilaDiwali25"
+    code: "YangerilaDiwali25",
+    icon: Sparkles,
+    iconColor: "#2F5C3B",
+    videoMp4: "bonus_festive.mp4",
+    videoWebm: "bonus_festive.webm",
+    bgImage: "bonus_festive.jpg"
   }
 ];
 
@@ -91,6 +141,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const [activeBonus, setActiveBonus] = useState(null);
+  const [closingBonus, setClosingBonus] = useState(null); // Fixes the white flash by delaying unmount
   const [copiedCode, setCopiedCode] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -98,6 +149,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
   const touchStartData = useRef({ y: 0, isAtTop: false, valid: false });
 
   const bonusesRef = useRef([]);
+  const guitarRef = useRef(null);
   const admissionSectionRef = useRef(null);
 
   const [activeAdmissionTab, setActiveAdmissionTab] = useState(null);
@@ -127,7 +179,10 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
   useEffect(() => {
     if (step > 6) resetAccordion();
-    if (step !== 8) setActiveBonus(null);
+    if (step !== 8) {
+      setActiveBonus(null);
+      setClosingBonus(null);
+    }
     if (step !== 9) {
       setActiveAdmissionTab(null);
       setIsModalOpen(false);
@@ -148,26 +203,39 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
   const handleBonusClick = useCallback((idx) => {
     if (activeBonus !== idx) {
-      if (isMobile) {
+      if (activeBonus === null && isMobile) {
         window.history.pushState({ bonusOpen: true }, '');
       }
       setActiveBonus(idx);
+      setClosingBonus(null); // Cancel any ongoing close cleanup if rapidly re-opened
     }
   }, [activeBonus, isMobile]);
 
+  // Clean, singular click handler to prevent event bubbling and double-fires
   const handleCloseBonus = useCallback((e) => {
-    if (e) e.stopPropagation();
-    if (window.history.state?.bonusOpen) {
-      window.history.back();
-    } else {
-      setActiveBonus(null);
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
     }
-  }, []);
+    if (activeBonus !== null) {
+      setClosingBonus(activeBonus); // Triggers the visual close but keeps video mounted
+      setActiveBonus(null);
+
+      // Remove the video completely from the DOM *after* the 0.7s flip finishes
+      setTimeout(() => {
+        setClosingBonus((currentClosing) => currentClosing === activeBonus ? null : currentClosing);
+      }, 700);
+    }
+  }, [activeBonus]);
 
   useEffect(() => {
     const handlePopState = (e) => {
       if (activeBonus !== null) {
+        setClosingBonus(activeBonus);
         setActiveBonus(null);
+        setTimeout(() => {
+          setClosingBonus(null);
+        }, 700);
       }
     };
     window.addEventListener('popstate', handlePopState);
@@ -179,7 +247,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
     setIsModalOpen(true);
   };
 
-  // NATIVE SWIPE-BACK LOGIC
+  // NATIVE SWIPE-BACK LOGIC (Optimized for instant response)
   const handleSwipeStart = (e) => {
     if (e.target.closest('input, textarea, select, button')) {
       touchStartData.current.valid = false;
@@ -198,9 +266,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
     if (deltaY > 70) {
       e.stopPropagation();
-      setTimeout(() => {
-        backAction();
-      }, 50);
+      backAction(); // Trigger immediately, no artificial delay
     }
   };
 
@@ -252,14 +318,17 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
           { scale: 0.9, autoAlpha: 0, y: -50 },
           { scale: 1, autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.8, ease: "back.out(1.2)", delay: 0.2 }
         );
+        if (guitarRef.current) gsap.fromTo(guitarRef.current, { xPercent: -100, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.2, ease: "power3.out", delay: 0.3 });
       } else {
         gsap.fromTo(bonusesRef.current,
           { scale: 0.8, autoAlpha: 0, y: 80 },
           { scale: 1, autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.8, ease: "back.out(1.2)", delay: 0.2 }
         );
+        if (guitarRef.current) gsap.fromTo(guitarRef.current, { xPercent: -100, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.2, ease: "power3.out", delay: 0.3 });
       }
     } else {
       gsap.to(bonusesRef.current, { autoAlpha: 0, duration: 0.3 });
+      if (guitarRef.current) gsap.to(guitarRef.current, { xPercent: -100, autoAlpha: 0, duration: 0.5, ease: "power2.in" });
     }
 
     if (step === 9) {
@@ -298,7 +367,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
   };
 
   const getCardLayout = (idx, activeIndex) => {
-    const gap = isMobile ? 6 : 16;
+    const gap = isMobile ? 8 : 16;
 
     if (activeIndex === null) {
       const isRight = idx % 2 === 1;
@@ -308,7 +377,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
         height: `calc(50% - ${gap / 2}px)`,
         left: isRight ? `calc(50% + ${gap / 2}px)` : '0px',
         top: isBottom ? `calc(50% + ${gap / 2}px)` : '0px',
-        zIndex: 10
+        zIndex: 20
       };
     } else {
       if (idx === activeIndex) {
@@ -318,7 +387,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
             height: '100%',
             left: '0px',
             top: '0px',
-            zIndex: 20
+            zIndex: 30
           };
         } else {
           return {
@@ -326,7 +395,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
             height: `calc(68% - ${gap / 2}px)`,
             left: '0px',
             top: '0px',
-            zIndex: 20
+            zIndex: 30
           };
         }
       } else {
@@ -508,22 +577,47 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
       {children}
 
       {/* Bonuses & Discount FLIP-style Layout Section */}
-      <div className="w-full h-dvh flex flex-col justify-center relative px-2 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0 bg-transparent border-t-[3px] border-ink-dark/10 overflow-hidden">
-        <div className="max-w-6xl mx-auto w-full flex flex-col h-full pb-8">
+      <div className="w-full h-dvh flex flex-col justify-center relative px-2 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0 bg-[#F8F2EA] border-t-[3px] border-ink-dark/10 overflow-hidden">
 
-          <div className="text-center shrink-0 mb-4 md:mb-10 w-full">
-            <h3 className="text-4xl sm:text-5xl md:text-7xl font-elegant-serif font-black text-ink-dark tracking-tighter leading-tight">
-              Bonuses & <span className="text-accent-teal">Discount</span>
+        {/* Background Looping Video Layer */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <SmartVideo
+            srcWebm={`${import.meta.env.BASE_URL}videos/bonus_bg.webm`}
+            srcMp4={`${import.meta.env.BASE_URL}videos/bonus_bg.mp4`}
+            loop={true}
+            className="w-full h-full object-cover opacity-80 mix-blend-multiply"
+          />
+        </div>
+
+        {/* Sliding Guitar Layer - Hidden on mobile, shifted right on desktop */}
+        <img
+          ref={guitarRef}
+          src={`${import.meta.env.BASE_URL}assets/guitar_left.png`}
+          alt="Acoustic Guitar"
+          className="hidden md:block absolute bottom-[-5%] left-[2%] lg:left-[5%] h-[85%] object-contain z-10 invisible pointer-events-none"
+          style={{
+            transform: 'translateX(-100%)',
+            filter: 'drop-shadow(4px 10px 15px rgba(45, 42, 38, 0.2))'
+          }}
+        />
+
+        <div className="max-w-6xl mx-auto w-full flex flex-col h-full pb-8 z-30 relative pointer-events-none">
+
+          <div className="text-center shrink-0 mb-4 md:mb-10 w-full drop-shadow-sm pointer-events-auto">
+            <h3 className="text-4xl sm:text-5xl md:text-7xl font-elegant-serif font-black text-[#2D2A26] tracking-tighter leading-tight">
+              Bonuses & <span className="text-[#A44A26]">Discount</span>
             </h3>
-            <p className="text-accent-teal font-elegant-serif italic text-lg sm:text-xl md:text-3xl mt-1 md:mt-2">
+            <p className="text-[#A44A26] font-elegant-serif italic text-lg sm:text-xl md:text-3xl mt-1 md:mt-2">
               Regularly Updated Offers
             </p>
           </div>
 
-          <div className="relative flex-1 w-full max-w-4xl lg:max-w-5xl mx-auto min-h-[400px] perspective-[2000px]">
+          <div className="relative flex-1 w-full max-w-4xl lg:max-w-5xl mx-auto min-h-[400px] perspective-[2000px] z-30 pointer-events-auto">
             {bonusData.map((bonus, idx) => {
               const isActive = activeBonus === idx;
+              const isClosing = closingBonus === idx;
               const hasActive = activeBonus !== null;
+              // Only shrink the unselected cards when one is open. (Not when closing).
               const isInactive = hasActive && !isActive;
 
               const layoutStyle = getCardLayout(idx, activeBonus);
@@ -539,84 +633,113 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                     left: layoutStyle.left,
                     top: layoutStyle.top,
                     zIndex: layoutStyle.zIndex,
-                    transition: 'width 0.8s cubic-bezier(0.25, 1, 0.4, 1), height 0.8s cubic-bezier(0.25, 1, 0.4, 1), left 0.8s cubic-bezier(0.25, 1, 0.4, 1), top 0.8s cubic-bezier(0.25, 1, 0.4, 1)'
+                    // Reduced duration to 0.7s to fix the "empty" lingering feeling
+                    transition: 'width 0.7s cubic-bezier(0.25, 1, 0.4, 1), height 0.7s cubic-bezier(0.25, 1, 0.4, 1), left 0.7s cubic-bezier(0.25, 1, 0.4, 1), top 0.7s cubic-bezier(0.25, 1, 0.4, 1), z-index 0.7s step-end'
                   }}
                 >
                   <div
-                    onClick={() => { if (!isActive) handleBonusClick(idx); }}
+                    onClick={() => { if (!isActive && !isClosing) handleBonusClick(idx); }}
                     className="w-full h-full relative cursor-pointer preserve-3d premium-glow"
                     style={{
-                      transform: isActive ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                      transition: 'transform 0.8s cubic-bezier(0.25, 1, 0.4, 1)'
+                      transform: (isActive || isClosing) ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                      transition: 'transform 0.7s cubic-bezier(0.25, 1, 0.4, 1)'
                     }}
                   >
-                    {/* Front of Card */}
-                    <div className="absolute inset-0 backface-hidden bg-paper-bg rounded-2xl md:rounded-3xl border-2 border-ink-dark/15 shadow-sm overflow-hidden group hover:border-accent-teal/50 transition-colors duration-300">
-                      <div className={`w-full h-full flex flex-col items-center justify-center text-center p-3 sm:p-5 md:p-8 origin-center transition-transform duration-[800ms] ease-[cubic-bezier(0.25,1,0.4,1)] ${isInactive ? 'scale-50 sm:scale-75 opacity-90' : 'scale-100 opacity-100 group-hover:scale-105'}`}>
-                        <h4 className={`text-base sm:text-xl md:text-3xl lg:text-4xl font-technical-sans font-black mb-1 md:mb-2 tracking-tighter leading-tight uppercase ${idx === 1 || idx === 2 ? 'text-accent-magenta' : 'text-accent-teal'}`}>
-                          {bonus.title}
-                        </h4>
-                        <p className="text-ink-dark font-bold font-technical-sans tracking-wide text-[9px] sm:text-xs md:text-sm mb-2 md:mb-4 uppercase">
-                          {bonus.subtitle}
-                        </p>
-                        <p className="text-ink-medium/70 font-bold font-technical-sans text-[7px] sm:text-[9px] md:text-[10px] uppercase tracking-widest">
-                          Valid till: {bonus.validity}
-                        </p>
+                    {/* Front of Card - Static Image & Content */}
+                    <div className={`absolute inset-0 backface-hidden bg-[#F5EFE6] rounded-2xl md:rounded-3xl border-2 border-[#E1D5C5] shadow-[0_10px_30px_rgba(0,0,0,0.08)] overflow-hidden group transition-colors duration-300 hover:border-[#A44A26] ${(isActive || isClosing) ? 'pointer-events-none' : 'pointer-events-auto'}`}>
 
-                        <div className={`overflow-hidden transition-all duration-[800ms] ease-[cubic-bezier(0.25,1,0.4,1)] flex items-center justify-center ${isInactive ? 'h-0 opacity-0 mt-0' : 'h-5 md:h-6 opacity-100 mt-2 md:mt-5'}`}>
-                          <p className="text-[6px] sm:text-[7px] md:text-[9px] text-ink-dark/50 font-black font-technical-sans uppercase tracking-[0.2em] bg-ink-dark/5 px-3 py-1.5 rounded-full whitespace-nowrap">
-                            Tap to reveal
-                          </p>
+                      {/* Background Image Layer */}
+                      <img
+                        src={`${import.meta.env.BASE_URL}assets/${bonus.bgImage}`}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover object-[85%_center] md:object-right opacity-90 mix-blend-multiply z-0 transition-transform duration-700 group-hover:scale-105 pointer-events-none"
+                      />
+
+                      <div className={`relative z-10 w-full h-full flex flex-row items-center justify-start text-left p-2.5 sm:p-5 md:p-8 origin-center transition-transform duration-[700ms] ease-[cubic-bezier(0.25,1,0.4,1)] ${isInactive ? 'scale-50 sm:scale-75 opacity-90' : 'scale-100 opacity-100 group-hover:scale-[1.02]'}`}>
+
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center shrink-0 mr-3 sm:mr-4 md:mr-6 shadow-md" style={{ backgroundColor: bonus.iconColor }}>
+                          <bonus.icon size={24} className="text-white w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
                         </div>
+
+                        <div className="flex flex-col items-start justify-center pr-2 pointer-events-none">
+                          <h4 className="text-[11px] sm:text-base md:text-2xl font-technical-sans font-black mb-0.5 md:mb-1.5 uppercase tracking-tighter" style={{ color: bonus.iconColor }}>
+                            {bonus.title}
+                          </h4>
+                          <p className="text-[#2D2A26] font-bold font-technical-sans tracking-wide text-[7px] sm:text-[9px] md:text-xs mb-1 md:mb-2 uppercase">
+                            {bonus.subtitle}
+                          </p>
+                          <p className="text-[#2D2A26]/60 font-bold font-technical-sans text-[6px] sm:text-[7px] md:text-[9px] uppercase tracking-widest">
+                            Valid till: {bonus.validity}
+                          </p>
+
+                          <div className={`overflow-hidden transition-all duration-[700ms] ease-[cubic-bezier(0.25,1,0.4,1)] flex items-center justify-start ${isInactive ? 'h-0 opacity-0 mt-0' : 'h-4 sm:h-5 md:h-6 opacity-100 mt-1.5 sm:mt-2 md:mt-3'}`}>
+                            <p className="text-[5px] sm:text-[6px] md:text-[8px] font-black font-technical-sans uppercase tracking-[0.2em] bg-[#E8DCC8] px-2 sm:px-3 py-1 sm:py-1.5 rounded-full whitespace-nowrap" style={{ color: bonus.iconColor }}>
+                              Tap to reveal
+                            </p>
+                          </div>
+                        </div>
+
                       </div>
                     </div>
 
-                    {/* Back of Card (Expanded Content with Swipe Logic) */}
-                    <div className="absolute inset-0 backface-hidden bg-accent-magenta rounded-2xl md:rounded-3xl border-4 border-accent-magenta shadow-[0_15px_40px_rgba(227,66,52,0.4)] overflow-hidden" style={{ transform: 'rotateY(180deg)' }}>
+                    {/* Back of Card (Expanded Content with Native AutoPlay Video) */}
+                    <div className={`absolute inset-0 backface-hidden bg-[#F5EFE6] rounded-2xl md:rounded-3xl border-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden ${isActive ? 'pointer-events-auto' : 'pointer-events-none'}`} style={{ transform: 'rotateY(180deg)', borderColor: bonus.iconColor }}>
 
+                      {/* Native Video Component stays mounted during 'isClosing' to prevent the white flash! */}
+                      {(isActive || isClosing) && (
+                        <CardVideo
+                          isActive={isActive} // Passes true when active, ensures restart from 0
+                          webm={`${import.meta.env.BASE_URL}videos/${bonus.videoWebm}`}
+                          mp4={`${import.meta.env.BASE_URL}videos/${bonus.videoMp4}`}
+                        />
+                      )}
+
+                      {/* X Button fixed with clean single click handler */}
                       <button
+                        type="button"
                         onClick={handleCloseBonus}
-                        className={`absolute top-3 right-3 sm:top-5 sm:right-5 p-1.5 sm:p-2 bg-white/20 hover:bg-white text-white hover:text-accent-magenta rounded-full transition-all z-50 pointer-events-auto ${isActive ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+                        className={`absolute top-3 right-3 sm:top-5 sm:right-5 p-2 bg-[#E8DCC8]/80 backdrop-blur-sm hover:bg-[#E8DCC8] text-[#2D2A26] border border-[#2D2A26]/10 rounded-full transition-all z-[100] cursor-pointer ${isActive ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'}`}
                       >
-                        <X size={isMobile ? 14 : 20} strokeWidth={3} />
+                        <X size={isMobile ? 16 : 24} strokeWidth={2.5} />
                       </button>
 
                       <div
                         onTouchStart={handleSwipeStart}
                         onTouchEnd={(e) => handleSwipeEnd(e, handleCloseBonus)}
-                        className={`w-full h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-10 lg:p-12 overflow-y-auto scrollbar-hide transition-all duration-700 delay-[100ms] pointer-events-auto ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} ${isActive && isMobile ? 'mobile-scroll-lock' : ''}`}
+                        className={`w-full h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-10 lg:p-12 scrollbar-hide transition-all duration-700 delay-[100ms] relative z-10 ${isActive ? 'opacity-100 translate-y-0 overflow-y-auto pointer-events-auto' : 'opacity-0 translate-y-8 overflow-hidden pointer-events-none'}`}
                       >
 
-                        <h4 className="text-base sm:text-2xl md:text-3xl lg:text-4xl font-black font-technical-sans text-white mb-2 md:mb-4 uppercase tracking-tighter leading-none shrink-0">
+                        <h4 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-technical-sans uppercase tracking-tighter leading-none shrink-0" style={{ color: bonus.iconColor }}>
                           {bonus.heading}
                         </h4>
-                        <p className="text-white/95 font-elegant-serif text-xs sm:text-sm md:text-base lg:text-lg font-medium leading-relaxed max-w-2xl mb-4 md:mb-6 shrink-0">
+                        <p className="text-[#2D2A26] font-elegant-serif text-sm md:text-base lg:text-lg font-medium leading-relaxed max-w-2xl mb-4 md:mb-6 shrink-0 mt-3">
                           {bonus.desc}
                         </p>
 
                         {bonus.type === "form" && (
                           <form onSubmit={(e) => e.preventDefault()} className="w-full max-w-[95%] sm:max-w-md md:max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4 shrink-0 mx-auto">
-                            <input type="text" placeholder="Your Name *" required className="w-full bg-white/10 border border-white/30 text-white placeholder:text-white/60 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-white transition-colors" />
-                            <input type="text" placeholder="Your Contact Number *" required className="w-full bg-white/10 border border-white/30 text-white placeholder:text-white/60 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-white transition-colors" />
-                            <input type="text" placeholder={bonus.id === 'student_ref' ? "New Student's Name *" : "Referred Person's Name *"} required className="w-full bg-white/10 border border-white/30 text-white placeholder:text-white/60 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-white transition-colors" />
-                            <input type="text" placeholder={bonus.id === 'student_ref' ? "New Student's Contact *" : "Referred Person's Contact *"} required className="w-full bg-white/10 border border-white/30 text-white placeholder:text-white/60 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-white transition-colors" />
-                            <button type="submit" className="md:col-span-2 mt-1 sm:mt-2 md:mt-0 bg-white text-accent-magenta hover:bg-ink-dark hover:border-ink-dark hover:text-white border-2 border-transparent px-4 py-2 sm:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-black uppercase tracking-widest transition-all w-full cursor-pointer">Submit Referral</button>
+                            <input type="text" placeholder="Your Name *" required className="w-full bg-white/40 border border-[#2D2A26]/20 text-[#2D2A26] placeholder:text-[#2D2A26]/50 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-ink-dark transition-colors backdrop-blur-md shadow-sm" />
+                            <input type="text" placeholder="Your Contact Number *" required className="w-full bg-white/40 border border-[#2D2A26]/20 text-[#2D2A26] placeholder:text-[#2D2A26]/50 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-ink-dark transition-colors backdrop-blur-md shadow-sm" />
+                            <input type="text" placeholder={bonus.id === 'student_ref' ? "New Student's Name *" : "Referred Person's Name *"} required className="w-full bg-white/40 border border-[#2D2A26]/20 text-[#2D2A26] placeholder:text-[#2D2A26]/50 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-ink-dark transition-colors backdrop-blur-md shadow-sm" />
+                            <input type="text" placeholder={bonus.id === 'student_ref' ? "New Student's Contact *" : "Referred Person's Contact *"} required className="w-full bg-white/40 border border-[#2D2A26]/20 text-[#2D2A26] placeholder:text-[#2D2A26]/50 px-3 py-2 sm:py-2.5 md:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-technical-sans font-bold focus:outline-none focus:border-ink-dark transition-colors backdrop-blur-md shadow-sm" />
+                            <button type="submit" className="md:col-span-2 mt-1 sm:mt-2 md:mt-0 text-white hover:opacity-90 border-2 border-transparent px-4 py-2 sm:py-3 rounded-lg text-[9px] sm:text-[11px] md:text-xs font-black uppercase tracking-widest transition-all w-full cursor-pointer shadow-md" style={{ backgroundColor: bonus.iconColor }}>Submit Referral</button>
                           </form>
                         )}
 
                         {bonus.type === "text" && (
-                          <button className="bg-white text-accent-magenta hover:bg-ink-dark hover:border-ink-dark hover:text-white border-2 border-transparent px-6 sm:px-8 py-3 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all mt-2 shrink-0 cursor-pointer">
+                          <button className="text-white hover:opacity-90 border-2 border-transparent px-6 sm:px-8 py-3 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all mt-2 shrink-0 cursor-pointer shadow-md" style={{ backgroundColor: bonus.iconColor }}>
                             Claim Group Offer
                           </button>
                         )}
 
                         {bonus.type === "code" && (
                           <div className="flex flex-col items-center gap-3 shrink-0">
-                            <div className="flex items-center gap-3 border-2 border-dashed border-white/50 bg-white/10 rounded-xl px-4 py-3 sm:px-6 sm:py-4">
-                              <span className="text-white font-technical-sans font-black tracking-widest text-sm sm:text-lg md:text-xl">{bonus.code}</span>
+                            <div className="flex items-center gap-3 border-2 border-dashed border-[#2D2A26]/30 bg-white/40 backdrop-blur-md rounded-xl px-4 py-3 sm:px-6 sm:py-4 shadow-sm">
+                              <span className="text-[#2D2A26] font-technical-sans font-black tracking-widest text-sm sm:text-lg md:text-xl">{bonus.code}</span>
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleCopyCode(bonus.code); }}
-                                className="ml-2 sm:ml-4 bg-white text-accent-magenta hover:bg-ink-dark hover:text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-1.5 cursor-pointer"
+                                className="ml-2 sm:ml-4 text-white hover:opacity-90 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
+                                style={{ backgroundColor: bonus.iconColor }}
                               >
                                 {copiedCode ? <><Check size={12} /> Copied!</> : 'Copy'}
                               </button>
