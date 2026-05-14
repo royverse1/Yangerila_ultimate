@@ -4,6 +4,7 @@ import { useGSAP } from '@gsap/react';
 import { TextPlugin } from 'gsap/TextPlugin';
 import heroVideoDesktop from '../assets/hero_y.mp4';
 import heroVideoMobile from '../assets/y_hero_v.mp4';
+import SmartVideo from './SmartVideo';
 
 gsap.registerPlugin(TextPlugin);
 
@@ -82,16 +83,25 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
   return (
     <div
       ref={containerRef}
-      className={`relative w-full aspect-square overflow-hidden rounded-[1.25rem] md:rounded-4xl cursor-pointer bg-paper-bg shrink-0 transition-[transform,box-shadow,border-color] duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-[transform,box-shadow,border-color] transform-[translateZ(0)] ${isInteracting ? 'scale-[1.04] shadow-[0_15px_35px_rgba(58,90,140,0.2)] -translate-y-1.5 border-2 border-accent-teal' : 'scale-100 shadow-[0_8px_20px_rgba(26,26,26,0.1)] border-2 border-ink-dark/10'}`}
+      className={`relative w-full aspect-square overflow-hidden rounded-[1.25rem] md:rounded-3xl cursor-pointer bg-paper-bg shrink-0 transition-[transform,box-shadow,border-color] duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-[transform,box-shadow,border-color] transform-[translateZ(0)] ${isInteracting ? 'scale-[1.04] shadow-[0_15px_35px_rgba(58,90,140,0.2)] -translate-y-1.5 border-2 border-[#E19B2D]' : 'scale-100 shadow-[0_8px_20px_rgba(26,26,26,0.1)] border-2 border-transparent'}`}
       onMouseEnter={handlePlay}
       onMouseLeave={() => handleStop(0)}
       onTouchStart={handlePlay}
       onTouchEnd={() => handleStop(3000)}
       onTouchCancel={() => handleStop(0)}
     >
-      <video ref={videoRef} src={src} poster={poster} muted loop playsInline decoding="async" className="w-full h-full object-cover scale-[1.02] will-change-transform" />
-      {/* PERFORMANCE FIX: md:mix-blend-overlay to prevent mobile GPU overload */}
-      <div className="absolute inset-0 bg-linear-to-br from-white/20 via-transparent to-black/10 pointer-events-none md:mix-blend-overlay" />
+      <video
+        ref={videoRef}
+        src={src}
+        poster={poster}
+        preload="metadata"
+        muted
+        loop
+        playsInline
+        decoding="async"
+        className="w-full h-full object-cover scale-[1.02] will-change-transform"
+      />
+      <div className="absolute inset-0 bg-linear-to-br from-white/20 via-transparent to-black/10 pointer-events-none md:mix-blend-overlay z-10" />
     </div>
   );
 });
@@ -113,6 +123,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   const [videoBlocked, setVideoBlocked] = useState(false);
   const [showSkip, setShowSkip] = useState(false);
   const [videoSrc, setVideoSrc] = useState(heroVideoDesktop);
+  const [isMobileAbout, setIsMobileAbout] = useState(false);
 
   const videoWrapperRef = useRef(null);
   const videoRef = useRef(null);
@@ -128,6 +139,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     const checkOrientation = () => {
       const isVertical = window.matchMedia("(max-aspect-ratio: 1/1)").matches;
       setVideoSrc(isVertical ? heroVideoMobile : heroVideoDesktop);
+      setIsMobileAbout(window.innerWidth < 768);
       setVideoBuffered(false);
     };
     checkOrientation();
@@ -388,50 +400,85 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         <p ref={paragraphRef} className="mt-4 md:mt-6 xl:mt-8 text-ink-medium max-w-2xl mx-auto text-sm sm:text-base md:text-lg xl:text-xl font-elegant-serif shadow-sm invisible translate-y-10 will-change-transform">A guitar-specialty academy bridging clinical precision and artistic mastery. Serving students nationwide and across 12 countries.</p>
       </div>
 
-      <div ref={aboutRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center invisible translate-y-10 px-4 sm:px-6 lg:px-24 bg-paper-bg border-t-2 border-ink-dark shadow-[0_-10px_40px_rgba(0,0,0,0.15)] will-change-transform">
-        <div className="about-scroll-container max-w-6xl mx-auto w-full flex flex-col gap-3 md:gap-6 lg:gap-8 relative z-10 max-h-[85dvh] overflow-y-auto overflow-x-hidden pb-4 pt-4 px-4 scrollbar-hide">
+      <div ref={aboutRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center invisible translate-y-10 px-4 sm:px-6 lg:px-24 bg-paper-bg border-t-2 border-ink-dark shadow-[0_-10px_40px_rgba(0,0,0,0.15)] will-change-transform overflow-hidden">
 
-          <div className="w-full border-t-[3px] border-accent-teal pt-2 md:pt-4 mb-1 md:mb-2 shrink-0">
-            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-black font-technical-sans text-ink-dark uppercase tracking-tighter leading-none mb-1">About</h2>
-            <h3 className="text-sm md:text-xl lg:text-2xl text-ink-medium font-light font-elegant-serif italic">Yangerila.</h3>
+        {/* SMART BACKGROUND LAYER */}
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-90 md:opacity-100">
+          <SmartVideo
+            key={isMobileAbout ? 'mobile' : 'desktop'}
+            srcWebm={`${import.meta.env.BASE_URL}videos/${isMobileAbout ? 'about_phone.webm' : 'about_bg.webm'}`}
+            srcMp4={`${import.meta.env.BASE_URL}videos/${isMobileAbout ? 'about_phone.mp4' : 'about_bg.mp4'}`}
+            poster={`${import.meta.env.BASE_URL}assets/${isMobileAbout ? 'about_phone.jpg' : 'about_bg.jpg'}`}
+            className="absolute inset-0 w-full h-full object-cover mix-blend-multiply"
+          />
+        </div>
+
+        {/* FIXED-FIT CONTAINER 
+          Replaced overflow-y-auto with flex/justify-center. Fits completely in 1 viewport on PC.
+          Uses sm:gap-10 and sm:mb-8 on mobile to expand and use the white space dynamically.
+        */}
+        <div className="max-w-7xl mx-auto w-full flex flex-col justify-center relative z-10 h-full max-h-[100dvh] pt-16 pb-8 md:py-0 px-2 sm:px-4 md:px-6 lg:px-8">
+
+          {/* CONTENT WRAPPER */}
+          <div className="w-full md:max-w-[75%] lg:max-w-[70%] xl:max-w-[65%] flex flex-col justify-center gap-5 sm:gap-10 md:gap-5 lg:gap-6 xl:gap-8 h-full mr-auto py-8 lg:py-16">
+
+            <div className="w-full border-t-[3px] border-[#3A5A8C] pt-2 md:pt-3 mb-2 sm:mb-8 md:mb-2 shrink-0">
+              <h2 className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl xl:text-7xl font-black font-technical-sans text-ink-dark uppercase tracking-tighter leading-none mb-1">About</h2>
+              <h3 className="text-xl md:text-xl lg:text-2xl xl:text-3xl text-[#E19B2D] font-light font-elegant-serif italic drop-shadow-sm">Yangerila.</h3>
+            </div>
+
+            {/* ITEM 01: Side-by-side on mobile, Text Left, Image Right */}
+            <div ref={el => addToBentoRefs(el, 0)} className="flex flex-row items-center md:items-start gap-4 sm:gap-5 md:gap-6 w-full invisible will-change-[transform,opacity] shrink-0">
+              <div className="flex-1 w-full order-1 text-left">
+                <div className="flex items-center gap-2 md:gap-3 mb-1.5 md:mb-2">
+                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#E19B2D] shrink-0"></div>
+                  <span className="text-[9px] sm:text-[10px] md:text-[10px] lg:text-xs font-bold font-technical-sans tracking-[0.2em] text-[#E19B2D] uppercase whitespace-nowrap">01 // Origin</span>
+                  <div className="hidden md:block flex-1 h-[1px] bg-[#E19B2D]/30 max-w-[150px] lg:max-w-[200px]"></div>
+                </div>
+                <p className="text-ink-dark font-elegant-serif font-medium text-xs sm:text-sm md:text-sm lg:text-base xl:text-lg leading-snug md:leading-relaxed">
+                  <span className="text-[#E19B2D] font-bold">Yangerila Creative Studio</span> is a guitar-specialty academy based in Indirapuram. We offer carefully designed courses that cover multiple aspects of guitar playing.
+                </p>
+              </div>
+              <div className="w-[25vw] max-w-[110px] sm:max-w-[130px] md:max-w-none md:w-28 md:h-28 lg:w-36 lg:h-36 xl:w-44 xl:h-44 shrink-0 aspect-square order-2 shadow-lg rounded-2xl md:rounded-3xl overflow-hidden">
+                <HoverVideo src={`${import.meta.env.BASE_URL}videos/1.mp4`} poster={`${import.meta.env.BASE_URL}assets/1.jpg`} isActiveStep={isAboutActive} />
+              </div>
+            </div>
+
+            {/* ITEM 02: Side-by-side on mobile. PC switches to Image Left */}
+            <div ref={el => addToBentoRefs(el, 1)} className="flex flex-row md:flex-row-reverse items-center md:items-start gap-4 sm:gap-5 md:gap-6 w-full invisible will-change-[transform,opacity] shrink-0">
+              <div className="flex-1 w-full order-1 md:order-2 text-left md:text-right">
+                <div className="flex items-center md:flex-row-reverse gap-2 md:gap-3 mb-1.5 md:mb-2">
+                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#E19B2D] shrink-0"></div>
+                  <span className="text-[9px] sm:text-[10px] md:text-[10px] lg:text-xs font-bold font-technical-sans tracking-[0.2em] text-[#E19B2D] uppercase whitespace-nowrap">02 // Approach</span>
+                  <div className="hidden md:block flex-1 h-[1px] bg-[#E19B2D]/30 max-w-[150px] lg:max-w-[200px]"></div>
+                </div>
+                <p className="text-ink-dark font-elegant-serif italic text-xs sm:text-sm md:text-sm lg:text-base xl:text-lg leading-snug md:leading-relaxed">
+                  Our online classes are redefining the way guitar is taught, combining live interactive sessions, structured courses, and constant teacher support.
+                </p>
+              </div>
+              <div className="w-[25vw] max-w-[110px] sm:max-w-[130px] md:max-w-none md:w-28 md:h-28 lg:w-36 lg:h-36 xl:w-44 xl:h-44 shrink-0 aspect-square order-2 md:order-1 shadow-lg rounded-2xl md:rounded-3xl overflow-hidden">
+                <HoverVideo src={`${import.meta.env.BASE_URL}videos/2.mp4`} poster={`${import.meta.env.BASE_URL}assets/2.jpg`} isActiveStep={isAboutActive} />
+              </div>
+            </div>
+
+            {/* ITEM 03: Side-by-side on mobile, Text Left, Image Right */}
+            <div ref={el => addToBentoRefs(el, 2)} className="flex flex-row items-center md:items-start gap-4 sm:gap-5 md:gap-6 w-full invisible will-change-[transform,opacity] shrink-0">
+              <div className="flex-1 w-full order-1 text-left">
+                <div className="flex items-center gap-2 md:gap-3 mb-1.5 md:mb-2">
+                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#E19B2D] shrink-0"></div>
+                  <span className="text-[9px] sm:text-[10px] md:text-[10px] lg:text-xs font-bold font-technical-sans tracking-[0.2em] text-[#E19B2D] uppercase whitespace-nowrap">03 // Vision</span>
+                  <div className="hidden md:block flex-1 h-[1px] bg-[#E19B2D]/30 max-w-[150px] lg:max-w-[200px]"></div>
+                </div>
+                <p className="text-ink-dark font-elegant-serif font-medium text-xs sm:text-sm md:text-sm lg:text-base xl:text-lg leading-snug md:leading-relaxed">
+                  At Yangerila, we believe music is more than just a talent — it's a life skill that everyone can and should learn. With this vision, we are proud to serve students across India.
+                </p>
+              </div>
+              <div className="w-[25vw] max-w-[110px] sm:max-w-[130px] md:max-w-none md:w-28 md:h-28 lg:w-36 lg:h-36 xl:w-44 xl:h-44 shrink-0 aspect-square order-2 shadow-lg rounded-2xl md:rounded-3xl overflow-hidden">
+                <HoverVideo src={`${import.meta.env.BASE_URL}videos/3.mp4`} poster={`${import.meta.env.BASE_URL}assets/3.jpg`} isActiveStep={isAboutActive} />
+              </div>
+            </div>
+
           </div>
-
-          <div ref={el => addToBentoRefs(el, 0)} className="flex flex-row items-center gap-3 md:gap-6 lg:gap-12 w-full invisible will-change-[transform,opacity] shrink-0">
-            <div className="flex-1">
-              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-technical-sans tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">01 // Origin</span>
-              <p className="text-ink-dark font-elegant-serif font-medium text-xs sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-relaxed">
-                <span className="text-accent-teal">Yangerila Creative Studio</span> is a guitar-specialty academy based in Indirapuram. We offer carefully designed courses that cover multiple aspects of guitar playing.
-              </p>
-            </div>
-            <div className="w-[10vh] h-[10vh] sm:w-[14vh] sm:h-[14vh] md:w-[18vh] md:h-[18vh] lg:w-48 lg:h-48 shrink-0 aspect-square">
-              <HoverVideo src={`${import.meta.env.BASE_URL}videos/1.mp4`} isActiveStep={isAboutActive} />
-            </div>
-          </div>
-
-          <div ref={el => addToBentoRefs(el, 1)} className="flex flex-row-reverse items-center gap-3 md:gap-6 lg:gap-12 w-full invisible will-change-[transform,opacity] shrink-0">
-            <div className="flex-1 text-right md:text-left">
-              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-technical-sans tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">02 // Approach</span>
-              <p className="text-ink-dark font-elegant-serif italic text-xs sm:text-base md:text-lg lg:text-2xl xl:text-3xl leading-relaxed">
-                Our online classes are redefining the way guitar is taught, combining live interactive sessions, structured courses, and constant teacher support.
-              </p>
-            </div>
-            <div className="w-[10vh] h-[10vh] sm:w-[14vh] sm:h-[14vh] md:w-[18vh] md:h-[18vh] lg:w-48 lg:h-48 shrink-0 aspect-square">
-              <HoverVideo src={`${import.meta.env.BASE_URL}videos/2.mp4`} isActiveStep={isAboutActive} />
-            </div>
-          </div>
-
-          <div ref={el => addToBentoRefs(el, 2)} className="flex flex-row items-center gap-3 md:gap-6 lg:gap-12 w-full invisible will-change-[transform,opacity] shrink-0">
-            <div className="flex-1">
-              <span className="block text-[8px] md:text-[10px] lg:text-xs font-bold font-technical-sans tracking-[0.2em] text-accent-teal uppercase mb-1 lg:mb-2">03 // Vision</span>
-              <p className="text-ink-dark font-elegant-serif font-medium text-xs sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-relaxed">
-                At Yangerila, we believe music is more than just a talent — it's a life skill that everyone can and should learn. With this vision, we are proud to serve students across India.
-              </p>
-            </div>
-            <div className="w-[10vh] h-[10vh] sm:w-[14vh] sm:h-[14vh] md:w-[18vh] md:h-[18vh] lg:w-48 lg:h-48 shrink-0 aspect-square">
-              <HoverVideo src={`${import.meta.env.BASE_URL}videos/3.mp4`} isActiveStep={isAboutActive} />
-            </div>
-          </div>
-
         </div>
       </div>
 
@@ -440,7 +487,6 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
         <div ref={maskRef} className="w-[25vw] md:w-[8vw] aspect-157/171 will-change-transform" style={{ transform: 'translateZ(0)' }}>
           <svg viewBox="0 0 157 171" className="w-full h-full overflow-visible" style={{ shapeRendering: 'geometricPrecision' }}>
-            {/* PERFORMANCE FIX: md:drop-shadow added to prevent mobile SVG lag during scale */}
             <path ref={letterYRef} d={yLogoPath} fill="transparent" stroke="var(--color-accent-teal)" strokeWidth="1.5" className="md:drop-shadow-[0_0_10px_rgba(58,90,140,0.6)]" style={{ vectorEffect: 'non-scaling-stroke' }} />
           </svg>
         </div>

@@ -103,7 +103,11 @@ export default function App() {
     lastTransitionTime.current = now;
     isReversingRef.current = finalStep < currentStepRef.current;
     isLockedRef.current = true;
+
+    // FIX: Only lock the global scroll on Step 3 (The 3D Cards). 
+    // Step 4 (Stats) will seamlessly pass scroll control back to App.jsx!
     isComponentLockedRef.current = (finalStep === 3);
+
     inertiaDeadTime.current = now + INERTIA_WINDOW;
 
     prevStepRef.current = currentStepRef.current;
@@ -246,7 +250,6 @@ export default function App() {
         }
         attemptAudioAutoplay();
 
-        // FIX: Prevent Render Thrashing by checking state before updating
         setIsUIMinimized(prev => prev ? prev : true);
         setMusicExpanded(prev => prev ? false : prev);
         setIsMenuOpen(prev => prev ? false : prev);
@@ -277,7 +280,6 @@ export default function App() {
         }
         attemptAudioAutoplay();
 
-        // FIX: Prevent Render Thrashing by checking state before updating
         setIsUIMinimized(prev => prev ? prev : true);
         setMusicExpanded(prev => prev ? false : prev);
         setIsMenuOpen(prev => prev ? false : prev);

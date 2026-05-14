@@ -10,7 +10,7 @@ gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
 // Highly efficient local component to force video restart on mount
 // Video is pinned to the right to preserve graphics, and uses #f9debd to prevent white flashes
-const CardVideo = React.memo(({ webm, mp4, isActive }) => {
+const CardVideo = React.memo(({ webm, mp4, bgImage, isActive }) => {
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -24,17 +24,25 @@ const CardVideo = React.memo(({ webm, mp4, isActive }) => {
   }, [isActive]);
 
   return (
-    <video
-      ref={videoRef}
-      autoPlay
-      muted
-      playsInline
-      className="absolute inset-0 w-full h-full object-cover object-[85%_center] md:object-right z-0 pointer-events-none"
-      style={{ backgroundColor: '#f9debd' }}
-    >
-      <source src={webm} type="video/webm" />
-      <source src={mp4} type="video/mp4" />
-    </video>
+    <div className="absolute inset-0 w-full h-full z-0 pointer-events-none bg-[#f9debd]">
+      {/* 1. The perfectly aligned fallback JPEG */}
+      <img
+        src={`${import.meta.env.BASE_URL}assets/${bgImage}`}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover object-[85%_center] md:object-right opacity-30 mix-blend-multiply z-0"
+      />
+      {/* 2. The Video that fades in seamlessly over it */}
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        playsInline
+        className={`absolute inset-0 w-full h-full object-cover object-[85%_center] md:object-right z-10 transition-opacity duration-700 ${isActive ? 'opacity-100' : 'opacity-0'}`}
+      >
+        <source src={webm} type="video/webm" />
+        <source src={mp4} type="video/mp4" />
+      </video>
+    </div>
   );
 });
 
@@ -129,7 +137,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
   const containerRef = useRef(null);
 
   const founderContainerRef = useRef(null);
-  const founderContainerRect = useRef(null);
   const founderTitleRef = useRef(null);
   const founderQuoteRef = useRef(null);
   const founderAuthorRef = useRef(null);
@@ -155,21 +162,16 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('demo');
 
-  const xTo = useRef(null);
-  const yTo = useRef(null);
-  const tiltRafRef = useRef(null);
-
-  // Cache founder bounds on resize
+  // Cache bounds on resize
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
-      if (founderContainerRef.current) {
-        founderContainerRect.current = founderContainerRef.current.getBoundingClientRect();
-      }
     };
     handleResize();
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const resetAccordion = useCallback(() => {
@@ -184,9 +186,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
     if (step !== 9) {
       setActiveAdmissionTab(null);
       setIsModalOpen(false);
-    }
-    if (step === 5 && founderContainerRef.current) {
-      founderContainerRect.current = founderContainerRef.current.getBoundingClientRect();
     }
   }, [step, resetAccordion]);
 
@@ -263,11 +262,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
       gsap.set(founderContainerRef.current, { autoAlpha: 1, pointerEvents: "auto" });
     }
 
-    if (tiltCardRef.current) {
-      xTo.current = gsap.quickTo(tiltCardRef.current, "rotationY", { ease: "power4.out", duration: 0.5 });
-      yTo.current = gsap.quickTo(tiltCardRef.current, "rotationX", { ease: "power4.out", duration: 0.5 });
-    }
-
     if (step === 5) {
       const paragraphs = quoteParagraphsRef.current.filter(Boolean);
       if (isReversing) {
@@ -324,25 +318,6 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
       }
     }
   }, { scope: containerRef, dependencies: [step, resetAccordion] });
-
-  const handleMouseMove = (e) => {
-    if (!tiltCardRef.current || !xTo.current || !yTo.current || !founderContainerRect.current) return;
-    cancelAnimationFrame(tiltRafRef.current);
-    tiltRafRef.current = requestAnimationFrame(() => {
-      const rect = founderContainerRect.current;
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -10;
-      const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 10;
-      xTo.current(rotateY);
-      yTo.current(rotateX);
-    });
-  };
-
-  const handleMouseLeave = () => {
-    if (xTo.current) xTo.current(0);
-    if (yTo.current) yTo.current(0);
-  };
 
   const handleCopyCode = (code) => {
     navigator.clipboard.writeText(code);
@@ -420,40 +395,55 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
       <div
         ref={founderContainerRef}
         id="founder_section"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        className="w-full h-dvh flex flex-col items-center justify-center relative shrink-0 bg-transparent px-4 sm:px-6 md:px-12 xl:px-24 overflow-hidden"
+        className="w-full h-dvh flex flex-col items-center justify-center relative shrink-0 px-3 sm:px-6 md:px-12 xl:px-24 overflow-hidden bg-transparent"
       >
-        <div className="w-full max-w-screen-2xl mx-auto h-full flex flex-col items-center justify-center relative py-12 md:py-24">
+        {/* Fullscreen Video Background */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <SmartVideo
+            srcWebm={`${import.meta.env.BASE_URL}videos/note_bg.webm`}
+            srcMp4={`${import.meta.env.BASE_URL}videos/note_bg.mp4`}
+            poster={`${import.meta.env.BASE_URL}assets/note_bg.jpg`}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        </div>
 
-          <div ref={founderTitleRef} className="invisible mb-6 md:mb-16 flex flex-col items-center md:items-start w-full max-w-7xl">
-            <span className="block text-[10px] md:text-xs font-black font-technical-sans tracking-[0.4em] text-accent-teal uppercase mb-2">Founder's Note</span>
+        <div className="w-full max-w-screen-2xl mx-auto h-full flex flex-col items-center justify-center relative py-6 md:py-24 z-10">
+
+          {/* HEADING block: Expanded text sizes and bolder appearance */}
+          <div ref={founderTitleRef} className="invisible mb-2 md:mb-10 flex flex-col items-center md:items-start w-full max-w-7xl px-2 sm:px-0">
+            <div className="flex flex-col gap-1.5 md:gap-3">
+              <span className="block text-sm sm:text-base md:text-lg lg:text-xl font-black font-technical-sans tracking-[0.25em] md:tracking-[0.3em] text-[#A44A26] uppercase">Founder's Note</span>
+              <div className="h-[2px] w-[120px] md:w-[160px] bg-[#A44A26]/40"></div>
+            </div>
           </div>
 
-          <div className="w-full flex flex-col md:grid md:grid-cols-2 gap-6 md:gap-16 lg:gap-20 items-center justify-center max-w-7xl mx-auto flex-1 md:flex-none">
+          {/* Content Grid/Wrapper */}
+          <div className="w-full flex flex-col-reverse md:grid md:grid-cols-2 gap-1.5 md:gap-16 lg:gap-20 items-center justify-center max-w-7xl mx-auto flex-1 md:flex-none">
 
-            <div className="flex flex-col items-start gap-3 md:gap-5 text-left relative w-full flex-1 md:flex-none justify-center">
-              <h2 ref={founderQuoteRef} className="relative z-10 text-base sm:text-xl lg:text-3xl font-bold text-ink-dark leading-snug tracking-tight w-full font-elegant-serif">
-                <p ref={el => quoteParagraphsRef.current[0] = el} className="quote-p1 invisible opacity-90 mb-2 md:mb-4 pr-1">
+            {/* TEXT div */}
+            <div className="flex flex-col items-start gap-1 md:gap-6 text-left relative w-full pr-0 md:pr-10 shrink mt-1.5 md:mt-0 px-2 sm:px-0">
+              <h2 ref={founderQuoteRef} className="relative z-10 text-sm sm:text-lg lg:text-[1.35rem] xl:text-[1.55rem] font-medium text-[#2D2A26] leading-snug md:leading-relaxed tracking-tight w-full font-elegant-serif">
+                <p ref={el => quoteParagraphsRef.current[0] = el} className="quote-p1 invisible mb-1 md:mb-6 opacity-95">
                   In my 20+ years as a guitarist, I’ve learned, played, performed, and composed—but teaching has always had my heart. Helping students became my true passion.
                 </p>
-                <p ref={el => quoteParagraphsRef.current[1] = el} className="quote-p2 invisible mb-3 md:mb-5 pr-1">
+                <p ref={el => quoteParagraphsRef.current[1] = el} className="quote-p2 invisible mb-1.5 md:mb-8 opacity-95">
                   I am confident in what we’ve created and in what we deliver.
                 </p>
-                <span ref={el => quoteParagraphsRef.current[2] = el} className="quote-p3 invisible italic text-lg sm:text-2xl lg:text-3xl tracking-tight leading-relaxed max-w-2xl text-ink-dark opacity-80 block mt-4 md:mt-6 pr-1">
+                <span ref={el => quoteParagraphsRef.current[2] = el} className="quote-p3 invisible italic text-base sm:text-xl lg:text-[1.5rem] xl:text-[1.75rem] tracking-tight leading-snug md:leading-relaxed max-w-2xl text-[#A44A26] font-semibold block mt-1.5 md:mt-8">
                   Give us the opportunity to serve you, and I promise it will be one of the best decisions in your musical journey.
                 </span>
               </h2>
 
-              <div ref={founderAuthorRef} className="mt-4 md:mt-14 invisible flex flex-col items-center md:items-start relative z-10 border-t-2 border-ink-dark/20 pt-4 md:pt-5 w-full max-w-sm shrink-0">
-                <p className="text-[9px] md:text-[11px] font-black font-technical-sans uppercase tracking-[0.3em] text-ink-medium mb-1 opacity-80">Lead Guitar Coach</p>
-                <h3 className="text-xl md:text-3xl lg:text-4xl font-black uppercase text-ink-dark font-technical-sans tracking-tighter tabular-nums leading-none">Micky Dixit</h3>
+              <div ref={founderAuthorRef} className="mt-3 md:mt-10 invisible flex flex-col items-start relative z-10 pt-3 md:pt-5 w-full shrink-0">
+                <p className="text-[8px] md:text-[10px] font-black font-technical-sans uppercase tracking-[0.3em] text-[#A44A26] mb-0.5 opacity-90">Lead Guitar Coach</p>
+                <h3 className="text-2xl sm:text-3xl lg:text-[2.5rem] font-black uppercase text-[#2D2A26] font-technical-sans tracking-tighter tabular-nums leading-none">Micky Dixit</h3>
               </div>
             </div>
 
-            <div ref={tiltCardRef} className="relative shrink-0 transform-style-3d cursor-crosshair invisible flex justify-center md:justify-end mt-4 md:mt-0 w-full h-[25vh] md:h-auto md:w-auto">
-              <div className="founder_image_box w-auto h-full aspect-[3/4] md:w-[320px] lg:w-[400px] md:h-auto bg-paper-bg border-10 md:border-16 border-paper-bg shadow-[0_20px_50px_rgba(26,26,26,0.3)] overflow-hidden pointer-events-none">
-                <img src={`${import.meta.env.BASE_URL}founder-guitar.jpg`} alt="Micky Dixit - Y Studio Founder" className="w-full h-full object-cover" />
+            {/* IMAGE div: Massively increased border-radius to create an almost-oval/pill shape */}
+            <div ref={tiltCardRef} className="relative shrink-0 invisible flex justify-center md:justify-end mt-2 md:mt-0 w-full h-[40vh] sm:h-[45vh] md:h-auto md:w-auto px-2 sm:px-0">
+              <div className="founder_image_box w-auto h-full aspect-[3/4] md:h-[500px] lg:h-[600px] xl:h-[650px] drop-shadow-[15px_15px_30px_rgba(45,42,38,0.15)] overflow-hidden pointer-events-none rounded-[3rem] sm:rounded-[4rem] md:rounded-[6rem] lg:rounded-[8rem] xl:rounded-[10rem]">
+                <img src={`${import.meta.env.BASE_URL}founder-guitar.jpg`} alt="Micky Dixit - Y Studio Founder" className="w-full h-full object-cover sepia-[0.3]" />
               </div>
             </div>
 
@@ -560,7 +550,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
       {children}
 
-      {/* Bonuses & Discount CROSS-FADE Layout Section */}
+      {/* Bonuses & Discount Section */}
       <div className="w-full h-dvh flex flex-col justify-center relative px-2 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0 bg-[#F8F2EA] border-t-[3px] border-ink-dark/10 overflow-hidden">
 
         {/* Background Looping Video Layer */}
@@ -573,7 +563,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
           />
         </div>
 
-        {/* Sliding Guitar Layer - Fully visible on mobile now */}
+        {/* Sliding Guitar Layer */}
         <img
           ref={guitarRef}
           src={`${import.meta.env.BASE_URL}assets/guitar_left.png`}
@@ -587,16 +577,16 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
         <div className="max-w-6xl mx-auto w-full flex flex-col h-full pb-8 z-30 relative pointer-events-none">
 
-          <div className="text-center shrink-0 mb-4 md:mb-10 w-full drop-shadow-sm pointer-events-auto">
-            <h3 className="text-4xl sm:text-5xl md:text-7xl font-elegant-serif font-black text-[#2D2A26] tracking-tighter leading-tight">
+          <div className="text-center shrink-0 mb-4 md:mb-10 w-full drop-shadow-sm pointer-events-auto px-2 sm:px-0">
+            <h3 className="text-3xl sm:text-5xl md:text-7xl font-elegant-serif font-black text-[#2D2A26] tracking-tighter leading-snug md:leading-tight">
               Bonuses & <span className="text-[#A44A26]">Discount</span>
             </h3>
-            <p className="text-[#A44A26] font-elegant-serif italic text-lg sm:text-xl md:text-3xl mt-1 md:mt-2">
+            <p className="text-[#A44A26] font-elegant-serif italic text-base sm:text-xl md:text-3xl mt-0.5 md:mt-2">
               Regularly Updated Offers
             </p>
           </div>
 
-          <div className="relative flex-1 w-full max-w-4xl lg:max-w-5xl mx-auto min-h-[400px] z-30 pointer-events-auto">
+          <div className="relative flex-1 w-full max-w-4xl lg:max-w-5xl mx-auto min-h-[380px] z-30 pointer-events-auto px-2 sm:px-0">
             {bonusData.map((bonus, idx) => {
               const isActive = activeBonus === idx;
               const hasActive = activeBonus !== null;
@@ -615,19 +605,16 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                     left: layoutStyle.left,
                     top: layoutStyle.top,
                     zIndex: layoutStyle.zIndex,
-                    // Snappy positioning transition
                     transition: 'width 0.6s cubic-bezier(0.25, 1, 0.4, 1), height 0.6s cubic-bezier(0.25, 1, 0.4, 1), left 0.6s cubic-bezier(0.25, 1, 0.4, 1), top 0.6s cubic-bezier(0.25, 1, 0.4, 1), z-index 0.6s step-end'
                   }}
                 >
                   <div
                     onClick={() => { if (!isActive) handleBonusClick(idx); }}
-                    // Added bg-[#f9debd] here so there is never a white background showing
                     className={`w-full h-full relative cursor-pointer premium-glow rounded-2xl md:rounded-3xl border-2 overflow-hidden transition-all duration-500 bg-[#f9debd] ${isActive ? 'shadow-[0_20px_50px_rgba(0,0,0,0.4)]' : 'border-[#E1D5C5] shadow-[0_10px_30px_rgba(0,0,0,0.08)] hover:border-[#A44A26]'}`}
                     style={{ borderColor: isActive ? bonus.iconColor : '' }}
                   >
 
-                    {/* --- LAYER 1: Front of Card (Static Image & Summarized Text) --- */}
-                    {/* Fades out and scales down smoothly when the card expands. Also has bg-[#f9debd] */}
+                    {/* FRONT of Card */}
                     <div className={`absolute inset-0 bg-[#f9debd] transition-all duration-500 ease-[cubic-bezier(0.25,1,0.4,1)] ${isActive ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100 pointer-events-auto'}`}>
                       <img
                         src={`${import.meta.env.BASE_URL}assets/${bonus.bgImage}`}
@@ -662,8 +649,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                       </div>
                     </div>
 
-                    {/* --- LAYER 2: Expanded Content (Video & Form) --- */}
-                    {/* Fades in and scales up slightly when the card is clicked. Also base colored #f9debd */}
+                    {/* BACK of Card */}
                     <div className={`absolute inset-0 bg-[#f9debd] transition-all duration-600 ease-[cubic-bezier(0.25,1,0.4,1)] ${isActive ? 'opacity-100 scale-100 pointer-events-auto delay-100' : 'opacity-0 scale-105 pointer-events-none'}`}>
 
                       {isActive && (
@@ -671,6 +657,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                           isActive={isActive}
                           webm={`${import.meta.env.BASE_URL}videos/${bonus.videoWebm}`}
                           mp4={`${import.meta.env.BASE_URL}videos/${bonus.videoMp4}`}
+                          bgImage={bonus.bgImage}
                         />
                       )}
 
@@ -688,10 +675,10 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                         className={`w-full h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-10 lg:p-12 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.4,1)] relative z-10 ${isActive ? 'translate-y-0 overflow-y-auto scrollbar-hide' : 'translate-y-8 overflow-hidden'}`}
                       >
 
-                        <h4 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-technical-sans uppercase tracking-tighter leading-none shrink-0" style={{ color: bonus.iconColor }}>
+                        <h4 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-technical-sans uppercase tracking-tighter leading-none shrink-0" style={{ color: bonus.iconColor }}>
                           {bonus.heading}
                         </h4>
-                        <p className="text-[#2D2A26] font-elegant-serif text-sm md:text-base lg:text-lg font-medium leading-relaxed max-w-2xl mb-4 md:mb-6 shrink-0 mt-3">
+                        <p className="text-[#2D2A26] font-elegant-serif text-[11px] sm:text-base lg:text-lg font-medium leading-relaxed max-w-2xl mb-4 md:mb-6 shrink-0 mt-2 md:mt-3 px-1 sm:px-0">
                           {bonus.desc}
                         </p>
 
@@ -712,12 +699,12 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
                         )}
 
                         {bonus.type === "code" && (
-                          <div className="flex flex-col items-center gap-3 shrink-0">
+                          <div className="flex flex-col items-center gap-3 shrink-0 mt-2 sm:mt-0">
                             <div className="flex items-center gap-3 border-2 border-dashed border-[#2D2A26]/30 bg-white/50 backdrop-blur-md rounded-xl px-4 py-3 sm:px-6 sm:py-4 shadow-sm">
-                              <span className="text-[#2D2A26] font-technical-sans font-black tracking-widest text-sm sm:text-lg md:text-xl">{bonus.code}</span>
+                              <span className="text-[#2D2A26] font-technical-sans font-black tracking-widest text-[11px] sm:text-lg md:text-xl">{bonus.code}</span>
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleCopyCode(bonus.code); }}
-                                className="ml-2 sm:ml-4 text-white hover:opacity-90 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
+                                className="ml-2 sm:ml-4 text-white hover:opacity-90 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[7px] sm:text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
                                 style={{ backgroundColor: bonus.iconColor }}
                               >
                                 {copiedCode ? <><Check size={12} /> Copied!</> : 'Copy'}
@@ -737,69 +724,69 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
         </div>
       </div>
 
-      {/* Interactive Admission & Demo Section */}
-      <div ref={admissionSectionRef} className="w-full h-dvh flex flex-col items-center justify-center text-center relative px-4 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0 overflow-hidden transition-colors duration-700 pointer-events-auto" style={{ backgroundColor: activeAdmissionTab === 'demo' ? 'var(--color-pastel-mint)' : activeAdmissionTab === 'admission' ? 'var(--color-pastel-blue)' : 'transparent' }}>
+      {/* Interactive Admission Section */}
+      <div ref={admissionSectionRef} className="w-full h-dvh flex flex-col items-center justify-center text-center relative px-2 sm:px-6 md:px-12 pt-16 md:pt-20 shrink-0 overflow-hidden transition-colors duration-700 pointer-events-auto" style={{ backgroundColor: activeAdmissionTab === 'demo' ? 'var(--color-pastel-mint)' : activeAdmissionTab === 'admission' ? 'var(--color-pastel-blue)' : 'transparent' }}>
 
-        {/* Dynamic Background Overlays for smooth tinting */}
+        {/* Background Overlays for smooth tinting */}
         <div className={`absolute inset-0 transition-opacity duration-700 pointer-events-none ${activeAdmissionTab === 'demo' ? 'bg-pastel-mint/30 opacity-100' : activeAdmissionTab === 'admission' ? 'bg-pastel-blue/20 opacity-100' : 'opacity-0'}`} />
 
-        <div className="admission-main-block relative z-10 w-full max-w-4xl mx-auto flex flex-col items-center justify-center h-full invisible">
+        <div className="admission-main-block relative z-10 w-full max-w-4xl mx-auto flex flex-col items-center justify-center h-full invisible px-2 sm:px-0">
 
           {/* Default Start State */}
-          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${activeAdmissionTab === null ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible -translate-y-16 scale-95 pointer-events-none'}`}>
-            <h2 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-ink-dark font-technical-sans mb-4 md:mb-8 uppercase tracking-tighter tabular-nums leading-none">
+          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] px-2 sm:px-0 ${activeAdmissionTab === null ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible -translate-y-16 scale-95 pointer-events-none'}`}>
+            <h2 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-ink-dark font-technical-sans mb-3 md:mb-8 uppercase tracking-tighter tabular-nums leading-none">
               Start Your <br className="hidden sm:block" />
               <span className="text-accent-teal">Journey</span>
             </h2>
-            <p className="text-sm sm:text-lg md:text-2xl text-ink-medium font-medium max-w-2xl mx-auto mb-10 md:mb-16 text-serif-italic px-2 sm:px-4 leading-relaxed">
+            <p className="text-[11.5px] sm:text-lg md:text-2xl text-ink-medium font-medium max-w-2xl mx-auto mb-8 md:mb-16 text-serif-italic px-2 sm:px-4 leading-snug md:leading-relaxed">
               Curious about mastering the guitar? Whether you want to explore our teaching style or are ready to enroll, choose your path below.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center w-full px-4">
-              <button onClick={() => setActiveAdmissionTab('demo')} className="bg-paper-bg hover:bg-white w-full sm:w-auto text-center px-8 py-4 md:px-12 md:py-5 rounded-full text-ink-dark font-black font-technical-sans tracking-widest uppercase border-2 border-ink-dark/20 premium-glow text-[10px] md:text-sm tabular-nums transition-colors cursor-pointer">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 justify-center items-center w-full px-2 sm:px-4 max-w-lg sm:max-w-none">
+              <button onClick={() => setActiveAdmissionTab('demo')} className="bg-paper-bg hover:bg-white w-full sm:w-auto text-center px-8 py-3.5 sm:py-4 md:px-12 md:py-5 rounded-full text-ink-dark font-black font-technical-sans tracking-widest uppercase border-2 border-ink-dark/20 premium-glow text-[9px] md:text-sm tabular-nums transition-colors cursor-pointer">
                 Free Demo
               </button>
               <span className="text-ink-dark/40 italic font-medium font-elegant-serif">or</span>
-              <button onClick={() => setActiveAdmissionTab('admission')} className="bg-ink-dark hover:bg-accent-teal w-full sm:w-auto text-center px-8 py-4 md:px-12 md:py-5 rounded-full text-white font-black font-technical-sans tracking-widest uppercase premium-glow text-[10px] md:text-sm tabular-nums transition-colors cursor-pointer">
+              <button onClick={() => setActiveAdmissionTab('admission')} className="bg-ink-dark hover:bg-accent-teal w-full sm:w-auto text-center px-8 py-3.5 sm:py-4 md:px-12 md:py-5 rounded-full text-white font-black font-technical-sans tracking-widest uppercase premium-glow text-[9px] md:text-sm tabular-nums transition-colors cursor-pointer">
                 Enroll Now
               </button>
             </div>
           </div>
 
           {/* Expanded Demo State */}
-          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] delay-100 ${activeAdmissionTab === 'demo' ? 'opacity-100 visible translate-y-0 scale-100 pointer-events-auto' : 'opacity-0 invisible translate-y-16 scale-95 pointer-events-none'}`}>
-            <div className="w-full max-w-4xl mx-auto px-4 flex flex-col items-center">
-              <div className="w-full flex justify-center mb-6 md:mb-10">
-                <button onClick={() => setActiveAdmissionTab(null)} className="flex items-center gap-2 text-ink-dark/60 hover:text-ink-dark font-black font-technical-sans uppercase tracking-widest text-[9px] sm:text-[10px] transition-colors cursor-pointer border-b-2 border-transparent hover:border-ink-dark pb-1">
+          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] delay-100 px-2 sm:px-0 ${activeAdmissionTab === 'demo' ? 'opacity-100 visible translate-y-0 scale-100 pointer-events-auto' : 'opacity-0 invisible translate-y-16 scale-95 pointer-events-none'}`}>
+            <div className="w-full max-w-4xl mx-auto flex flex-col items-center px-2 sm:px-4">
+              <div className="w-full flex justify-center mb-5 md:mb-10 shrink-0">
+                <button onClick={() => setActiveAdmissionTab(null)} className="flex items-center gap-1.5 sm:gap-2 text-ink-dark/60 hover:text-ink-dark font-black font-technical-sans uppercase tracking-widest text-[8px] sm:text-[10px] transition-colors cursor-pointer border-b-2 border-transparent hover:border-ink-dark pb-0.5 sm:pb-1">
                   ← Back to Options
                 </button>
               </div>
-              <h2 className="text-3xl sm:text-5xl md:text-7xl font-black text-ink-dark font-technical-sans mb-4 md:mb-6 uppercase tracking-tighter tabular-nums leading-none">
+              <h2 className="text-2xl sm:text-5xl md:text-7xl font-black text-ink-dark font-technical-sans mb-3 md:mb-6 uppercase tracking-tighter tabular-nums leading-none shrink-0">
                 Demo <span className="text-accent-teal">Session</span>
               </h2>
-              <p className="text-sm sm:text-lg md:text-xl text-ink-dark/90 font-medium max-w-3xl mx-auto mb-8 md:mb-12 font-elegant-serif px-2 sm:px-4 leading-relaxed">
+              <p className="text-[11px] sm:text-lg md:text-xl text-ink-dark/90 font-medium max-w-3xl mx-auto mb-6 md:mb-12 font-elegant-serif leading-snug md:leading-relaxed shrink">
                 Come and experience our uniquely designed demo session. Unlike typical trial classes, this session gives you a complete overview of guitar types, playing techniques, and all the essential information every beginner should know before starting their journey. Best of all—it's completely free and online.
               </p>
-              <button onClick={() => openModal('demo')} className="bg-ink-dark hover:bg-white hover:text-ink-dark w-full sm:w-auto text-center text-white px-10 py-4 md:px-14 md:py-5 rounded-full font-black font-technical-sans tracking-widest uppercase border-2 border-ink-dark shadow-xl text-[10px] md:text-sm tabular-nums transition-all cursor-pointer">
+              <button onClick={() => openModal('demo')} className="bg-ink-dark hover:bg-white hover:text-ink-dark w-full sm:w-auto text-center text-white px-9 py-3.5 sm:py-4 md:px-14 md:py-5 rounded-full font-black font-technical-sans tracking-widest uppercase border-2 border-ink-dark shadow-xl text-[9px] md:text-sm tabular-nums transition-all cursor-pointer shrink-0">
                 Book Demo Now
               </button>
             </div>
           </div>
 
           {/* Expanded Admission State */}
-          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] delay-100 ${activeAdmissionTab === 'admission' ? 'opacity-100 visible translate-y-0 scale-100 pointer-events-auto' : 'opacity-0 invisible translate-y-16 scale-95 pointer-events-none'}`}>
-            <div className="w-full max-w-4xl mx-auto px-4 flex flex-col items-center">
-              <div className="w-full flex justify-center mb-6 md:mb-10">
-                <button onClick={() => setActiveAdmissionTab(null)} className="flex items-center gap-2 text-ink-dark/60 hover:text-ink-dark font-black font-technical-sans uppercase tracking-widest text-[9px] sm:text-[10px] transition-colors cursor-pointer border-b-2 border-transparent hover:border-ink-dark pb-1">
+          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] delay-100 px-2 sm:px-0 ${activeAdmissionTab === 'admission' ? 'opacity-100 visible translate-y-0 scale-100 pointer-events-auto' : 'opacity-0 invisible translate-y-16 scale-95 pointer-events-none'}`}>
+            <div className="w-full max-w-4xl mx-auto flex flex-col items-center px-2 sm:px-4">
+              <div className="w-full flex justify-center mb-5 md:mb-10 shrink-0">
+                <button onClick={() => setActiveAdmissionTab(null)} className="flex items-center gap-1.5 sm:gap-2 text-ink-dark/60 hover:text-ink-dark font-black font-technical-sans uppercase tracking-widest text-[8px] sm:text-[10px] transition-colors cursor-pointer border-b-2 border-transparent hover:border-ink-dark pb-0.5 sm:pb-1">
                   ← Back to Options
                 </button>
               </div>
-              <h2 className="text-3xl sm:text-5xl md:text-7xl font-black text-ink-dark font-technical-sans mb-4 md:mb-6 uppercase tracking-tighter tabular-nums leading-none">
+              <h2 className="text-2xl sm:text-5xl md:text-7xl font-black text-ink-dark font-technical-sans mb-3 md:mb-6 uppercase tracking-tighter tabular-nums leading-none shrink-0">
                 Admissions
               </h2>
-              <p className="text-sm sm:text-lg md:text-xl text-ink-dark/90 font-medium max-w-3xl mx-auto mb-8 md:mb-12 font-elegant-serif px-2 sm:px-4 leading-relaxed">
+              <p className="text-[11px] sm:text-lg md:text-xl text-ink-dark/90 font-medium max-w-3xl mx-auto mb-6 md:mb-12 font-elegant-serif leading-snug md:leading-relaxed shrink">
                 Interested in joining us? Simply fill out this form, and our Student Relationship Manager (SRM) will contact you to answer all your queries. Every student is given a demo session first, and once that's complete, your SRM will personally guide you through the admission process.
               </p>
-              <button onClick={() => openModal('join')} className="bg-ink-dark hover:bg-white hover:text-ink-dark w-full sm:w-auto text-center text-white px-10 py-4 md:px-14 md:py-5 rounded-full font-black font-technical-sans tracking-widest uppercase border-2 border-ink-dark shadow-xl text-[10px] md:text-sm tabular-nums transition-all cursor-pointer">
+              <button onClick={() => openModal('join')} className="bg-ink-dark hover:bg-white hover:text-ink-dark w-full sm:w-auto text-center text-white px-9 py-3.5 sm:py-4 md:px-14 md:py-5 rounded-full font-black font-technical-sans tracking-widest uppercase border-2 border-ink-dark shadow-xl text-[9px] md:text-sm tabular-nums transition-all cursor-pointer shrink-0">
                 Fill This Form
               </button>
             </div>
@@ -807,68 +794,63 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
         </div>
 
-        {/* Global On-Screen Popup Modal for Forms (Absolute to Section instead of Fixed) */}
+        {/* Modal for Forms */}
         {isModalOpen && (
-          <div className="absolute inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-ink-dark/80 backdrop-blur-md transition-opacity duration-300 pointer-events-auto">
-            <div className="bg-ink-dark/95 border border-accent-teal/30 p-6 md:p-8 lg:p-10 rounded-3xl w-full max-w-xl max-h-[90vh] overflow-y-auto scrollbar-hide shadow-[0_20px_60px_rgba(0,0,0,0.4)] relative flex flex-col transform transition-transform duration-500 scale-100">
+          <div className="absolute inset-0 z-[100] flex items-center justify-center p-2 sm:p-6 bg-ink-dark/80 backdrop-blur-md transition-opacity duration-300 pointer-events-auto">
+            <div className="bg-ink-dark/95 border border-accent-teal/30 p-5 sm:p-8 rounded-3xl w-full max-w-xl max-h-[95vh] overflow-y-auto scrollbar-hide shadow-[0_20px_60px_rgba(0,0,0,0.4)] relative flex flex-col transform transition-transform duration-500 scale-100">
 
-              <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-white/60 hover:text-white bg-white/5 hover:bg-white/20 p-2 rounded-full transition-colors cursor-pointer">
-                <X size={20} strokeWidth={2.5} />
+              <button onClick={() => setIsModalOpen(false)} className="absolute top-3 right-3 text-white/60 hover:text-white bg-white/5 hover:bg-white/20 p-1.5 sm:p-2 rounded-full transition-colors cursor-pointer">
+                <X size={18} strokeWidth={2.5} />
               </button>
 
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-black font-technical-sans text-accent-teal mb-4 md:mb-6 text-center uppercase tracking-tight">
+              <h3 className="text-lg sm:text-2xl font-technical-sans font-black text-accent-teal mb-4 md:mb-6 text-center uppercase tracking-tight tabular-nums">
                 {modalType === 'demo' ? 'Demo Session Form' : 'Admission Form'}
               </h3>
 
-              <form onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }} className="flex flex-col gap-3 sm:gap-4 w-full">
+              <form onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }} className="flex flex-col gap-2.5 sm:gap-4 w-full text-left">
 
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">What brings you here? *</label>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1 tabular-nums">What brings you here? *</label>
                   <div className="relative">
-                    <select defaultValue={modalType === 'demo' ? 'demo' : 'join'} className="w-full bg-white/5 border border-white/20 text-white px-4 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors appearance-none cursor-pointer">
-                      <option value="join" className="text-ink-dark">I want to join the academy</option>
-                      <option value="know" className="text-ink-dark">I want to know more</option>
-                      <option value="demo" className="text-ink-dark">I want to book a demo class</option>
+                    <select defaultValue={modalType === 'demo' ? 'demo' : 'join'} className="w-full bg-white/5 border border-white/20 text-white px-3.5 py-2.5 sm:py-3 rounded-xl text-[10px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors appearance-none cursor-pointer tabular-nums">
+                      <option value="join" className="text-ink-dark tabular-nums">I want to join the academy</option>
+                      <option value="know" className="text-ink-dark tabular-nums">I want to know more</option>
+                      <option value="demo" className="text-ink-dark tabular-nums">I want to book a demo class</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white">
-                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+                      <ChevronRight size={16} className="rotate-90 opacity-60" />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">Name *</label>
-                  <input type="text" placeholder="Enter your full name" required className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/40 px-4 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors" />
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1 tabular-nums">Name *</label>
+                  <input type="text" placeholder="Enter your full name" required className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/40 px-4 py-2.5 sm:py-3 rounded-xl text-[10px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors tabular-nums" />
                 </div>
 
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">Phone Number *</label>
-                  <input type="tel" placeholder="+91 98765 43210" required className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/40 px-4 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors" />
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1 tabular-nums">Phone Number *</label>
+                  <input type="tel" placeholder="+91 98765 43210" required className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/40 px-4 py-2.5 sm:py-3 rounded-xl text-[10px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors tabular-nums" />
                 </div>
 
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">Age</label>
-                  <input type="number" placeholder="Enter your age" className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/40 px-4 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-sm font-technical-sans focus:outline-none focus:border-accent-teal transition-colors" />
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-1 sm:mt-2">
-                  <div className="flex flex-col gap-2 text-left flex-1">
-                    <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">Have you learned guitar before? *</label>
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <div className="flex flex-col gap-1 flex-1">
+                    <label className="text-[9px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1 tabular-nums">Have you learned guitar? *</label>
                     <div className="flex gap-4 ml-1">
-                      <label className="flex items-center gap-2 cursor-pointer text-[11px] sm:text-sm text-white font-technical-sans"><input type="radio" name="learned" value="yes" required className="accent-teal w-3.5 h-3.5 sm:w-4 sm:h-4 cursor-pointer" /> Yes</label>
-                      <label className="flex items-center gap-2 cursor-pointer text-[11px] sm:text-sm text-white font-technical-sans"><input type="radio" name="learned" value="no" required className="accent-teal w-3.5 h-3.5 sm:w-4 sm:h-4 cursor-pointer" /> No</label>
+                      <label className="flex items-center gap-2 cursor-pointer text-[10px] sm:text-sm text-white font-technical-sans tabular-nums"><input type="radio" name="learned" value="yes" required className="accent-teal w-3.5 h-3.5 sm:w-4 sm:h-4 cursor-pointer" /> Yes</label>
+                      <label className="flex items-center gap-2 cursor-pointer text-[10px] sm:text-sm text-white font-technical-sans tabular-nums"><input type="radio" name="learned" value="no" required className="accent-teal w-3.5 h-3.5 sm:w-4 sm:h-4 cursor-pointer" /> No</label>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2 text-left flex-1">
-                    <label className="text-[10px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1">Do you have a guitar? *</label>
+                  <div className="flex flex-col gap-1 flex-1">
+                    <label className="text-[9px] sm:text-xs font-bold text-white/80 font-technical-sans ml-1 tabular-nums">Do you have a guitar? *</label>
                     <div className="flex gap-4 ml-1">
-                      <label className="flex items-center gap-2 cursor-pointer text-[11px] sm:text-sm text-white font-technical-sans"><input type="radio" name="guitar" value="yes" required className="accent-teal w-3.5 h-3.5 sm:w-4 sm:h-4 cursor-pointer" /> Yes</label>
-                      <label className="flex items-center gap-2 cursor-pointer text-[11px] sm:text-sm text-white font-technical-sans"><input type="radio" name="guitar" value="no" required className="accent-teal w-3.5 h-3.5 sm:w-4 sm:h-4 cursor-pointer" /> No</label>
+                      <label className="flex items-center gap-2 cursor-pointer text-[10px] sm:text-sm text-white font-technical-sans tabular-nums"><input type="radio" name="guitar" value="yes" required className="accent-teal w-3.5 h-3.5 sm:w-4 sm:h-4 cursor-pointer" /> Yes</label>
+                      <label className="flex items-center gap-2 cursor-pointer text-[10px] sm:text-sm text-white font-technical-sans tabular-nums"><input type="radio" name="guitar" value="no" required className="accent-teal w-3.5 h-3.5 sm:w-4 sm:h-4 cursor-pointer" /> No</label>
                     </div>
                   </div>
                 </div>
 
-                <button type="submit" className="mt-2 sm:mt-4 bg-accent-teal hover:bg-white text-white hover:text-ink-dark font-black font-technical-sans py-3.5 sm:py-4 rounded-xl text-xs sm:text-sm uppercase tracking-widest transition-colors shadow-lg cursor-pointer">Submit</button>
+                <button type="submit" className="mt-2.5 sm:mt-4 bg-accent-teal hover:bg-white text-white hover:text-ink-dark font-black font-technical-sans py-3.5 sm:py-4 rounded-xl text-[10px] sm:text-xs md:text-sm uppercase tracking-widest transition-colors shadow-lg cursor-pointer tabular-nums">Submit</button>
               </form>
             </div>
           </div>
