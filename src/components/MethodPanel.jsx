@@ -18,7 +18,7 @@ const CardVideo = React.memo(({ webm, mp4, bgImage, isActive }) => {
       videoRef.current.currentTime = 0;
       const playPromise = videoRef.current.play();
       if (playPromise !== undefined) {
-        playPromise.catch(error => console.log("Card video autoplay prevented:", error));
+        playPromise.catch(() => { });
       }
     }
   }, [isActive]);
@@ -50,25 +50,25 @@ const courseData = [
   {
     id: 0, title: "Hobby Courses", price: "₹3200/Mo Onwards", stats: "2500+ Alums", icon: Music,
     colorPastel: 'var(--color-paper-bg)', colorText: 'var(--color-ink-dark)', colorGlow: 'rgba(58, 90, 140, 0.5)',
-    videoWebm: 'hobby_guitar.webm', videoMp4: 'hobby_guitar.mp4', poster: 'hobby_guitar.jpg',
+    videoWebm: null, videoMp4: null, poster: null,
     desc: 'Perfect for casual learners. Master your favorite songs and basic chords through an easy, stress-free path designed to keep the joy in playing.'
   },
   {
     id: 1, title: "Rhythm Grades", price: "₹3200/Mo Onwards", stats: "2000+ Alums", icon: Activity,
     colorPastel: '#EBE6DF', colorText: 'var(--color-ink-dark)', colorGlow: 'rgba(227, 66, 52, 0.5)',
-    videoWebm: 'rhythm_guitar.webm', videoMp4: 'rhythm_guitar.mp4', poster: 'rhythm_guitar.jpg',
+    videoWebm: null, videoMp4: null, poster: null,
     desc: 'The foundation of mastery. Precision grading focusing on complex strumming, timing, dynamic control, and essential music theory.'
   },
   {
     id: 2, title: "Lead Grades", price: "₹3600/Mo Onwards", stats: "1800+ Alums", icon: Star,
     colorPastel: 'var(--color-paper-bg)', colorText: 'var(--color-ink-dark)', colorGlow: 'rgba(147, 233, 190, 0.4)',
-    videoWebm: 'lead_guitar.webm', videoMp4: 'lead_guitar.mp4', poster: 'lead_guitar.jpg',
+    videoWebm: null, videoMp4: null, poster: null,
     desc: 'Unleash your expression. Master scale proficiency, intricate techniques (bends, slides, taps), improvisation, and blistering solos.'
   },
   {
     id: 3, title: "Finger-picking", price: "₹3600/Mo Onwards", stats: "1250+ Alums", icon: Zap,
     colorPastel: '#EBE6DF', colorText: 'var(--color-ink-dark)', colorGlow: 'rgba(225, 155, 45, 0.4)',
-    videoWebm: 'fingerpicking_guitar.webm', videoMp4: 'fingerpicking_guitar.mp4', poster: 'fingerpicking_guitar.jpg',
+    videoWebm: null, videoMp4: null, poster: null,
     desc: 'Clinical precision. Develop independent control of thumb and fingers, explore Travis picking, and master complex melodies.'
   }
 ];
@@ -179,14 +179,18 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
   }, []);
 
   useEffect(() => {
-    if (step > 6) resetAccordion();
-    if (step !== 8) {
-      setActiveBonus(null);
-    }
-    if (step !== 9) {
-      setActiveAdmissionTab(null);
-      setIsModalOpen(false);
-    }
+    const resetTimer = window.setTimeout(() => {
+      if (step > 6) resetAccordion();
+      if (step !== 8) {
+        setActiveBonus(null);
+      }
+      if (step !== 9) {
+        setActiveAdmissionTab(null);
+        setIsModalOpen(false);
+      }
+    }, 0);
+
+    return () => clearTimeout(resetTimer);
   }, [step, resetAccordion]);
 
   const handlePanelClick = useCallback((index) => {
@@ -216,7 +220,7 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
   }, []);
 
   useEffect(() => {
-    const handlePopState = (e) => {
+    const handlePopState = () => {
       if (activeBonus !== null) {
         setActiveBonus(null);
       }
@@ -507,9 +511,9 @@ const MethodPanel = React.memo(function MethodPanel({ step, children, isReversin
 
                   <div className="stagger-item relative z-10 hidden md:block w-full md:w-1/2 aspect-video md:aspect-auto h-[30%] md:h-[80%] lg:h-[90%] rounded-xl md:rounded-3xl border-4 border-ink-dark shadow-2xl overflow-hidden shrink-0">
                     <SmartVideo
-                      srcWebm={`${import.meta.env.BASE_URL}courses/${course.videoWebm}`}
-                      srcMp4={`${import.meta.env.BASE_URL}courses/${course.videoMp4}`}
-                      poster={`${import.meta.env.BASE_URL}courses/${course.poster}`}
+                      srcWebm={course.videoWebm ? `${import.meta.env.BASE_URL}courses/${course.videoWebm}` : null}
+                      srcMp4={course.videoMp4 ? `${import.meta.env.BASE_URL}courses/${course.videoMp4}` : null}
+                      poster={course.poster ? `${import.meta.env.BASE_URL}courses/${course.poster}` : null}
                     />
                   </div>
 

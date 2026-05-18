@@ -1,7 +1,7 @@
 const CACHE_NAME = 'yangerila-timeline-v1';
-const IMAGE_ROUTE_PATTERN = /assets\/y_scroll\/.*\.jpg/;
+const IMAGE_ROUTE_PATTERN = /assets\/y_scroll\/.*\.webp/;
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
     self.skipWaiting();
 });
 
@@ -20,7 +20,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    // Only intercept requests for the timeline JPEG sequence
+    // Only intercept requests for the timeline WebP sequence
     if (IMAGE_ROUTE_PATTERN.test(event.request.url)) {
         event.respondWith(
             caches.match(event.request).then((cachedResponse) => {

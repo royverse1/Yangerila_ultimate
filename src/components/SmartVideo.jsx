@@ -33,34 +33,27 @@ const SmartVideo = React.memo(function SmartVideo({
         const element = containerRef.current;
         if (!element) return;
 
-        const playObserver = new IntersectionObserver(
+        const observer = new IntersectionObserver(
             ([entry]) => {
-                if (entry.isIntersecting) {
-                    setSpatialState(prev => prev !== 'unmounted' ? 'playing' : 'unmounted');
-                } else {
-                    setSpatialState(prev => prev === 'playing' ? 'buffered' : prev);
-                }
-            },
-            { threshold: 0.1 }
-        );
+                const rect = entry.boundingClientRect;
+                const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+                const isInViewport = rect.bottom > 0 && rect.top < viewportHeight;
 
-        const mountObserver = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setSpatialState(prev => prev === 'unmounted' ? 'buffered' : prev);
-                } else {
+                if (!entry.isIntersecting) {
                     setSpatialState('unmounted');
+                } else if (isInViewport) {
+                    setSpatialState('playing');
+                } else {
+                    setSpatialState('buffered');
                 }
             },
-            { rootMargin: "200px 0px" }
+            { rootMargin: "200px 0px", threshold: 0.01 }
         );
 
-        playObserver.observe(element);
-        mountObserver.observe(element);
+        observer.observe(element);
 
         return () => {
-            playObserver.disconnect();
-            mountObserver.disconnect();
+            observer.disconnect();
         };
     }, []);
 

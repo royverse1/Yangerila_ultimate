@@ -91,7 +91,7 @@ export default function App() {
     };
   }, []);
 
-  const goToStep = useCallback((nextStep, isFromMenu = false) => {
+  const goToStep = useCallback((nextStep) => {
     const now = Date.now();
     if (isLockedRef.current || now - lastTransitionTime.current < COOLDOWN_MS) return;
 
@@ -334,7 +334,7 @@ export default function App() {
   return (
     <div className="relative w-full h-dvh overflow-hidden bg-transparent font-sans">
       <StaticPastelBackground step={currentStep} />
-      <audio ref={audioRef} src={ambientMusic} loop preload="auto" />
+      <audio ref={audioRef} src={ambientMusic} loop preload="none" />
 
       <div className={`fixed bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 right-4 sm:right-6 md:right-8 z-100 pointer-events-none flex justify-between items-end transition-opacity duration-1000 ${isIntroPlaying ? 'opacity-0' : 'opacity-100'}`}>
         <button
@@ -374,7 +374,7 @@ export default function App() {
             {navLinks.map((link, idx) => (
               <button
                 key={idx}
-                onClick={() => goToStep(link.step, true)}
+                onClick={() => goToStep(link.step)}
                 className={`w-full text-left px-3 py-2 rounded-xl text-[9px] md:text-[10px] font-bold transition-all duration-300 focus:outline-none ${currentStep === link.step ? 'bg-white/70 shadow-sm text-accent-teal' : 'text-ink-dark hover:bg-white/40 hover:text-accent-teal'}`}
               >
                 {link.label}

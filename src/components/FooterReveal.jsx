@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { Mail, ChevronLeft, ChevronRight, Pause, Play, MessageCircle, MapPin, Phone } from 'lucide-react';
 
-import contactBg from '../assets/contact_bg.jpg';
+import contactBg from '../assets/Contact_bg.jpg';
 
 const testimonials = [
   { name: 'Amit Gulati', role: 'Banker', text: '“The group classes make me feel I am a part of something. I never thought this would be possible where I live.”' },

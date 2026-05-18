@@ -77,7 +77,9 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
   }, [isActiveStep, handlePlay, handleStop]);
 
   useEffect(() => {
-    if (!isActiveStep) handleStop(0);
+    if (isActiveStep) return;
+    const stopTimer = window.setTimeout(() => handleStop(0), 0);
+    return () => clearTimeout(stopTimer);
   }, [isActiveStep, handleStop]);
 
   return (
@@ -130,7 +132,6 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   const loadingScreenRef = useRef(null);
   const progressBarRef = useRef(null);
 
-  const isActive = step >= 0 && step <= 2;
   const isAboutActive = step === 2;
 
   const yLogoPath = "M69.680,151.308 C65.149,152.644 63.920,157.974 64.907,158.322 C57.879,157.741 54.575,161.654 55.000,170.000 C55.019,169.981 84.536,170.483 107.052,170.235 C108.052,170.224 108.104,170.256 107.944,169.736 C107.904,159.734 103.470,159.279 101.510,158.878 C99.549,158.478 97.377,158.555 96.311,158.394 C96.038,156.229 94.973,154.539 93.693,152.899 C92.413,151.258 89.463,150.510 88.943,150.590 C88.423,150.670 86.693,152.438 87.036,123.967 C87.217,108.974 98.117,80.183 102.556,73.129 C107.865,62.596 121.867,48.795 126.684,45.962 C127.349,44.921 130.813,43.420 130.389,41.604 C129.542,40.515 116.559,46.173 113.465,47.445 C112.454,48.197 109.373,50.149 108.595,51.578 C108.428,51.935 105.909,51.179 107.487,46.361 C108.650,42.291 109.775,38.241 113.961,36.148 C113.961,36.148 123.893,35.069 132.364,32.785 C145.288,28.130 152.249,10.781 152.942,9.133 C153.636,7.485 156.342,1.949 156.342,1.949 C156.342,1.949 151.205,2.319 148.603,2.406 C132.903,2.753 122.983,1.980 111.822,14.630 C110.030,17.117 108.293,24.621 108.929,28.120 C109.565,31.618 111.630,39.065 106.904,41.428 C106.904,41.428 106.638,40.560 106.506,40.126 C113.973,28.926 101.117,16.040 89.544,16.040 C89.544,16.040 80.623,14.594 76.163,13.871 C82.238,16.908 80.325,40.741 104.517,40.741 C104.517,40.741 105.481,41.875 105.963,42.441 C105.963,42.441 102.533,53.291 105.457,53.291 C105.457,53.291 99.084,55.669 90.195,64.972 C88.284,67.049 81.150,75.668 80.154,77.413 C78.658,75.087 74.957,67.185 70.305,61.122 C56.682,37.781 35.593,19.753 29.446,15.766 C24.544,12.028 16.346,5.890 0.064,0.325 C38.608,33.218 64.638,97.620 65.451,107.031 C66.903,113.130 73.514,148.752 69.680,151.308 Z";
@@ -440,7 +441,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
                 </p>
               </div>
               <div className="w-[25vw] max-w-[110px] sm:max-w-[130px] md:max-w-none md:w-28 md:h-28 lg:w-36 lg:h-36 xl:w-44 xl:h-44 shrink-0 aspect-square order-2 shadow-lg rounded-2xl md:rounded-3xl overflow-hidden">
-                <HoverVideo src={`${import.meta.env.BASE_URL}videos/1.mp4`} poster={`${import.meta.env.BASE_URL}assets/1.jpg`} isActiveStep={isAboutActive} />
+                <HoverVideo src={`${import.meta.env.BASE_URL}videos/1.mp4`} isActiveStep={isAboutActive} />
               </div>
             </div>
 
@@ -457,7 +458,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
                 </p>
               </div>
               <div className="w-[25vw] max-w-[110px] sm:max-w-[130px] md:max-w-none md:w-28 md:h-28 lg:w-36 lg:h-36 xl:w-44 xl:h-44 shrink-0 aspect-square order-2 md:order-1 shadow-lg rounded-2xl md:rounded-3xl overflow-hidden">
-                <HoverVideo src={`${import.meta.env.BASE_URL}videos/2.mp4`} poster={`${import.meta.env.BASE_URL}assets/2.jpg`} isActiveStep={isAboutActive} />
+                <HoverVideo src={`${import.meta.env.BASE_URL}videos/2.mp4`} isActiveStep={isAboutActive} />
               </div>
             </div>
 
@@ -474,7 +475,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
                 </p>
               </div>
               <div className="w-[25vw] max-w-[110px] sm:max-w-[130px] md:max-w-none md:w-28 md:h-28 lg:w-36 lg:h-36 xl:w-44 xl:h-44 shrink-0 aspect-square order-2 shadow-lg rounded-2xl md:rounded-3xl overflow-hidden">
-                <HoverVideo src={`${import.meta.env.BASE_URL}videos/3.mp4`} poster={`${import.meta.env.BASE_URL}assets/3.jpg`} isActiveStep={isAboutActive} />
+                <HoverVideo src={`${import.meta.env.BASE_URL}videos/3.mp4`} isActiveStep={isAboutActive} />
               </div>
             </div>
 

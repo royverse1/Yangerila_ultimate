@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { Music, BookOpen, TrendingUp, Headset, ChevronRight, Plus, Minus, Award, ShieldCheck } from 'lucide-react';
@@ -225,19 +225,15 @@ const faqData = [
 ];
 
 const FAQSection = React.memo(function FAQSection({ step, isReversingRef }) {
-  const [activeCategoryId, setActiveCategoryId] = useState(null);
+  const [activeCategoryId, setActiveCategoryId] = useState(() => (
+    typeof window !== 'undefined' && window.innerWidth >= 1024 ? faqData[0].id : null
+  ));
   const [openIndex, setOpenIndex] = useState(-1);
   const [slideDir, setSlideDir] = useState('forward');
   const containerRef = useRef(null);
 
   // Swipe gesture tracking ref
   const touchStartData = useRef({ y: 0, isAtTop: false, valid: false });
-
-  useEffect(() => {
-    if (window.innerWidth >= 1024) {
-      setActiveCategoryId(faqData[0].id);
-    }
-  }, []);
 
   const activeCategory = faqData.find(cat => cat.id === activeCategoryId) || faqData[0];
 

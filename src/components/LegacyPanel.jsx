@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import gsap from 'gsap';
 import { Observer } from 'gsap/observer';
 import { useGSAP } from '@gsap/react';
@@ -36,7 +36,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
   const cardsRef = useRef([]);
   const statsBlockRef = useRef(null);
   const canvasRef = useRef(null);
-  const [mountStatus, setMountStatus] = useState('unmounted');
 
   const frameRef = useRef({ current: 0 });
   const cardIndexRef = useRef(0);
@@ -46,12 +45,8 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
   const enginePausedRef = useRef(false);
 
   const imagesRef = useRef(new Array(TOTAL_FRAMES + 1).fill(null));
-
-  useEffect(() => {
-    if ((step === 3 || step === 4) && mountStatus === 'unmounted') {
-      setMountStatus('mounted');
-    }
-  }, [step, mountStatus]);
+  const frameLoadQueueRef = useRef(new Set());
+  const frameLoadTimerRef = useRef(null);
 
   const renderFrame = useCallback((index) => {
     const canvas = canvasRef.current;
@@ -94,7 +89,8 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
     );
   }, []);
 
-  const loadFramePriority = (i) => {
+  const loadFramePriority = useCallback((i) => {
+    i = Math.round(i);
     if (i >= 0 && i <= TOTAL_FRAMES && !imagesRef.current[i]) {
       const img = new Image();
       img.onload = () => {
@@ -104,9 +100,40 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
       };
       img.src = getFrameUrl(i);
     }
-  };
+  }, [renderFrame]);
 
-  const flyToCard = (targetIndex, dur = 0.9) => {
+  const drainFrameQueue = useCallback(function drainQueuedFrames() {
+    frameLoadTimerRef.current = null;
+
+    let loadedThisPass = 0;
+    const queuedFrames = frameLoadQueueRef.current;
+
+    for (const frame of queuedFrames) {
+      queuedFrames.delete(frame);
+      loadFramePriority(frame);
+      loadedThisPass++;
+      if (loadedThisPass >= 8) break;
+    }
+
+    if (queuedFrames.size > 0) {
+      frameLoadTimerRef.current = window.setTimeout(drainQueuedFrames, 120);
+    }
+  }, [loadFramePriority]);
+
+  const scheduleFrameRange = useCallback((start, end, stepSize = 1) => {
+    const from = Math.max(0, Math.min(TOTAL_FRAMES, Math.round(Math.min(start, end))));
+    const to = Math.max(0, Math.min(TOTAL_FRAMES, Math.round(Math.max(start, end))));
+
+    for (let i = from; i <= to; i += stepSize) {
+      if (!imagesRef.current[i]) frameLoadQueueRef.current.add(i);
+    }
+
+    if (frameLoadTimerRef.current === null && frameLoadQueueRef.current.size > 0) {
+      frameLoadTimerRef.current = window.setTimeout(drainFrameQueue, 0);
+    }
+  }, [drainFrameQueue]);
+
+  const flyToCard = useCallback((targetIndex, dur = 0.9) => {
     if (enginePausedRef.current) return;
 
     const targetFrame = (TOTAL_FRAMES / 2) * targetIndex;
@@ -116,6 +143,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
     loadFramePriority(targetFrame);
     loadFramePriority(targetFrame - 1);
     loadFramePriority(targetFrame + 1);
+    scheduleFrameRange(frameRef.current.current, targetFrame, 1);
 
     gsap.to(frameRef.current, {
       current: targetFrame,
@@ -154,19 +182,17 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         overwrite: 'auto'
       });
     });
-  };
+  }, [loadFramePriority, renderFrame, scheduleFrameRange]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    const frameQueue = frameLoadQueueRef.current;
 
-    // Initial sequence loading strategy
-    for (let i = 0; i <= 10; i++) loadFramePriority(i);
+    // Initial sequence loading strategy: anchors only. Full sequence is staged
+    // when the user approaches the legacy section.
+    for (let i = 0; i <= 4; i++) loadFramePriority(i);
     loadFramePriority(82);
     loadFramePriority(164);
-
-    const lazyTimer = setTimeout(() => {
-      for (let i = 11; i <= TOTAL_FRAMES; i++) loadFramePriority(i);
-    }, 2000);
 
     let resizeTimer;
     const handleResize = () => {
@@ -206,9 +232,31 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleOrientation);
       clearTimeout(resizeTimer);
-      clearTimeout(lazyTimer);
+      clearTimeout(frameLoadTimerRef.current);
+      frameLoadTimerRef.current = null;
+      frameQueue.clear();
     };
-  }, [renderFrame]);
+  }, [renderFrame, loadFramePriority, flyToCard]);
+
+  useEffect(() => {
+    if (step < 2 || step > 4) return;
+
+    const activeFrame = frameRef.current.current;
+    scheduleFrameRange(activeFrame - 18, activeFrame + 18, 1);
+
+    if (step === 2) {
+      scheduleFrameRange(0, TOTAL_FRAMES, 4);
+      return;
+    }
+
+    scheduleFrameRange(0, TOTAL_FRAMES, 2);
+
+    const fullSequenceTimer = window.setTimeout(() => {
+      scheduleFrameRange(0, TOTAL_FRAMES, 1);
+    }, 900);
+
+    return () => clearTimeout(fullSequenceTimer);
+  }, [step, scheduleFrameRange]);
 
   const handlePanelIntent = useCallback((intent, self) => {
     if (!isActiveRef.current || enginePausedRef.current) return;
@@ -236,7 +284,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         window.dispatchEvent(new CustomEvent('requestPrevStep'));
       }
     }
-  }, []);
+  }, [flyToCard]);
 
   useGSAP(() => {
     const obs = Observer.create({
@@ -338,7 +386,7 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         statsTl.fromTo(counter, { innerText: 0 }, { innerText: target, duration: 1.5, snap: { innerText: 1 }, ease: 'power1.out' }, '<');
       });
     }
-  }, [step]);
+  }, [step, flyToCard, isReversingRef, onComplete, renderFrame]);
 
   return (
     <div
