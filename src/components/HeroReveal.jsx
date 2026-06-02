@@ -395,11 +395,22 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         </div>
       )}
 
-      <div ref={textRef} className="z-0 absolute inset-0 flex flex-col items-center justify-center text-center px-4 max-w-5xl mx-auto invisible translate-y-10 will-change-transform">
-        <span className="text-ink-medium font-technical-sans tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-xs xl:text-sm font-bold uppercase mb-4 md:mb-6 xl:mb-8 block">Yangerila Creative Studio</span>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-ink-dark font-technical-sans tracking-tighter mb-4 md:mb-6 uppercase leading-tight">Always Performance <br /><span className="text-accent-teal drop-shadow-sm">Ready</span></h1>
-        <p ref={paragraphRef} className="mt-4 md:mt-6 xl:mt-8 text-ink-medium max-w-2xl mx-auto text-sm sm:text-base md:text-lg xl:text-xl font-elegant-serif shadow-sm invisible translate-y-10 will-change-transform">A guitar-specialty academy bridging clinical precision and artistic mastery. Serving students nationwide and across 12 countries.</p>
+      {/* --- MOCKUP REPLACEMENT SECTION START --- */}
+      <div ref={textRef} className="z-0 absolute inset-0 w-full h-full invisible translate-y-10 will-change-transform bg-[#f9debd]">
+        
+        <picture className="w-full h-full flex items-center justify-center">
+          <source media="(min-width: 768px)" srcSet={`${import.meta.env.BASE_URL}assets/hero_mockup_landscape.jpg`} />
+          <img 
+            src={`${import.meta.env.BASE_URL}assets/hero_mockup_portrait.jpg`} 
+            alt="Hero Concept Mockup" 
+            className="w-full h-full object-contain block" 
+          />
+        </picture>
+        
+        <div ref={paragraphRef} className="invisible translate-y-10 will-change-transform hidden"></div>
+
       </div>
+      {/* --- MOCKUP REPLACEMENT SECTION END --- */}
 
       <div ref={aboutRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center invisible translate-y-10 px-4 sm:px-6 lg:px-24 bg-paper-bg border-t-2 border-ink-dark shadow-[0_-10px_40px_rgba(0,0,0,0.15)] will-change-transform overflow-hidden">
 
@@ -414,10 +425,6 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
           />
         </div>
 
-        {/* FIXED-FIT CONTAINER 
-          Replaced overflow-y-auto with flex/justify-center. Fits completely in 1 viewport on PC.
-          Uses sm:gap-10 and sm:mb-8 on mobile to expand and use the white space dynamically.
-        */}
         <div className="max-w-7xl mx-auto w-full flex flex-col justify-center relative z-10 h-full max-h-[100dvh] pt-16 pb-8 md:py-0 px-2 sm:px-4 md:px-6 lg:px-8">
 
           {/* CONTENT WRAPPER */}
