@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { TextPlugin } from 'gsap/TextPlugin';
+import { Users, Globe, MapPin, TrendingUp, Headset, Award, FileText } from 'lucide-react';
 import heroVideoDesktop from '../assets/hero_y.mp4';
 import heroVideoMobile from '../assets/y_hero_v.mp4';
 import SmartVideo from './SmartVideo';
@@ -108,6 +109,22 @@ const HoverVideo = React.memo(({ src, poster, isActiveStep }) => {
   );
 });
 
+// Reorganized Bento Grid Data (Teaching on Left, Stats on Right)
+const desktopLeftBento = [
+  { icon: Award, stat: "Certified", label: "Guitar Courses" },
+  { icon: Users, stat: "20+ Years", label: "Teaching Experience" },
+  { icon: FileText, stat: "Interactive", label: "Smart Sheets" },
+  { icon: TrendingUp, stat: "Fastest", label: "Progress Guaranteed" },
+];
+const desktopRightBento = [
+  { icon: Users, stat: "4,000+", label: "Students Taught" },
+  { icon: Globe, stat: "12+", label: "Countries" },
+  { icon: MapPin, stat: "40+", label: "Indian Cities" },
+  { icon: Headset, stat: "24/7", label: "Student Support" },
+];
+// Combine for the mobile infinite scroller
+const mobileBentoOrder = [...desktopLeftBento, ...desktopRightBento];
+
 const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversingRef, onIntroComplete }) {
   const containerRef = useRef(null);
   const maskRef = useRef(null);
@@ -117,6 +134,9 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   const paragraphRef = useRef(null);
   const aboutRef = useRef(null);
   const bentoRowsRef = useRef([]);
+
+  const mobileBentoRefs = useRef([]);
+  const desktopBentoRefs = useRef([]);
   const maskProxy = useRef({ scale: 1, opacity: 1 });
 
   const [introDone, setIntroDone] = useState(false);
@@ -135,6 +155,10 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   const isAboutActive = step === 2;
 
   const yLogoPath = "M69.680,151.308 C65.149,152.644 63.920,157.974 64.907,158.322 C57.879,157.741 54.575,161.654 55.000,170.000 C55.019,169.981 84.536,170.483 107.052,170.235 C108.052,170.224 108.104,170.256 107.944,169.736 C107.904,159.734 103.470,159.279 101.510,158.878 C99.549,158.478 97.377,158.555 96.311,158.394 C96.038,156.229 94.973,154.539 93.693,152.899 C92.413,151.258 89.463,150.510 88.943,150.590 C88.423,150.670 86.693,152.438 87.036,123.967 C87.217,108.974 98.117,80.183 102.556,73.129 C107.865,62.596 121.867,48.795 126.684,45.962 C127.349,44.921 130.813,43.420 130.389,41.604 C129.542,40.515 116.559,46.173 113.465,47.445 C112.454,48.197 109.373,50.149 108.595,51.578 C108.428,51.935 105.909,51.179 107.487,46.361 C108.650,42.291 109.775,38.241 113.961,36.148 C113.961,36.148 123.893,35.069 132.364,32.785 C145.288,28.130 152.249,10.781 152.942,9.133 C153.636,7.485 156.342,1.949 156.342,1.949 C156.342,1.949 151.205,2.319 148.603,2.406 C132.903,2.753 122.983,1.980 111.822,14.630 C110.030,17.117 108.293,24.621 108.929,28.120 C109.565,31.618 111.630,39.065 106.904,41.428 C106.904,41.428 106.638,40.560 106.506,40.126 C113.973,28.926 101.117,16.040 89.544,16.040 C89.544,16.040 80.623,14.594 76.163,13.871 C82.238,16.908 80.325,40.741 104.517,40.741 C104.517,40.741 105.481,41.875 105.963,42.441 C105.963,42.441 102.533,53.291 105.457,53.291 C105.457,53.291 99.084,55.669 90.195,64.972 C88.284,67.049 81.150,75.668 80.154,77.413 C78.658,75.087 74.957,67.185 70.305,61.122 C56.682,37.781 35.593,19.753 29.446,15.766 C24.544,12.028 16.346,5.890 0.064,0.325 C38.608,33.218 64.638,97.620 65.451,107.031 C66.903,113.130 73.514,148.752 69.680,151.308 Z";
+
+  const addToMobileBento = useCallback((el, index) => { if (el) mobileBentoRefs.current[index] = el; }, []);
+  const addToDesktopBento = useCallback((el, index) => { if (el) desktopBentoRefs.current[index] = el; }, []);
+  const addToBentoRefs = useCallback((el, index) => { if (el) bentoRowsRef.current[index] = el; }, []);
 
   useEffect(() => {
     const checkOrientation = () => {
@@ -268,7 +292,12 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   useGSAP(() => {
     const isReversing = isReversingRef.current;
 
+    // Safely get active buttons and all buttons based on DOM to prevent undefined ref errors
+    const getActiveBento = () => window.innerWidth < 768 ? mobileBentoRefs.current : desktopBentoRefs.current;
+    const getAllBento = () => [...mobileBentoRefs.current, ...desktopBentoRefs.current];
+
     if (step > 2) {
+      gsap.killTweensOf(getAllBento());
       gsap.to(maskRef.current, { autoAlpha: 0, duration: 0.1, force3D: true });
       gsap.to(containerRef.current, { yPercent: -100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut", force3D: true });
       gsap.to([textRef.current, paragraphRef.current, aboutRef.current], { autoAlpha: 0, duration: 0.4, delay: 0.2, force3D: true });
@@ -282,18 +311,22 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
 
     if (isReversing && step === 2) {
       gsap.killTweensOf([containerRef.current, textRef.current, paragraphRef.current, maskRef.current, aboutRef.current, maskProxy.current]);
+      gsap.killTweensOf(getAllBento());
+
       gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out", force3D: true, onComplete });
       gsap.set(maskRef.current, { autoAlpha: 0, scale: 120, force3D: true });
       maskProxy.current = { scale: 120, opacity: 0 };
       renderCanvas();
       gsap.set(letterYRef.current, { autoAlpha: 0, force3D: false });
       gsap.set([textRef.current, paragraphRef.current], { autoAlpha: 0, y: -50 });
+      gsap.set(getAllBento(), { autoAlpha: 0, scale: 0.8 });
       gsap.set(aboutRef.current, { autoAlpha: 1, y: 0 });
       gsap.set(bentoRowsRef.current, { autoAlpha: 1, y: 0 });
       return;
     }
 
     if (step === 0) {
+      gsap.killTweensOf(getAllBento());
       if (isReversing) {
         gsap.to(maskRef.current, { scale: 1, autoAlpha: 1, duration: 0.8, ease: "power3.inOut", force3D: true, transformOrigin: '50% 50%' });
         gsap.to(maskProxy.current, { scale: 1, opacity: 1, duration: 0.8, ease: "power3.inOut", onUpdate: renderCanvas });
@@ -305,6 +338,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         renderCanvas();
         gsap.set(letterYRef.current, { autoAlpha: 1, force3D: false });
         gsap.set([textRef.current, paragraphRef.current], { autoAlpha: 0, y: 60 });
+        gsap.set(getAllBento(), { autoAlpha: 0, scale: 0.5 });
         gsap.set(aboutRef.current, { autoAlpha: 0, y: 50 });
         gsap.set(bentoRowsRef.current, { autoAlpha: 0, y: 50 });
         onComplete();
@@ -312,6 +346,9 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     }
 
     if (step === 1) {
+      gsap.killTweensOf(getAllBento());
+      const activeBento = getActiveBento();
+
       if (isReversing) {
         gsap.killTweensOf([textRef.current, paragraphRef.current, maskRef.current, aboutRef.current, maskProxy.current, bentoRowsRef.current]);
         gsap.set(maskRef.current, { autoAlpha: 0, scale: 120, force3D: true });
@@ -320,20 +357,45 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         gsap.set(letterYRef.current, { autoAlpha: 0, force3D: false });
         gsap.to(aboutRef.current, { autoAlpha: 0, y: 50, duration: 0.6, force3D: true });
         gsap.to(bentoRowsRef.current, { autoAlpha: 0, y: 30, duration: 0.4, force3D: true });
-        gsap.to([textRef.current, paragraphRef.current], { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true, onComplete });
+
+        const tl = gsap.timeline({ onComplete });
+        tl.to([textRef.current, paragraphRef.current], { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, 0);
+        tl.fromTo(activeBento,
+          { scale: 0.8, autoAlpha: 0 },
+          {
+            scale: 1, autoAlpha: 1, duration: 0.6, stagger: 0.08, ease: 'back.out(1.5)',
+            onComplete: () => {
+              gsap.to(activeBento, { scale: 1.05, duration: 0.8, yoyo: true, repeat: -1, ease: 'sine.inOut', stagger: { each: 0.1, from: "random" } });
+            }
+          }, 0.2);
       } else {
         const tl = gsap.timeline({ onComplete });
         tl.to(maskRef.current, { scale: 120, transformOrigin: '50% 50%', ease: 'power3.inOut', duration: 1.2, force3D: true }, 0);
         tl.to(maskProxy.current, { scale: 120, ease: 'power3.inOut', duration: 1.2, onUpdate: renderCanvas }, 0);
         tl.to(letterYRef.current, { autoAlpha: 0, duration: 0.15, force3D: false }, 0);
+
         tl.to(textRef.current, { autoAlpha: 1, scale: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, 0.4);
-        tl.to(paragraphRef.current, { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, 0.5);
+
+        tl.fromTo(activeBento,
+          { scale: 0.4, autoAlpha: 0 },
+          {
+            scale: 1, autoAlpha: 1, duration: 0.6, ease: 'back.out(1.5)', stagger: 0.08, force3D: true,
+            onComplete: () => {
+              gsap.to(activeBento, {
+                scale: 1.05, duration: 0.8, yoyo: true, repeat: -1, ease: 'sine.inOut', stagger: { each: 0.1, from: "random" }
+              });
+            }
+          }, 0.6);
       }
     }
 
     if (step === 2 && !isReversing) {
+      const activeBento = getActiveBento();
+      gsap.killTweensOf(getAllBento());
+
       const tl = gsap.timeline({ onComplete });
-      tl.to([textRef.current, paragraphRef.current], { autoAlpha: 0, y: -50, duration: 0.6, ease: 'power3.inOut', force3D: true });
+      tl.to(activeBento, { autoAlpha: 0, scale: 0.9, duration: 0.4, stagger: 0.05, ease: 'power2.inOut' }, 0);
+      tl.to([textRef.current, paragraphRef.current], { autoAlpha: 0, y: -50, duration: 0.6, ease: 'power3.inOut', force3D: true }, 0.2);
       tl.to(aboutRef.current, { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power3.out', force3D: true }, "-=0.2");
       tl.fromTo(bentoRowsRef.current,
         { autoAlpha: 0, y: 30 },
@@ -342,8 +404,6 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       );
     }
   }, { scope: containerRef, dependencies: [step] });
-
-  const addToBentoRefs = useCallback((el, index) => { if (el) bentoRowsRef.current[index] = el; }, []);
 
   return (
     <section ref={containerRef} className={`fixed inset-0 w-full h-dvh z-50 bg-transparent overflow-hidden flex items-center justify-center will-change-transform ${step > 2 ? 'pointer-events-none' : ''}`}>
@@ -395,26 +455,116 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         </div>
       )}
 
-      {/* --- MOCKUP REPLACEMENT SECTION START --- */}
-      <div ref={textRef} className="z-0 absolute inset-0 w-full h-full invisible translate-y-10 will-change-transform bg-[#f9debd]">
-        
-        <picture className="w-full h-full flex items-center justify-center">
-          <source media="(min-width: 768px)" srcSet={`${import.meta.env.BASE_URL}assets/hero_mockup_landscape.jpg`} />
-          <img 
-            src={`${import.meta.env.BASE_URL}assets/hero_mockup_portrait.jpg`} 
-            alt="Hero Concept Mockup" 
-            className="w-full h-full object-contain block" 
-          />
-        </picture>
-        
-        <div ref={paragraphRef} className="invisible translate-y-10 will-change-transform hidden"></div>
+      {/* --- RESPONSIVE TYPOGRAPHY & BENTO GRID START --- */}
+      <div ref={textRef} className="z-0 absolute inset-0 w-full h-full flex flex-col items-center invisible will-change-transform bg-[#f9debd] overflow-hidden">
 
+        {/* Background Clean Looping Video */}
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-black">
+          <SmartVideo
+            srcWebm={`${import.meta.env.BASE_URL}videos/hero_bg_clean.webm`}
+            srcMp4={`${import.meta.env.BASE_URL}videos/hero_bg_clean.mp4`}
+            poster={`${import.meta.env.BASE_URL}assets/hero_bg_clean.jpg`}
+            className="w-full h-full [&>video]:object-[50%_80%] md:[&>video]:object-[50%_100%]"
+            loop={true}
+          />
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center mt-[8vh] md:mt-[6vh] w-full px-4 drop-shadow-md pointer-events-none">
+          <h1 className="text-[3.25rem] sm:text-6xl md:text-7xl lg:text-[7.5rem] font-black font-technical-sans text-ink-dark uppercase tracking-tighter leading-[0.85] mb-2 sm:mb-4" style={{ transform: 'scaleY(1.1)' }}>
+            Yangerila
+          </h1>
+          <h2 className="text-[11px] sm:text-sm md:text-lg lg:text-2xl font-bold font-technical-sans text-ink-dark uppercase tracking-[0.3em] sm:tracking-[0.4em] md:tracking-[0.5em] mb-4 md:mb-5 ml-2 md:ml-4">
+            A Guitar Specialty Academy
+          </h2>
+
+          <p className="text-[10px] sm:text-[12px] md:text-sm lg:text-lg font-black font-technical-sans text-ink-dark uppercase tracking-[0.2em] sm:tracking-widest opacity-90 mt-1 md:mt-2">
+            Start your guitar learning journey with us
+          </p>
+        </div>
+
+        <div className="relative z-10 w-full h-full max-w-[110rem] mx-auto flex-1 flex flex-col justify-end md:justify-center pb-8 md:pb-0 pointer-events-none">
+
+          {/* MOBILE VIEW GRID (Infinite Scroller Marquee) */}
+          <div className="relative w-full md:hidden pointer-events-auto mt-auto mb-16 sm:mb-20 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
+
+            <style>{`
+                   @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+                   .animate-scroll { animation: scroll 25s linear infinite; width: max-content; }
+                   .animate-scroll:hover, .animate-scroll:active { animation-play-state: paused; }
+               `}</style>
+
+            {/* Array is duplicated to seamlessly loop, exactly 50% width travels */}
+            <div className="flex gap-4 px-4 animate-scroll">
+              {[...mobileBentoOrder, ...mobileBentoOrder].map((btn, index) => (
+                <div
+                  key={`mobile-${index}`}
+                  ref={el => addToMobileBento(el, index)}
+                  className="flex flex-row items-center gap-3 bg-[#fdfbf7]/90 backdrop-blur-md p-3 pr-6 rounded-3xl border border-ink-dark/15 shadow-sm will-change-transform shrink-0"
+                >
+                  <div className="w-10 h-10 rounded-full bg-ink-dark flex items-center justify-center shrink-0 shadow-inner">
+                    <btn.icon className="text-[#f9debd] w-5 h-5" strokeWidth={2.5} />
+                  </div>
+                  <div className="flex flex-col text-left">
+                    <span className="text-base font-black font-technical-sans text-ink-dark leading-none mb-0.5">{btn.stat}</span>
+                    <span className="text-[9px] font-bold font-technical-sans text-ink-dark/80 uppercase leading-tight">{btn.label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* DESKTOP VIEW PANELS */}
+          <div className="hidden md:flex absolute inset-0 w-full h-full items-center justify-between pointer-events-none px-4 md:px-8 lg:px-12 xl:px-20 pb-16 lg:pb-28">
+
+            {/* Left Side (Teaching Focus) */}
+            <div className="flex flex-col gap-6 lg:gap-10 pointer-events-auto">
+              {desktopLeftBento.map((btn, index) => (
+                <div
+                  key={`desktop-left-${index}`}
+                  ref={el => addToDesktopBento(el, index)}
+                  className="relative flex items-center gap-4 lg:gap-6 bg-[#fdfbf7]/95 backdrop-blur-md p-3 lg:p-5 pr-8 lg:pr-12 rounded-3xl lg:rounded-[3rem] border border-ink-dark/15 shadow-[0_8px_30px_rgba(0,0,0,0.06)] will-change-transform w-[17rem] lg:w-[22rem] xl:w-[26rem]"
+                >
+                  <div className="w-12 h-12 lg:w-20 lg:h-20 rounded-full bg-ink-dark flex items-center justify-center shrink-0 shadow-inner z-10">
+                    <btn.icon className="text-[#f9debd] w-5 h-5 lg:w-8 lg:h-8" strokeWidth={2.5} />
+                  </div>
+                  <div className="flex flex-col z-10 text-left">
+                    <span className="text-xl lg:text-4xl font-black font-technical-sans text-ink-dark leading-none tracking-tight">{btn.stat}</span>
+                    <span className="text-[10px] lg:text-[13px] font-bold font-technical-sans text-ink-dark/80 uppercase leading-tight mt-1 lg:mt-1.5 tracking-wider">{btn.label}</span>
+                  </div>
+                  <div className="absolute top-1/2 -right-8 lg:-right-16 xl:-right-24 w-8 lg:w-16 xl:w-24 h-[1.5px] bg-ink-dark/20 pointer-events-none"></div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right Side (Stats Focus) */}
+            <div className="flex flex-col gap-6 lg:gap-10 pointer-events-auto">
+              {desktopRightBento.map((btn, index) => (
+                <div
+                  key={`desktop-right-${index}`}
+                  ref={el => addToDesktopBento(el, index + 4)}
+                  className="relative flex items-center flex-row-reverse text-right gap-4 lg:gap-6 bg-[#fdfbf7]/95 backdrop-blur-md p-3 lg:p-5 pl-8 lg:pl-12 rounded-3xl lg:rounded-[3rem] border border-ink-dark/15 shadow-[0_8px_30px_rgba(0,0,0,0.06)] will-change-transform w-[17rem] lg:w-[22rem] xl:w-[26rem]"
+                >
+                  <div className="w-12 h-12 lg:w-20 lg:h-20 rounded-full bg-ink-dark flex items-center justify-center shrink-0 shadow-inner z-10">
+                    <btn.icon className="text-[#f9debd] w-5 h-5 lg:w-8 lg:h-8" strokeWidth={2.5} />
+                  </div>
+                  <div className="flex flex-col z-10 text-right">
+                    <span className="text-xl lg:text-4xl font-black font-technical-sans text-ink-dark leading-none tracking-tight">{btn.stat}</span>
+                    <span className="text-[10px] lg:text-[13px] font-bold font-technical-sans text-ink-dark/80 uppercase leading-tight mt-1 lg:mt-1.5 tracking-wider">{btn.label}</span>
+                  </div>
+                  <div className="absolute top-1/2 -left-8 lg:-left-16 xl:-left-24 w-8 lg:w-16 xl:w-24 h-[1.5px] bg-ink-dark/20 pointer-events-none"></div>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        </div>
+
+        <div ref={paragraphRef} className="invisible hidden"></div>
       </div>
-      {/* --- MOCKUP REPLACEMENT SECTION END --- */}
+      {/* --- RESPONSIVE TYPOGRAPHY & BENTO GRID END --- */}
 
       <div ref={aboutRef} className="absolute inset-0 z-20 flex flex-col items-center justify-center invisible translate-y-10 px-4 sm:px-6 lg:px-24 bg-paper-bg border-t-2 border-ink-dark shadow-[0_-10px_40px_rgba(0,0,0,0.15)] will-change-transform overflow-hidden">
 
-        {/* SMART BACKGROUND LAYER */}
         <div className="absolute inset-0 z-0 pointer-events-none opacity-90 md:opacity-100">
           <SmartVideo
             key={isMobileAbout ? 'mobile' : 'desktop'}
@@ -427,7 +577,6 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
 
         <div className="max-w-7xl mx-auto w-full flex flex-col justify-center relative z-10 h-full max-h-[100dvh] pt-16 pb-8 md:py-0 px-2 sm:px-4 md:px-6 lg:px-8">
 
-          {/* CONTENT WRAPPER */}
           <div className="w-full md:max-w-[75%] lg:max-w-[70%] xl:max-w-[65%] flex flex-col justify-center gap-5 sm:gap-10 md:gap-5 lg:gap-6 xl:gap-8 h-full mr-auto py-8 lg:py-16">
 
             <div className="w-full border-t-[3px] border-[#3A5A8C] pt-2 md:pt-3 mb-2 sm:mb-8 md:mb-2 shrink-0">
@@ -435,7 +584,6 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
               <h3 className="text-xl md:text-xl lg:text-2xl xl:text-3xl text-[#E19B2D] font-light font-elegant-serif italic drop-shadow-sm">Yangerila.</h3>
             </div>
 
-            {/* ITEM 01: Side-by-side on mobile, Text Left, Image Right */}
             <div ref={el => addToBentoRefs(el, 0)} className="flex flex-row items-center md:items-start gap-4 sm:gap-5 md:gap-6 w-full invisible will-change-[transform,opacity] shrink-0">
               <div className="flex-1 w-full order-1 text-left">
                 <div className="flex items-center gap-2 md:gap-3 mb-1.5 md:mb-2">
@@ -452,7 +600,6 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
               </div>
             </div>
 
-            {/* ITEM 02: Side-by-side on mobile. PC switches to Image Left */}
             <div ref={el => addToBentoRefs(el, 1)} className="flex flex-row md:flex-row-reverse items-center md:items-start gap-4 sm:gap-5 md:gap-6 w-full invisible will-change-[transform,opacity] shrink-0">
               <div className="flex-1 w-full order-1 md:order-2 text-left md:text-right">
                 <div className="flex items-center md:flex-row-reverse gap-2 md:gap-3 mb-1.5 md:mb-2">
@@ -469,7 +616,6 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
               </div>
             </div>
 
-            {/* ITEM 03: Side-by-side on mobile, Text Left, Image Right */}
             <div ref={el => addToBentoRefs(el, 2)} className="flex flex-row items-center md:items-start gap-4 sm:gap-5 md:gap-6 w-full invisible will-change-[transform,opacity] shrink-0">
               <div className="flex-1 w-full order-1 text-left">
                 <div className="flex items-center gap-2 md:gap-3 mb-1.5 md:mb-2">
