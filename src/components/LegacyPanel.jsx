@@ -34,14 +34,13 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
   const containerRef = useRef(null);
   const cameraRef = useRef(null);
   const cardsRef = useRef([]);
-  const statsBlockRef = useRef(null);
   const canvasRef = useRef(null);
 
   const frameRef = useRef({ current: 0 });
   const cardIndexRef = useRef(0);
   const isActiveRef = useRef(false);
   const interactionTimeoutRef = useRef(null);
-  const isActive = step === 3 || step === 4;
+  const isActive = step === 3;
   const enginePausedRef = useRef(false);
 
   const imagesRef = useRef(new Array(TOTAL_FRAMES + 1).fill(null));
@@ -55,8 +54,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
     let targetIdx = Math.round(index);
     let img = imagesRef.current[targetIdx];
 
-    // FIX: Nearest Neighbor Fallback. 
-    // If the frame hasn't loaded (fast scrolling), find the closest loaded frame to prevent canvas freeze.
     if (!img) {
       let offset = 1;
       while (offset <= TOTAL_FRAMES) {
@@ -72,7 +69,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
       }
     }
 
-    // If absolutely zero frames are loaded yet, just skip to avoid crashing
     if (!img) return;
 
     const ctx = canvas.getContext('2d', { alpha: false });
@@ -95,7 +91,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
       const img = new Image();
       img.onload = () => {
         imagesRef.current[i] = img;
-        // Re-render if this was the exact frame the user is currently parked on
         if (i === Math.round(frameRef.current.current)) renderFrame(i);
       };
       img.src = getFrameUrl(i);
@@ -138,8 +133,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
 
     const targetFrame = (TOTAL_FRAMES / 2) * targetIndex;
 
-    // FIX: Target Aggression.
-    // Instantly prioritize loading the destination frame and its neighbors before the sequence catches up.
     loadFramePriority(targetFrame);
     loadFramePriority(targetFrame - 1);
     loadFramePriority(targetFrame + 1);
@@ -188,8 +181,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
     const canvas = canvasRef.current;
     const frameQueue = frameLoadQueueRef.current;
 
-    // Initial sequence loading strategy: anchors only. Full sequence is staged
-    // when the user approaches the legacy section.
     for (let i = 0; i <= 4; i++) loadFramePriority(i);
     loadFramePriority(82);
     loadFramePriority(164);
@@ -316,8 +307,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
 
   useEffect(() => {
     const isReversing = isReversingRef.current;
-    const statCards = statsBlockRef.current?.querySelectorAll('.stat-card') ?? [];
-    const counters = statsBlockRef.current?.querySelectorAll('.counter-val') ?? [];
 
     if (step < 3) {
       isActiveRef.current = false;
@@ -327,12 +316,12 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
       gsap.to(canvasRef.current, { opacity: 1, duration: 0.8 });
     }
 
-    if (step > 4) {
+    if (step > 3) {
       isActiveRef.current = false;
       clearTimeout(interactionTimeoutRef.current);
       gsap.killTweensOf(frameRef.current);
       gsap.to(containerRef.current, { yPercent: -100, autoAlpha: 0, duration: 0.8, ease: 'power3.inOut', force3D: true });
-      gsap.set([cameraRef.current, statsBlockRef.current], { autoAlpha: 0, display: 'none', delay: 0.4 });
+      gsap.set(cameraRef.current, { autoAlpha: 0, display: 'none', delay: 0.4 });
       gsap.to(canvasRef.current, { opacity: 1, duration: 0.8 });
     }
 
@@ -350,41 +339,15 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
         frameRef.current.current = TOTAL_FRAMES;
         renderFrame(TOTAL_FRAMES);
         flyToCard(2, 0);
-        gsap.to(statsBlockRef.current, { autoAlpha: 0, duration: 0.4 });
-        gsap.to(statCards, { y: 50, autoAlpha: 0, duration: 0.4, ease: 'power2.in' });
       } else {
         cardIndexRef.current = 0;
         frameRef.current.current = 0;
         renderFrame(0);
         flyToCard(0, 0);
-        gsap.set(statsBlockRef.current, { autoAlpha: 0 });
-        gsap.set(statCards, { scale: 0.9, autoAlpha: 0, y: 20 });
       }
 
       clearTimeout(interactionTimeoutRef.current);
       interactionTimeoutRef.current = setTimeout(() => { isActiveRef.current = true; }, 700);
-    }
-
-    if (step === 4) {
-      isActiveRef.current = false;
-      clearTimeout(interactionTimeoutRef.current);
-      gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: 'power3.out' });
-      gsap.to(canvasRef.current, { opacity: 1, duration: 0.8, ease: 'power3.inOut' });
-
-      gsap.killTweensOf(frameRef.current);
-      cardsRef.current.forEach(c => { if (c) gsap.killTweensOf(c); });
-
-      gsap.set(cameraRef.current, { autoAlpha: 0, display: 'none' });
-      frameRef.current.current = TOTAL_FRAMES;
-      renderFrame(TOTAL_FRAMES);
-
-      gsap.set(statsBlockRef.current, { autoAlpha: 1, display: 'flex' });
-      const statsTl = gsap.timeline({ onComplete: () => { if (onComplete) onComplete(); } });
-      statsTl.to(statCards, { scale: 1, autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.8, ease: 'back.out(2)', force3D: true }, '+=0.2');
-      counters.forEach(counter => {
-        const target = parseFloat(counter.getAttribute('data-target'));
-        statsTl.fromTo(counter, { innerText: 0 }, { innerText: target, duration: 1.5, snap: { innerText: 1 }, ease: 'power1.out' }, '<');
-      });
     }
   }, [step, flyToCard, isReversingRef, onComplete, renderFrame]);
 
@@ -419,25 +382,6 @@ const LegacyPanel = React.memo(function LegacyPanel({ step, onComplete, isRevers
               </div>
             </div>
           ))}
-        </div>
-      </div>
-
-      <div ref={statsBlockRef} className="absolute inset-0 z-20 flex items-center justify-center invisible w-full h-full will-change-transform pointer-events-none">
-        <img src={getFrameUrl(164)} alt="" className="absolute inset-0 w-full h-full object-cover z-0 opacity-30" />
-        <div className="absolute inset-0 bg-ink-dark/90 z-0" />
-        <div className="w-full max-w-7xl grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-8 relative z-10 px-4 sm:px-6 md:px-24">
-          <div className="stat-card col-span-2 md:col-span-1 bg-ink-dark p-6 md:p-12 rounded-3xl md:rounded-3xl flex flex-col justify-center items-start border-2 border-pastel-blue shadow-[0_15px_40px_rgba(58,90,140,0.5)] relative overflow-hidden">
-            <span className="text-4xl md:text-5xl xl:text-7xl font-black text-pastel-blue relative z-10 font-technical-sans"><span className="counter-val" data-target="20">0</span>+</span>
-            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-technical-sans font-bold relative z-10">Years Exp</span>
-          </div>
-          <div className="stat-card bg-ink-dark p-6 md:p-12 rounded-3xl md:rounded-3xl flex flex-col justify-center items-start border-2 border-pastel-pink shadow-[0_15px_40px_rgba(227,66,52,0.5)] relative overflow-hidden">
-            <span className="text-4xl md:text-5xl xl:text-7xl font-black text-pastel-pink relative z-10 font-technical-sans"><span className="counter-val" data-target="4000">0</span>+</span>
-            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-technical-sans font-bold relative z-10">Students</span>
-          </div>
-          <div className="stat-card bg-ink-dark p-6 md:p-12 rounded-3xl md:rounded-3xl flex flex-col justify-center items-start border-2 border-pastel-mint shadow-[0_15px_40px_rgba(147,233,190,0.3)] relative overflow-hidden">
-            <span className="text-4xl md:text-5xl xl:text-7xl font-black text-pastel-mint relative z-10 font-technical-sans"><span className="counter-val" data-target="12">0</span>+</span>
-            <span className="text-[10px] md:text-xs xl:text-base tracking-widest text-paper-bg/70 uppercase mt-2 md:mt-4 font-technical-sans font-bold relative z-10">Countries</span>
-          </div>
         </div>
       </div>
     </div>

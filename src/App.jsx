@@ -104,8 +104,6 @@ export default function App() {
     isReversingRef.current = finalStep < currentStepRef.current;
     isLockedRef.current = true;
 
-    // FIX: Only lock the global scroll on Step 3 (The 3D Cards). 
-    // Step 4 (Stats) will seamlessly pass scroll control back to App.jsx!
     isComponentLockedRef.current = (finalStep === 3);
 
     inertiaDeadTime.current = now + INERTIA_WINDOW;
@@ -119,8 +117,16 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const handleReqNext = () => goToStep(currentStepRef.current + 1);
-    const handleReqPrev = () => goToStep(currentStepRef.current - 1);
+    const handleReqNext = () => {
+      let next = currentStepRef.current + 1;
+      if (next === 4) next = 5;
+      goToStep(next);
+    };
+    const handleReqPrev = () => {
+      let prev = currentStepRef.current - 1;
+      if (prev === 4) prev = 3;
+      goToStep(prev);
+    };
     window.addEventListener('requestNextStep', handleReqNext);
     window.addEventListener('requestPrevStep', handleReqPrev);
     return () => {
@@ -218,8 +224,16 @@ export default function App() {
     if (isLockedRef.current || isComponentLockedRef.current || isIntroPlayingRef.current) return;
     if (now - lastTransitionTime.current < COOLDOWN_MS) return;
     if (now < inertiaDeadTime.current) return;
-    if (direction === 'next') goToStep(currentStepRef.current + 1);
-    else goToStep(currentStepRef.current - 1);
+
+    if (direction === 'next') {
+      let next = currentStepRef.current + 1;
+      if (next === 4) next = 5;
+      goToStep(next);
+    } else {
+      let prev = currentStepRef.current - 1;
+      if (prev === 4) prev = 3;
+      goToStep(prev);
+    }
   }, [goToStep]);
 
   useGSAP(() => {
@@ -295,22 +309,25 @@ export default function App() {
 
       if (isLockedRef.current || isIntroPlayingRef.current || isComponentLockedRef.current) return;
       if (Date.now() < inertiaDeadTime.current) return;
+
       if (e.key === 'ArrowDown' || e.key === 'PageDown') {
         attemptAudioAutoplay();
-
         setIsUIMinimized(prev => prev ? prev : true);
         setMusicExpanded(prev => prev ? false : prev);
         setIsMenuOpen(prev => prev ? false : prev);
 
-        goToStep(currentStepRef.current + 1);
+        let next = currentStepRef.current + 1;
+        if (next === 4) next = 5;
+        goToStep(next);
       } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
         attemptAudioAutoplay();
-
         setIsUIMinimized(prev => prev ? prev : true);
         setMusicExpanded(prev => prev ? false : prev);
         setIsMenuOpen(prev => prev ? false : prev);
 
-        goToStep(currentStepRef.current - 1);
+        let prev = currentStepRef.current - 1;
+        if (prev === 4) prev = 3;
+        goToStep(prev);
       }
     };
 
