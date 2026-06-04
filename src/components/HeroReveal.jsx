@@ -391,13 +391,13 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
           <div className="absolute bottom-0 left-0 w-full h-[50%] bg-gradient-to-t from-[#FDFBF7] via-[#FDFBF7]/90 to-transparent md:hidden"></div>
         </div>
 
-        {/* Exact Typography matching image mockups */}
+        {/* Text Block with updated labels and custom Y SVG */}
         <div className="relative z-10 flex flex-col items-center mt-[4vh] md:mt-[6vh] w-full px-4 pointer-events-none">
-          <h1 className="text-[4rem] sm:text-6xl md:text-[6.5rem] lg:text-[8rem] font-black font-technical-sans text-ink-dark uppercase tracking-tighter leading-[0.8] mb-1 md:mb-2" style={{ transform: 'scaleY(1.15)' }}>
+          <h1 className="text-[4rem] sm:text-6xl md:text-[6.5rem] lg:text-[8rem] font-black font-technical-sans text-ink-dark uppercase tracking-tighter leading-[0.8] mb-4 md:mb-6" style={{ transform: 'scaleY(1.15)' }}>
             Yangerila
           </h1>
           <h2 className="text-[10px] sm:text-sm md:text-xl lg:text-2xl font-bold font-technical-sans text-ink-dark uppercase tracking-[0.4em] md:tracking-[0.5em] mb-3 md:mb-5">
-            Creative Studio
+            A Guitar Specialty Academy
           </h2>
 
           <div className="flex items-center gap-3 md:gap-4 w-full max-w-[260px] md:max-w-[400px] mb-3 md:mb-5">
@@ -438,7 +438,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
           </div>
         </div>
 
-        {/* DESKTOP VIEW PANELS: Hugging edges, +20% scaling on width, height, icons, text. Single flowchart line connecting them. */}
+        {/* DESKTOP VIEW PANELS: Hugging edges, +20% scaling on width, height, icons, text */}
         <div className="hidden md:flex absolute inset-0 w-full h-full justify-between items-center pointer-events-none px-6 lg:px-10 xl:px-16 pt-[12vh] pb-[8vh] z-10">
 
           {/* Left Side Group */}
