@@ -22,7 +22,7 @@ AboutDivider.displayName = 'AboutDivider';
 const bentoItems = [
   { icon: Users, stat: "4,000+", label: "Students\nTaught" },
   { icon: Globe, stat: "12+", label: "Countries" }, 
-  { icon: MapPin, stat: "40+", label: "Indian Cities" },
+  { icon: MapPin, stat: "40+", label: "Indian\nCities" },
   { icon: Headset, stat: "24/7", label: "Student\nSupport" },
   { icon: Award, stat: "Certified", label: "Guitar\nCourses" },
   { icon: FileText, stat: "Interactive", label: "Smart\nSheets" },
@@ -230,7 +230,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       renderCanvas();
       gsap.set(letterYRef.current, { autoAlpha: 0, force3D: false });
       gsap.set([textRef.current, paragraphRef.current], { autoAlpha: 0, y: -50 });
-      gsap.set(getAllBento(), { autoAlpha: 0, scale: 1, boxShadow: "0px 0px 0px 0px rgba(225, 155, 45, 0)" });
+      gsap.set(getAllBento(), { autoAlpha: 0, scale: 1, boxShadow: "0px 0px 0px 0px rgba(240, 90, 0, 0)" });
       gsap.set(aboutRef.current, { autoAlpha: 1, y: 0 });
       gsap.set(aboutLinesRef.current, { autoAlpha: 1, y: 0 });
       return;
@@ -251,7 +251,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         renderCanvas();
         gsap.set(letterYRef.current, { autoAlpha: 1, force3D: false });
         gsap.set([textRef.current, paragraphRef.current], { autoAlpha: 0, y: 60 });
-        gsap.set(getAllBento(), { autoAlpha: 0, scale: 1, boxShadow: "0px 0px 0px 0px rgba(225, 155, 45, 0)" });
+        gsap.set(getAllBento(), { autoAlpha: 0, scale: 1, boxShadow: "0px 0px 0px 0px rgba(240, 90, 0, 0)" });
         gsap.set(aboutRef.current, { autoAlpha: 0, y: 50 });
         gsap.set(aboutLinesRef.current, { autoAlpha: 0, y: 30 });
         onComplete();
@@ -274,13 +274,13 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         const tl = gsap.timeline({ onComplete });
         tl.to([textRef.current, paragraphRef.current], { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, 0);
         tl.fromTo(activeBento,
-          { scale: 0.95, autoAlpha: 0, boxShadow: "0px 0px 0px 0px rgba(225, 155, 45, 0)" },
+          { scale: 0.95, autoAlpha: 0, boxShadow: "0px 0px 0px 0px rgba(240, 90, 0, 0)" },
           {
             scale: 1, autoAlpha: 1, duration: 0.6, stagger: 0.08, ease: 'back.out(1.5)',
             onComplete: () => {
               gsap.to(activeBento, { 
-                boxShadow: "0px 0px 20px 4px rgba(225, 155, 45, 0.4)", 
-                duration: 1.5, yoyo: true, repeat: -1, ease: 'sine.inOut', stagger: { each: 0.3, from: "random" } 
+                boxShadow: "0px 0px 30px 8px rgba(240, 90, 0, 0.7)", 
+                duration: 0.6, yoyo: true, repeat: -1, ease: 'sine.inOut', stagger: 0.15 
               });
             }
           }, 0.2);
@@ -293,13 +293,13 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         tl.to(textRef.current, { autoAlpha: 1, scale: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, 0.4);
 
         tl.fromTo(activeBento,
-          { scale: 0.95, autoAlpha: 0, boxShadow: "0px 0px 0px 0px rgba(225, 155, 45, 0)" },
+          { scale: 0.95, autoAlpha: 0, boxShadow: "0px 0px 0px 0px rgba(240, 90, 0, 0)" },
           {
             scale: 1, autoAlpha: 1, duration: 0.6, ease: 'back.out(1.5)', stagger: 0.08, force3D: true,
             onComplete: () => {
               gsap.to(activeBento, {
-                boxShadow: "0px 0px 20px 4px rgba(225, 155, 45, 0.4)", 
-                duration: 1.5, yoyo: true, repeat: -1, ease: 'sine.inOut', stagger: { each: 0.3, from: "random" }
+                boxShadow: "0px 0px 30px 8px rgba(240, 90, 0, 0.7)", 
+                duration: 0.6, yoyo: true, repeat: -1, ease: 'sine.inOut', stagger: 0.15
               });
             }
           }, 0.6);
@@ -312,7 +312,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       gsap.killTweensOf(aboutLinesRef.current);
 
       const tl = gsap.timeline({ onComplete });
-      tl.to(activeBento, { autoAlpha: 0, scale: 0.95, boxShadow: "0px 0px 0px 0px rgba(225, 155, 45, 0)", duration: 0.4, stagger: 0.05, ease: 'power2.inOut' }, 0);
+      tl.to(activeBento, { autoAlpha: 0, scale: 0.95, boxShadow: "0px 0px 0px 0px rgba(240, 90, 0, 0)", duration: 0.4, stagger: 0.05, ease: 'power2.inOut' }, 0);
       tl.to([textRef.current, paragraphRef.current], { autoAlpha: 0, y: -50, duration: 0.6, ease: 'power3.inOut', force3D: true }, 0.2);
       tl.to(aboutRef.current, { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power3.out', force3D: true }, "-=0.2");
       tl.fromTo(aboutLinesRef.current,
@@ -403,16 +403,15 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
           <div className="flex items-center gap-3 md:gap-4 w-full max-w-[260px] md:max-w-[400px] mb-3 md:mb-5">
             <div className="h-[1.5px] bg-ink-dark flex-1"></div>
             <div className="w-5 h-5 md:w-8 md:h-8 shrink-0 relative flex items-center justify-center">
-              <svg viewBox="0 0 24 24" className="w-full h-full text-ink-dark fill-current">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <svg viewBox="0 0 157 171" className="w-full h-full fill-current text-ink-dark">
+                <path d={yLogoPath} />
               </svg>
-              <span className="absolute text-[#FDFBF7] text-[8px] md:text-[12px] top-[46%] left-[50%] -translate-x-1/2 -translate-y-1/2 leading-none">★</span>
             </div>
             <div className="h-[1.5px] bg-ink-dark flex-1"></div>
           </div>
 
           <h3 className="text-[10px] sm:text-xs md:text-lg lg:text-xl font-black font-technical-sans text-ink-dark uppercase tracking-[0.15em] md:tracking-[0.2em]">
-            A Guitar Specialty Academy
+            Start your guitar learning journey with us
           </h3>
         </div>
 
@@ -439,49 +438,65 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
           </div>
         </div>
 
-        {/* DESKTOP VIEW PANELS: Hugging edges (px-6 to px-16), larger widths, flex justified to edges */}
+        {/* DESKTOP VIEW PANELS: Hugging edges, +20% scaling on width, height, icons, text. Single flowchart line connecting them. */}
         <div className="hidden md:flex absolute inset-0 w-full h-full justify-between items-center pointer-events-none px-6 lg:px-10 xl:px-16 pt-[12vh] pb-[8vh] z-10">
 
           {/* Left Side Group */}
-          <div className="flex flex-col gap-6 lg:gap-8 xl:gap-10 justify-center h-full pointer-events-auto w-[260px] lg:w-[300px] xl:w-[360px]">
-            {desktopLeftBento.map((btn, index) => (
-              <div
-                key={`desktop-left-${index}`}
-                ref={el => addToDesktopBento(el, index)}
-                className="relative flex items-center gap-4 bg-white/40 backdrop-blur-md px-4 lg:px-5 py-2 h-[90px] lg:h-[110px] xl:h-[130px] rounded-2xl lg:rounded-3xl border-2 border-ink-dark shadow-none will-change-[transform,box-shadow] w-full"
-              >
-                <div className="w-[60px] h-[60px] lg:w-[70px] lg:h-[70px] xl:w-[80px] xl:h-[80px] rounded-full bg-ink-dark flex items-center justify-center shrink-0">
-                  <btn.icon className="text-[#FDFBF7] w-6 h-6 lg:w-8 lg:h-8 xl:w-10 xl:h-10" strokeWidth={2.5} />
+          <div className="flex flex-col justify-center h-full pointer-events-auto w-[195px] lg:w-[210px] xl:w-[230px]">
+            <div className="relative flex flex-col gap-2 lg:gap-2.5 w-full">
+              
+              {/* Left Flowchart Vertical Line */}
+              <div className="hidden lg:block absolute top-[50px] lg:top-[55px] xl:top-[62.5px] bottom-[50px] lg:bottom-[55px] xl:bottom-[62.5px] -right-4 lg:-right-6 xl:-right-8 w-[1.5px] bg-ink-dark pointer-events-none"></div>
+              {/* Left Flowchart Main Horizontal Line */}
+              <div className="hidden lg:block absolute top-1/2 -right-4 lg:-right-6 xl:-right-8 w-8 lg:w-12 xl:w-20 h-[1.5px] bg-ink-dark translate-x-full pointer-events-none"></div>
+
+              {desktopLeftBento.map((btn, index) => (
+                <div
+                  key={`desktop-left-${index}`}
+                  ref={el => addToDesktopBento(el, index)}
+                  className="relative flex items-center gap-3 bg-white/40 backdrop-blur-md px-3 lg:px-4 py-2 h-[100px] lg:h-[110px] xl:h-[125px] rounded-2xl border-2 border-ink-dark shadow-none will-change-[transform,box-shadow] w-full"
+                >
+                  <div className="w-[50px] h-[50px] lg:w-[60px] lg:h-[60px] xl:w-[68px] xl:h-[68px] rounded-full bg-ink-dark flex items-center justify-center shrink-0">
+                    <btn.icon className="text-[#FDFBF7] w-6 h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" strokeWidth={2.5} />
+                  </div>
+                  <div className="flex flex-col z-10 text-left justify-center flex-1">
+                    <span className="text-[16px] lg:text-[18px] xl:text-[22px] font-black font-technical-sans text-ink-dark leading-none tracking-tight mb-1">{btn.stat}</span>
+                    <span className="text-[9px] lg:text-[10px] xl:text-[12px] font-bold font-technical-sans text-ink-dark/80 uppercase leading-tight whitespace-pre-line">{btn.label}</span>
+                  </div>
+                  {/* Button Flowchart Connectors */}
+                  <div className="hidden lg:block absolute top-1/2 -right-4 lg:-right-6 xl:-right-8 w-4 lg:w-6 xl:w-8 h-[1.5px] bg-ink-dark pointer-events-none"></div>
                 </div>
-                <div className="flex flex-col z-10 text-left justify-center flex-1">
-                  <span className="text-[18px] lg:text-[22px] xl:text-[26px] font-black font-technical-sans text-ink-dark leading-none tracking-tight mb-1">{btn.stat}</span>
-                  <span className="text-[10px] lg:text-[12px] xl:text-[14px] font-bold font-technical-sans text-ink-dark/80 uppercase leading-tight whitespace-pre-line">{btn.label}</span>
-                </div>
-                {/* Anchor Connecting Line Pointing Center */}
-                <div className="hidden lg:block absolute top-1/2 -right-8 lg:-right-12 xl:-right-16 w-8 lg:w-12 xl:w-16 h-[2px] bg-ink-dark pointer-events-none"></div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Right Side Group */}
-          <div className="flex flex-col gap-6 lg:gap-8 xl:gap-10 justify-center h-full pointer-events-auto w-[260px] lg:w-[300px] xl:w-[360px]">
-            {desktopRightBento.map((btn, index) => (
-              <div
-                key={`desktop-right-${index}`}
-                ref={el => addToDesktopBento(el, index + 4)}
-                className="relative flex items-center flex-row-reverse gap-4 bg-white/40 backdrop-blur-md px-4 lg:px-5 py-2 h-[90px] lg:h-[110px] xl:h-[130px] rounded-2xl lg:rounded-3xl border-2 border-ink-dark shadow-none will-change-[transform,box-shadow] w-full text-right"
-              >
-                <div className="w-[60px] h-[60px] lg:w-[70px] lg:h-[70px] xl:w-[80px] xl:h-[80px] rounded-full bg-ink-dark flex items-center justify-center shrink-0">
-                  <btn.icon className="text-[#FDFBF7] w-6 h-6 lg:w-8 lg:h-8 xl:w-10 xl:h-10" strokeWidth={2.5} />
+          <div className="flex flex-col justify-center h-full pointer-events-auto w-[195px] lg:w-[210px] xl:w-[230px]">
+            <div className="relative flex flex-col gap-2 lg:gap-2.5 w-full">
+              
+              {/* Right Flowchart Vertical Line */}
+              <div className="hidden lg:block absolute top-[50px] lg:top-[55px] xl:top-[62.5px] bottom-[50px] lg:bottom-[55px] xl:bottom-[62.5px] -left-4 lg:-left-6 xl:-left-8 w-[1.5px] bg-ink-dark pointer-events-none"></div>
+              {/* Right Flowchart Main Horizontal Line */}
+              <div className="hidden lg:block absolute top-1/2 -left-4 lg:-left-6 xl:-left-8 w-8 lg:w-12 xl:w-20 h-[1.5px] bg-ink-dark -translate-x-full pointer-events-none"></div>
+
+              {desktopRightBento.map((btn, index) => (
+                <div
+                  key={`desktop-right-${index}`}
+                  ref={el => addToDesktopBento(el, index + 4)}
+                  className="relative flex items-center flex-row-reverse gap-3 bg-white/40 backdrop-blur-md px-3 lg:px-4 py-2 h-[100px] lg:h-[110px] xl:h-[125px] rounded-2xl border-2 border-ink-dark shadow-none will-change-[transform,box-shadow] w-full text-right"
+                >
+                  <div className="w-[50px] h-[50px] lg:w-[60px] lg:h-[60px] xl:w-[68px] xl:h-[68px] rounded-full bg-ink-dark flex items-center justify-center shrink-0">
+                    <btn.icon className="text-[#FDFBF7] w-6 h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" strokeWidth={2.5} />
+                  </div>
+                  <div className="flex flex-col z-10 text-right justify-center flex-1">
+                    <span className="text-[16px] lg:text-[18px] xl:text-[22px] font-black font-technical-sans text-ink-dark leading-none tracking-tight mb-1">{btn.stat}</span>
+                    <span className="text-[9px] lg:text-[10px] xl:text-[12px] font-bold font-technical-sans text-ink-dark/80 uppercase leading-tight whitespace-pre-line">{btn.label}</span>
+                  </div>
+                  {/* Button Flowchart Connectors */}
+                  <div className="hidden lg:block absolute top-1/2 -left-4 lg:-left-6 xl:-left-8 w-4 lg:w-6 xl:w-8 h-[1.5px] bg-ink-dark pointer-events-none"></div>
                 </div>
-                <div className="flex flex-col z-10 text-right justify-center flex-1">
-                  <span className="text-[18px] lg:text-[22px] xl:text-[26px] font-black font-technical-sans text-ink-dark leading-none tracking-tight mb-1">{btn.stat}</span>
-                  <span className="text-[10px] lg:text-[12px] xl:text-[14px] font-bold font-technical-sans text-ink-dark/80 uppercase leading-tight whitespace-pre-line">{btn.label}</span>
-                </div>
-                {/* Anchor Connecting Line Pointing Center */}
-                <div className="hidden lg:block absolute top-1/2 -left-8 lg:-left-12 xl:-left-16 w-8 lg:w-12 xl:w-16 h-[2px] bg-ink-dark pointer-events-none"></div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
         </div>
