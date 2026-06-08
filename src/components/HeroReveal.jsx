@@ -18,28 +18,26 @@ const AboutDivider = React.forwardRef((props, ref) => (
 ));
 AboutDivider.displayName = 'AboutDivider';
 
-// Data matched exactly to the reference mockup with the requested "Teaching Experience" update
+// Final 6-item layout data
 const bentoItems = [
   { icon: Users, stat: "4,000+", label: "Students\nTaught" },
-  { icon: Globe, stat: "12+", label: "Countries" }, 
+  { icon: Globe, stat: "12+", label: "Countries" },
   { icon: MapPin, stat: "40+", label: "Indian\nCities" },
-  { icon: Headset, stat: "24/7", label: "Student\nSupport" },
   { icon: Award, stat: "Certified", label: "Guitar\nCourses" },
   { icon: FileText, stat: "Interactive", label: "Smart\nSheets" },
-  { icon: TrendingUp, stat: "Fastest", label: "Progress\nGuaranteed" },
-  { icon: Users, stat: "20+ Years", label: "Teaching Experience" }, 
+  { icon: TrendingUp, stat: "Fastest", label: "Progress\nGuaranteed" }
 ];
 
-// Mobile Grid: 4 columns, 2 rows
+// Mobile Grid: 3 columns, 2 rows (6 items)
 const mobileBentoOrder = bentoItems;
 
-// Desktop Left: Students, Countries, Cities, Fastest Progress
-const desktopLeftBento = [bentoItems[0], bentoItems[1], bentoItems[2], bentoItems[6]];
+// Desktop Left: 3 Items (Indexes 0, 1, 2)
+const desktopLeftBento = [bentoItems[0], bentoItems[1], bentoItems[2]];
 
-// Desktop Right: Support, Certified, Smart Sheets, Teaching Exp
-const desktopRightBento = [bentoItems[3], bentoItems[4], bentoItems[5], bentoItems[7]];
+// Desktop Right: 3 Items (Indexes 3, 4, 5)
+const desktopRightBento = [bentoItems[3], bentoItems[4], bentoItems[5]];
 
-const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversingRef, onIntroComplete }) {
+const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversingRef, onIntroComplete, isRevealingRef }) {
   const containerRef = useRef(null);
   const maskRef = useRef(null);
   const canvasRef = useRef(null);
@@ -52,6 +50,8 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   const desktopBentoRefs = useRef([]);
   const aboutLinesRef = useRef([]);
   const maskProxy = useRef({ scale: 1, opacity: 1 });
+  const flowchartLinesRef = useRef([]);
+  const masterTlRef = useRef(null);
 
   const [introDone, setIntroDone] = useState(false);
   const [loadingPhase, setLoadingPhase] = useState(0);
@@ -72,6 +72,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
   const addToMobileBento = useCallback((el, index) => { if (el) mobileBentoRefs.current[index] = el; }, []);
   const addToDesktopBento = useCallback((el, index) => { if (el) desktopBentoRefs.current[index] = el; }, []);
   const addToAboutLines = useCallback((el, index) => { if (el) aboutLinesRef.current[index] = el; }, []);
+  const addToFlowchartLines = useCallback((el) => { if (el && !flowchartLinesRef.current.includes(el)) flowchartLinesRef.current.push(el); }, []);
 
   useEffect(() => {
     const checkOrientation = () => {
@@ -154,6 +155,18 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     });
   }, [introDone, onIntroComplete]);
 
+  // FAST-FORWARD SCROLL LISTENER
+  useEffect(() => {
+    const handleEarlyScroll = (e) => {
+      if (step === 1 && masterTlRef.current && masterTlRef.current.isActive()) {
+        // Accelerates the long cinematic sequence so it skips fluidly
+        masterTlRef.current.timeScale(8);
+      }
+    };
+    window.addEventListener('fastForwardReveal', handleEarlyScroll);
+    return () => window.removeEventListener('fastForwardReveal', handleEarlyScroll);
+  }, [step]);
+
   useEffect(() => {
     const forceLoad = setTimeout(() => {
       if (!videoBuffered) setVideoBuffered(true);
@@ -205,13 +218,29 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     const getActiveBento = () => window.innerWidth < 768 ? mobileBentoRefs.current : desktopBentoRefs.current;
     const getAllBento = () => [...mobileBentoRefs.current, ...desktopBentoRefs.current];
 
+    const getOffsets = () => {
+      const elements = getActiveBento();
+      const isMobile = window.innerWidth < 768;
+      const centerX = window.innerWidth / 2;
+      const centerY = isMobile ? window.innerHeight * 0.5 : window.innerHeight * 0.75;
+
+      return elements.map(el => {
+        if (!el) return { el: null, dx: 0, dy: 0 };
+        const rect = el.getBoundingClientRect();
+        return {
+          el,
+          dx: centerX - (rect.left + rect.width / 2),
+          dy: centerY - (rect.top + rect.height / 2)
+        };
+      });
+    };
+
     if (step > 2) {
       gsap.killTweensOf(getAllBento());
-      gsap.killTweensOf(aboutLinesRef.current);
+      gsap.killTweensOf(flowchartLinesRef.current);
       gsap.to(maskRef.current, { autoAlpha: 0, duration: 0.1, force3D: true });
       gsap.to(containerRef.current, { yPercent: -100, autoAlpha: 0, duration: 0.8, ease: "power3.inOut", force3D: true });
       gsap.to([textRef.current, paragraphRef.current, aboutRef.current], { autoAlpha: 0, duration: 0.4, delay: 0.2, force3D: true });
-      gsap.to(aboutLinesRef.current, { autoAlpha: 0, duration: 0.4, force3D: true });
       return;
     }
 
@@ -222,7 +251,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
     if (isReversing && step === 2) {
       gsap.killTweensOf([containerRef.current, textRef.current, paragraphRef.current, maskRef.current, aboutRef.current, maskProxy.current]);
       gsap.killTweensOf(getAllBento());
-      gsap.killTweensOf(aboutLinesRef.current);
+      gsap.killTweensOf(flowchartLinesRef.current);
 
       gsap.to(containerRef.current, { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out", force3D: true, onComplete });
       gsap.set(maskRef.current, { autoAlpha: 0, scale: 120, force3D: true });
@@ -231,6 +260,8 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       gsap.set(letterYRef.current, { autoAlpha: 0, force3D: false });
       gsap.set([textRef.current, paragraphRef.current], { autoAlpha: 0, y: -50 });
       gsap.set(getAllBento(), { autoAlpha: 0, scale: 1, boxShadow: "0px 0px 0px 0px rgba(240, 90, 0, 0)" });
+
+      // Ensure About items are fully visible if backing up into Step 2
       gsap.set(aboutRef.current, { autoAlpha: 1, y: 0 });
       gsap.set(aboutLinesRef.current, { autoAlpha: 1, y: 0 });
       return;
@@ -238,13 +269,14 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
 
     if (step === 0) {
       gsap.killTweensOf(getAllBento());
-      gsap.killTweensOf(aboutLinesRef.current);
+      if (masterTlRef.current) masterTlRef.current.kill();
 
       if (isReversing) {
         gsap.to(maskRef.current, { scale: 1, autoAlpha: 1, duration: 0.8, ease: "power3.inOut", force3D: true, transformOrigin: '50% 50%' });
         gsap.to(maskProxy.current, { scale: 1, opacity: 1, duration: 0.8, ease: "power3.inOut", onUpdate: renderCanvas });
         gsap.to(letterYRef.current, { autoAlpha: 1, duration: 0.4, delay: 0.4, force3D: false });
         gsap.to([textRef.current, paragraphRef.current], { autoAlpha: 0, y: 60, duration: 0.6, force3D: true, onComplete });
+        gsap.set(aboutLinesRef.current, { autoAlpha: 0, y: 20 });
       } else {
         gsap.set(maskRef.current, { scale: 1, autoAlpha: 1, force3D: true });
         maskProxy.current = { scale: 1, opacity: 1 };
@@ -253,23 +285,26 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
         gsap.set([textRef.current, paragraphRef.current], { autoAlpha: 0, y: 60 });
         gsap.set(getAllBento(), { autoAlpha: 0, scale: 1, boxShadow: "0px 0px 0px 0px rgba(240, 90, 0, 0)" });
         gsap.set(aboutRef.current, { autoAlpha: 0, y: 50 });
-        gsap.set(aboutLinesRef.current, { autoAlpha: 0, y: 30 });
+        gsap.set(aboutLinesRef.current, { autoAlpha: 0, y: 20 });
         onComplete();
       }
     }
 
     if (step === 1) {
       gsap.killTweensOf(getAllBento());
+      const isMobile = window.innerWidth < 768;
       const activeBento = getActiveBento();
 
       if (isReversing) {
-        gsap.killTweensOf([textRef.current, paragraphRef.current, maskRef.current, aboutRef.current, maskProxy.current, aboutLinesRef.current]);
+        gsap.killTweensOf([textRef.current, paragraphRef.current, maskRef.current, aboutRef.current, maskProxy.current]);
         gsap.set(maskRef.current, { autoAlpha: 0, scale: 120, force3D: true });
         maskProxy.current = { scale: 120, opacity: 0 };
         renderCanvas();
         gsap.set(letterYRef.current, { autoAlpha: 0, force3D: false });
+
+        // Hide About elements cleanly when reversing to step 1
         gsap.to(aboutRef.current, { autoAlpha: 0, y: 50, duration: 0.6, force3D: true });
-        gsap.to(aboutLinesRef.current, { autoAlpha: 0, y: 30, duration: 0.4, force3D: true });
+        gsap.set(aboutLinesRef.current, { autoAlpha: 0, y: 20 });
 
         const tl = gsap.timeline({ onComplete });
         tl.to([textRef.current, paragraphRef.current], { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, 0);
@@ -278,47 +313,124 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
           {
             scale: 1, autoAlpha: 1, duration: 0.6, stagger: 0.08, ease: 'back.out(1.5)',
             onComplete: () => {
-              gsap.to(activeBento, { 
-                boxShadow: "0px 0px 30px 8px rgba(240, 90, 0, 0.7)", 
-                duration: 0.6, yoyo: true, repeat: -1, ease: 'sine.inOut', stagger: 0.15 
+              gsap.to(activeBento, {
+                boxShadow: "0px 0px 30px 8px rgba(240, 90, 0, 0.7)",
+                duration: 0.6, yoyo: true, repeat: -1, ease: 'sine.inOut', stagger: 0.15
               });
             }
           }, 0.2);
       } else {
-        const tl = gsap.timeline({ onComplete });
-        tl.to(maskRef.current, { scale: 120, transformOrigin: '50% 50%', ease: 'power3.inOut', duration: 1.2, force3D: true }, 0);
-        tl.to(maskProxy.current, { scale: 120, ease: 'power3.inOut', duration: 1.2, onUpdate: renderCanvas }, 0);
+        if (isRevealingRef) isRevealingRef.current = true; // Lock scroll for fast-forward
+
+        // 1. Force the parent layout into its final visible state
+        gsap.set(textRef.current, { y: 0, scale: 1 });
+        gsap.set(activeBento, { clearProps: "all" });
+
+        // 2. Force browser reflow to compute accurate coordinates
+        void textRef.current.offsetHeight;
+
+        // 3. Measure accurate final locations relative to screen
+        const offsets = getOffsets();
+
+        // 4. Force buttons into exact starting position
+        offsets.forEach(({ el, dx, dy }) => {
+          if (!el) return;
+          gsap.set(el, { x: dx, y: dy, scale: 0, opacity: 0, backdropFilter: 'blur(0px)' });
+
+          const iconContainer = el.querySelector('.bento-icon-container');
+          const textBlocks = el.querySelectorAll('.bento-text-line');
+          if (iconContainer) gsap.set(iconContainer, { scale: 0, opacity: 0 });
+          if (textBlocks) gsap.set(textBlocks, { text: "" });
+        });
+
+        // 5. Revert parent back to its hidden 'step 0' state
+        gsap.set(textRef.current, { y: 60 });
+
+        // Force a normal timescale
+        const tl = gsap.timeline({
+          onComplete: () => {
+            if (isRevealingRef) isRevealingRef.current = false; // Unlock global scroll down
+            if (onComplete) onComplete();
+          }
+        }).timeScale(1);
+        masterTlRef.current = tl;
+
+        // Base background reveal
+        tl.to(maskRef.current, { scale: 120, transformOrigin: '50% 50%', ease: 'power3.inOut', duration: 1.5, force3D: true }, 0);
+        tl.to(maskProxy.current, { scale: 120, ease: 'power3.inOut', duration: 1.5, onUpdate: renderCanvas }, 0);
         tl.to(letterYRef.current, { autoAlpha: 0, duration: 0.15, force3D: false }, 0);
+        tl.to(textRef.current, { autoAlpha: 1, scale: 1, y: 0, duration: 1.2, ease: 'power3.out', force3D: true }, 0.5);
 
-        tl.to(textRef.current, { autoAlpha: 1, scale: 1, y: 0, duration: 0.8, ease: 'power3.out', force3D: true }, 0.4);
+        gsap.set(flowchartLinesRef.current, { autoAlpha: 0 });
 
-        tl.fromTo(activeBento,
-          { scale: 0.95, autoAlpha: 0, boxShadow: "0px 0px 0px 0px rgba(240, 90, 0, 0)" },
-          {
-            scale: 1, autoAlpha: 1, duration: 0.6, ease: 'back.out(1.5)', stagger: 0.08, force3D: true,
-            onComplete: () => {
-              gsap.to(activeBento, {
-                boxShadow: "0px 0px 30px 8px rgba(240, 90, 0, 0.7)", 
-                duration: 0.6, yoyo: true, repeat: -1, ease: 'sine.inOut', stagger: 0.15
-              });
-            }
-          }, 0.6);
+        const sequenceOrder = isMobile ? [0, 1, 2, 3, 4, 5] : [0, 3, 1, 4, 2, 5];
+
+        tl.addLabel("bentoPop", 1.2);
+
+        sequenceOrder.forEach((index, i) => {
+          const itemData = offsets[index];
+          if (!itemData || !itemData.el) return;
+
+          const item = itemData.el;
+          const iconContainer = item.querySelector('.bento-icon-container');
+          const textBlocks = item.querySelectorAll('.bento-text-line');
+
+          // EXACTLY 1.5 second interval between each button start
+          const startTime = `bentoPop+=${i * 1.5}`;
+
+          // Pop up takes 1.0s
+          tl.to(item, { scale: 1, opacity: 1, duration: 1.0, ease: 'back.out(1.2)', force3D: true }, startTime);
+
+          // Icon and Text load
+          if (iconContainer) {
+            tl.to(iconContainer, { scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.5)' }, `${startTime}+=0.3`);
+          }
+
+          if (textBlocks.length > 0) {
+            textBlocks.forEach((tb) => {
+              const originalText = tb.getAttribute('data-text');
+              if (originalText) {
+                tl.to(tb, { text: originalText, duration: 0.8, ease: "none" }, `${startTime}+=0.3`);
+              }
+            });
+          }
+
+          // Move takes 1.2s, waiting for the pop to finish
+          tl.to(item, {
+            x: 0, y: 0, duration: 1.2, ease: 'power3.inOut',
+            onComplete: () => gsap.set(item, { clearProps: "backdropFilter" })
+          }, `${startTime}+=1.0`);
+        });
+
+        // Connector lines fade entirely independently AFTER all pops are locked
+        const endSequenceTime = `bentoPop+=${sequenceOrder.length * 1.5 + 1.2}`;
+        tl.to(flowchartLinesRef.current, { autoAlpha: 1, duration: 1.2, stagger: 0.1, ease: 'power2.inOut' }, endSequenceTime);
+        tl.add(() => {
+          gsap.to(activeBento, {
+            boxShadow: "0px 0px 30px 8px rgba(240, 90, 0, 0.7)",
+            duration: 1.0, yoyo: true, repeat: -1, ease: 'sine.inOut', stagger: 0.2
+          });
+        }, `${endSequenceTime}+=0.5`);
       }
     }
 
     if (step === 2 && !isReversing) {
       const activeBento = getActiveBento();
       gsap.killTweensOf(getAllBento());
-      gsap.killTweensOf(aboutLinesRef.current);
 
       const tl = gsap.timeline({ onComplete });
       tl.to(activeBento, { autoAlpha: 0, scale: 0.95, boxShadow: "0px 0px 0px 0px rgba(240, 90, 0, 0)", duration: 0.4, stagger: 0.05, ease: 'power2.inOut' }, 0);
+      tl.to(flowchartLinesRef.current, { autoAlpha: 0, duration: 0.2 }, 0);
       tl.to([textRef.current, paragraphRef.current], { autoAlpha: 0, y: -50, duration: 0.6, ease: 'power3.inOut', force3D: true }, 0.2);
+
+      // Reveal the parent About container
       tl.to(aboutRef.current, { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power3.out', force3D: true }, "-=0.2");
+
+      // Reveal the internal About text lines that were previously stuck at opacity-0
       tl.fromTo(aboutLinesRef.current,
-        { autoAlpha: 0, y: 30 },
-        { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.08, ease: "power3.out", force3D: true },
-        "-=0.2"
+        { autoAlpha: 0, y: 20 },
+        { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.1, ease: 'power3.out', force3D: true },
+        "-=0.4"
       );
     }
   }, { scope: containerRef, dependencies: [step] });
@@ -376,7 +488,7 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
       {/* --- RESPONSIVE TYPOGRAPHY & BENTO GRID START --- */}
       <div ref={textRef} className="z-0 absolute inset-0 w-full h-full flex flex-col items-center invisible will-change-transform bg-[#FDFBF7] overflow-hidden">
 
-        {/* Video Background (Fullscreen on Desktop, Masked/Gradient on Mobile) */}
+        {/* Video Background */}
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden pointer-events-none bg-[#FDFBF7]">
           <div className="absolute top-0 left-0 w-full h-[60%] md:h-full [mask-image:linear-gradient(to_bottom,black_60%,transparent_100%)] md:[mask-image:none]">
             <SmartVideo
@@ -387,11 +499,11 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
               loop={true}
             />
           </div>
-          {/* Mobile Bottom Fade Mask - Hidden entirely on Desktop */}
+          {/* Mobile Bottom Fade Mask */}
           <div className="absolute bottom-0 left-0 w-full h-[50%] bg-gradient-to-t from-[#FDFBF7] via-[#FDFBF7]/90 to-transparent md:hidden"></div>
         </div>
 
-        {/* Text Block with updated labels and custom Y SVG */}
+        {/* Main Text Center Block */}
         <div className="relative z-10 flex flex-col items-center mt-[4vh] md:mt-[6vh] w-full px-4 pointer-events-none">
           <h1 className="text-[4rem] sm:text-6xl md:text-[6.5rem] lg:text-[8rem] font-black font-technical-sans text-ink-dark uppercase tracking-tighter leading-[0.8] mb-4 md:mb-6" style={{ transform: 'scaleY(1.15)' }}>
             Yangerila
@@ -401,13 +513,13 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
           </h2>
 
           <div className="flex items-center gap-3 md:gap-4 w-full max-w-[260px] md:max-w-[400px] mb-3 md:mb-5">
-            <div className="h-[1.5px] bg-ink-dark flex-1"></div>
-            <div className="w-5 h-5 md:w-8 md:h-8 shrink-0 relative flex items-center justify-center">
+            <div className="h-[1.5px] bg-ink-dark flex-1 opacity-0" ref={addToFlowchartLines}></div>
+            <div className="w-5 h-5 md:w-8 md:h-8 shrink-0 relative flex items-center justify-center opacity-0" ref={addToFlowchartLines}>
               <svg viewBox="0 0 157 171" className="w-full h-full fill-current text-ink-dark">
                 <path d={yLogoPath} />
               </svg>
             </div>
-            <div className="h-[1.5px] bg-ink-dark flex-1"></div>
+            <div className="h-[1.5px] bg-ink-dark flex-1 opacity-0" ref={addToFlowchartLines}></div>
           </div>
 
           <h3 className="text-[10px] sm:text-xs md:text-lg lg:text-xl font-black font-technical-sans text-ink-dark uppercase tracking-[0.15em] md:tracking-[0.2em]">
@@ -415,22 +527,22 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
           </h3>
         </div>
 
-        {/* MOBILE VIEW GRID: 4 columns, 2 rows of vertical glassmorphism cards */}
+        {/* MOBILE VIEW GRID: 3 columns, 2 rows of 6 vertical glassmorphism cards */}
         <div className="relative z-10 w-full h-full mx-auto flex-1 flex flex-col justify-end pb-8 md:hidden pointer-events-none">
-          <div className="relative w-full pointer-events-auto mt-auto mb-6 px-2 z-20">
-            <div className="grid grid-cols-4 gap-1.5 w-full max-w-[480px] mx-auto">
+          <div className="relative w-full pointer-events-auto mt-auto mb-6 px-4 z-20">
+            <div className="grid grid-cols-3 gap-2 w-full max-w-[500px] mx-auto">
               {mobileBentoOrder.map((btn, index) => (
                 <div
                   key={`mobile-${index}`}
                   ref={el => addToMobileBento(el, index)}
-                  className="flex flex-col items-center justify-center gap-1.5 bg-white/40 backdrop-blur-md p-2 py-4 rounded-2xl border-2 border-ink-dark shadow-none will-change-[transform,box-shadow] text-center aspect-[3/4] w-full"
+                  className="flex flex-col items-center justify-center gap-2 bg-white/40 backdrop-blur-md p-2 py-5 rounded-2xl border-2 border-ink-dark shadow-none will-change-[transform,box-shadow,opacity] text-center w-full"
                 >
-                  <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-ink-dark flex items-center justify-center shrink-0 mb-0.5">
-                    <btn.icon className="text-[#FDFBF7] w-4 h-4 sm:w-6 sm:h-6" strokeWidth={2.5} />
+                  <div className="bento-icon-container w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-ink-dark flex items-center justify-center shrink-0 mb-1">
+                    <btn.icon className="text-[#FDFBF7] w-5 h-5 sm:w-7 sm:h-7" strokeWidth={2.5} />
                   </div>
-                  <div className="flex flex-col items-center justify-center w-full">
-                    <span className="text-[11px] sm:text-[14px] font-black font-technical-sans text-ink-dark leading-none mb-1">{btn.stat}</span>
-                    <span className="text-[7px] sm:text-[8px] font-bold font-technical-sans text-ink-dark/80 uppercase leading-tight whitespace-pre-line text-center px-0.5">{btn.label}</span>
+                  <div className="flex flex-col items-center justify-center w-full min-h-[28px]">
+                    <span className="bento-text-line text-[13px] sm:text-[16px] font-black font-technical-sans text-ink-dark leading-none mb-1 text-center" data-text={btn.stat}></span>
+                    <span className="bento-text-line text-[8px] sm:text-[10px] font-bold font-technical-sans text-ink-dark/80 uppercase leading-tight whitespace-pre-line text-center px-0.5" data-text={btn.label}></span>
                   </div>
                 </div>
               ))}
@@ -438,62 +550,62 @@ const HeroReveal = React.memo(function HeroReveal({ step, onComplete, isReversin
           </div>
         </div>
 
-        {/* DESKTOP VIEW PANELS: Hugging edges, +20% scaling on width, height, icons, text */}
+        {/* DESKTOP VIEW PANELS: Hugging edges, 3 left / 3 right with flowchart lines */}
         <div className="hidden md:flex absolute inset-0 w-full h-full justify-between items-center pointer-events-none px-6 lg:px-10 xl:px-16 pt-[12vh] pb-[8vh] z-10">
 
           {/* Left Side Group */}
-          <div className="flex flex-col justify-center h-full pointer-events-auto w-[195px] lg:w-[210px] xl:w-[230px]">
-            <div className="relative flex flex-col gap-2 lg:gap-2.5 w-full">
-              
+          <div className="flex flex-col gap-6 lg:gap-8 xl:gap-10 justify-center h-full pointer-events-auto w-[195px] lg:w-[210px] xl:w-[230px]">
+            <div className="relative flex flex-col gap-6 lg:gap-8 xl:gap-10 w-full h-full justify-center">
+
               {/* Left Flowchart Vertical Line */}
-              <div className="hidden lg:block absolute top-[50px] lg:top-[55px] xl:top-[62.5px] bottom-[50px] lg:bottom-[55px] xl:bottom-[62.5px] -right-4 lg:-right-6 xl:-right-8 w-[1.5px] bg-ink-dark pointer-events-none"></div>
+              <div ref={addToFlowchartLines} className="hidden lg:block absolute top-[62px] lg:top-[65px] xl:top-[75px] bottom-[62px] lg:bottom-[65px] xl:bottom-[75px] -right-4 lg:-right-6 xl:-right-8 w-[2px] bg-ink-dark opacity-0"></div>
               {/* Left Flowchart Main Horizontal Line */}
-              <div className="hidden lg:block absolute top-1/2 -right-4 lg:-right-6 xl:-right-8 w-8 lg:w-12 xl:w-20 h-[1.5px] bg-ink-dark translate-x-full pointer-events-none"></div>
+              <div ref={addToFlowchartLines} className="hidden lg:block absolute top-1/2 -right-4 lg:-right-6 xl:-right-8 w-8 lg:w-12 xl:w-20 h-[2px] bg-ink-dark translate-x-full opacity-0"></div>
 
               {desktopLeftBento.map((btn, index) => (
                 <div
                   key={`desktop-left-${index}`}
                   ref={el => addToDesktopBento(el, index)}
-                  className="relative flex items-center gap-3 bg-white/40 backdrop-blur-md px-3 lg:px-4 py-2 h-[100px] lg:h-[110px] xl:h-[125px] rounded-2xl border-2 border-ink-dark shadow-none will-change-[transform,box-shadow] w-full"
+                  className="relative flex items-center gap-3 bg-white/40 backdrop-blur-md px-3 lg:px-4 py-2 h-[100px] lg:h-[110px] xl:h-[125px] rounded-2xl border-2 border-ink-dark shadow-none will-change-[transform,box-shadow,opacity] w-full"
                 >
-                  <div className="w-[50px] h-[50px] lg:w-[60px] lg:h-[60px] xl:w-[68px] xl:h-[68px] rounded-full bg-ink-dark flex items-center justify-center shrink-0">
+                  <div className="bento-icon-container w-[50px] h-[50px] lg:w-[60px] lg:h-[60px] xl:w-[68px] xl:h-[68px] rounded-full bg-ink-dark flex items-center justify-center shrink-0">
                     <btn.icon className="text-[#FDFBF7] w-6 h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" strokeWidth={2.5} />
                   </div>
-                  <div className="flex flex-col z-10 text-left justify-center flex-1">
-                    <span className="text-[16px] lg:text-[18px] xl:text-[22px] font-black font-technical-sans text-ink-dark leading-none tracking-tight mb-1">{btn.stat}</span>
-                    <span className="text-[9px] lg:text-[10px] xl:text-[12px] font-bold font-technical-sans text-ink-dark/80 uppercase leading-tight whitespace-pre-line">{btn.label}</span>
+                  <div className="flex flex-col z-10 text-left justify-center flex-1 min-w-0">
+                    <span className="bento-text-line text-[16px] lg:text-[18px] xl:text-[22px] font-black font-technical-sans text-ink-dark leading-none tracking-tight mb-1 truncate" data-text={btn.stat}></span>
+                    <span className="bento-text-line text-[9px] lg:text-[10px] xl:text-[12px] font-bold font-technical-sans text-ink-dark/80 uppercase leading-tight whitespace-pre-line" data-text={btn.label}></span>
                   </div>
                   {/* Button Flowchart Connectors */}
-                  <div className="hidden lg:block absolute top-1/2 -right-4 lg:-right-6 xl:-right-8 w-4 lg:w-6 xl:w-8 h-[1.5px] bg-ink-dark pointer-events-none"></div>
+                  <div ref={addToFlowchartLines} className="hidden lg:block absolute top-1/2 -right-4 lg:-right-6 xl:-right-8 w-4 lg:w-6 xl:w-8 h-[2px] bg-ink-dark opacity-0 pointer-events-none"></div>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Right Side Group */}
-          <div className="flex flex-col justify-center h-full pointer-events-auto w-[195px] lg:w-[210px] xl:w-[230px]">
-            <div className="relative flex flex-col gap-2 lg:gap-2.5 w-full">
-              
+          <div className="flex flex-col gap-6 lg:gap-8 xl:gap-10 justify-center h-full pointer-events-auto w-[195px] lg:w-[210px] xl:w-[230px]">
+            <div className="relative flex flex-col gap-6 lg:gap-8 xl:gap-10 w-full h-full justify-center">
+
               {/* Right Flowchart Vertical Line */}
-              <div className="hidden lg:block absolute top-[50px] lg:top-[55px] xl:top-[62.5px] bottom-[50px] lg:bottom-[55px] xl:bottom-[62.5px] -left-4 lg:-left-6 xl:-left-8 w-[1.5px] bg-ink-dark pointer-events-none"></div>
+              <div ref={addToFlowchartLines} className="hidden lg:block absolute top-[62px] lg:top-[65px] xl:top-[75px] bottom-[62px] lg:bottom-[65px] xl:bottom-[75px] -left-4 lg:-left-6 xl:-left-8 w-[2px] bg-ink-dark opacity-0"></div>
               {/* Right Flowchart Main Horizontal Line */}
-              <div className="hidden lg:block absolute top-1/2 -left-4 lg:-left-6 xl:-left-8 w-8 lg:w-12 xl:w-20 h-[1.5px] bg-ink-dark -translate-x-full pointer-events-none"></div>
+              <div ref={addToFlowchartLines} className="hidden lg:block absolute top-1/2 -left-4 lg:-left-6 xl:-left-8 w-8 lg:w-12 xl:w-20 h-[2px] bg-ink-dark -translate-x-full opacity-0"></div>
 
               {desktopRightBento.map((btn, index) => (
                 <div
                   key={`desktop-right-${index}`}
-                  ref={el => addToDesktopBento(el, index + 4)}
-                  className="relative flex items-center flex-row-reverse gap-3 bg-white/40 backdrop-blur-md px-3 lg:px-4 py-2 h-[100px] lg:h-[110px] xl:h-[125px] rounded-2xl border-2 border-ink-dark shadow-none will-change-[transform,box-shadow] w-full text-right"
+                  ref={el => addToDesktopBento(el, index + 3)}
+                  className="relative flex items-center flex-row-reverse gap-3 bg-white/40 backdrop-blur-md px-3 lg:px-4 py-2 h-[100px] lg:h-[110px] xl:h-[125px] rounded-2xl border-2 border-ink-dark shadow-none will-change-[transform,box-shadow,opacity] w-full text-right"
                 >
-                  <div className="w-[50px] h-[50px] lg:w-[60px] lg:h-[60px] xl:w-[68px] xl:h-[68px] rounded-full bg-ink-dark flex items-center justify-center shrink-0">
+                  <div className="bento-icon-container w-[50px] h-[50px] lg:w-[60px] lg:h-[60px] xl:w-[68px] xl:h-[68px] rounded-full bg-ink-dark flex items-center justify-center shrink-0">
                     <btn.icon className="text-[#FDFBF7] w-6 h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" strokeWidth={2.5} />
                   </div>
-                  <div className="flex flex-col z-10 text-right justify-center flex-1">
-                    <span className="text-[16px] lg:text-[18px] xl:text-[22px] font-black font-technical-sans text-ink-dark leading-none tracking-tight mb-1">{btn.stat}</span>
-                    <span className="text-[9px] lg:text-[10px] xl:text-[12px] font-bold font-technical-sans text-ink-dark/80 uppercase leading-tight whitespace-pre-line">{btn.label}</span>
+                  <div className="flex flex-col z-10 text-right justify-center flex-1 min-w-0">
+                    <span className="bento-text-line text-[16px] lg:text-[18px] xl:text-[22px] font-black font-technical-sans text-ink-dark leading-none tracking-tight mb-1 truncate" data-text={btn.stat}></span>
+                    <span className="bento-text-line text-[9px] lg:text-[10px] xl:text-[12px] font-bold font-technical-sans text-ink-dark/80 uppercase leading-tight whitespace-pre-line" data-text={btn.label}></span>
                   </div>
                   {/* Button Flowchart Connectors */}
-                  <div className="hidden lg:block absolute top-1/2 -left-4 lg:-left-6 xl:-left-8 w-4 lg:w-6 xl:w-8 h-[1.5px] bg-ink-dark pointer-events-none"></div>
+                  <div ref={addToFlowchartLines} className="hidden lg:block absolute top-1/2 -left-4 lg:-left-6 xl:-left-8 w-4 lg:w-6 xl:w-8 h-[2px] bg-ink-dark opacity-0 pointer-events-none"></div>
                 </div>
               ))}
             </div>

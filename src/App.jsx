@@ -38,6 +38,7 @@ export default function App() {
   const isLockedRef = useRef(false);
   const isComponentLockedRef = useRef(false);
   const isReversingRef = useRef(false);
+  const isRevealingRef = useRef(false); // Tracks if the 6-button cinematic sequence is actively playing
   const lastTransitionTime = useRef(0);
   const COOLDOWN_MS = 600;
 
@@ -71,10 +72,6 @@ export default function App() {
   }, []);
 
   const onStepComplete = useCallback(() => { isLockedRef.current = false; }, []);
-  const handleIntroComplete = useCallback(() => {
-    isIntroPlayingRef.current = false;
-    setIsIntroPlaying(false);
-  }, []);
 
   useEffect(() => {
     const extendInertia = () => {
@@ -114,6 +111,12 @@ export default function App() {
     setIsMenuOpen(false);
 
     setTimeout(() => { isLockedRef.current = false; }, COOLDOWN_MS);
+  }, []);
+
+  const handleIntroComplete = useCallback(() => {
+    isIntroPlayingRef.current = false;
+    setIsIntroPlaying(false);
+    // Waits for manual user scroll to trigger the zoom and step 1
   }, []);
 
   useEffect(() => {
@@ -221,6 +224,19 @@ export default function App() {
 
   const handleScrollIntent = useCallback((direction) => {
     const now = Date.now();
+
+    // INTERCEPT: If the cinematic sequence is playing, absorb the scroll to skip it.
+    if (isRevealingRef.current) {
+      // FIX: 1200ms momentum protection window. 
+      // This prevents the trackpad/mousewheel inertia from the initial step-triggering scroll
+      // from instantly fast-forwarding the GSAP animation before it even starts.
+      if (now - lastTransitionTime.current > 1200) {
+        window.dispatchEvent(new CustomEvent('fastForwardReveal'));
+        lastTransitionTime.current = now; // Add cooldown to prevent double-skipping
+      }
+      return; // Always block standard section-scrolling while revealing
+    }
+
     if (isLockedRef.current || isComponentLockedRef.current || isIntroPlayingRef.current) return;
     if (now - lastTransitionTime.current < COOLDOWN_MS) return;
     if (now < inertiaDeadTime.current) return;
@@ -306,6 +322,14 @@ export default function App() {
 
     const handleKeyDown = (e) => {
       if (e.target && e.target.closest('input, textarea, select')) return;
+
+      // INTERCEPT Keyboard scroll to fast forward
+      if (isRevealingRef.current) {
+        if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === 'ArrowUp' || e.key === 'PageUp') {
+          window.dispatchEvent(new CustomEvent('fastForwardReveal'));
+        }
+        return;
+      }
 
       if (isLockedRef.current || isIntroPlayingRef.current || isComponentLockedRef.current) return;
       if (Date.now() < inertiaDeadTime.current) return;
@@ -412,7 +436,7 @@ export default function App() {
       </div>
 
       <main className="relative z-10 w-full h-full">
-        <HeroReveal step={currentStep} onComplete={onStepComplete} isReversingRef={isReversingRef} onIntroComplete={handleIntroComplete} />
+        <HeroReveal step={currentStep} onComplete={onStepComplete} isReversingRef={isReversingRef} onIntroComplete={handleIntroComplete} isRevealingRef={isRevealingRef} />
         <LegacyPanel step={currentStep} onComplete={onStepComplete} isReversingRef={isReversingRef} />
 
         <div
